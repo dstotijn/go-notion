@@ -67,7 +67,7 @@ func (c *Client) newRequest(ctx context.Context, method, url string, body io.Rea
 func (c *Client) FindDatabaseByID(ctx context.Context, id string) (db Database, err error) {
 	req, err := c.newRequest(ctx, http.MethodGet, "/databases/"+id, nil)
 	if err != nil {
-		return Database{}, fmt.Errorf("notion: invalid URL: %w", err)
+		return Database{}, fmt.Errorf("notion: invalid request: %w", err)
 	}
 
 	res, err := c.httpClient.Do(req)
@@ -100,7 +100,7 @@ func (c *Client) QueryDatabase(ctx context.Context, id string, query DatabaseQue
 
 	req, err := c.newRequest(ctx, http.MethodPost, fmt.Sprintf("/databases/%v/query", id), body)
 	if err != nil {
-		return DatabaseQueryResponse{}, fmt.Errorf("notion: invalid URL: %w", err)
+		return DatabaseQueryResponse{}, fmt.Errorf("notion: invalid request: %w", err)
 	}
 
 	res, err := c.httpClient.Do(req)
