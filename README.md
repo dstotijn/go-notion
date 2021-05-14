@@ -11,8 +11,7 @@ Go client for the [Notion API](https://developers.notion.com/reference).
 ### Databases
 
 - [x] [Retrieve a database](database.go)
-- [ ] Query a database
-- [ ] List databases
+- [x] [Query a database](database.go)
 
 ## Pages
 

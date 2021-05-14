@@ -52,5 +52,9 @@ func (c *Client) newRequest(method, url string, body io.Reader) (*http.Request, 
 	req.Header.Set("Notion-Version", apiVersion)
 	req.Header.Set("User-Agent", "go-notion/"+clientVersion)
 
+	if method == http.MethodPost || method == http.MethodPatch {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
 	return req, nil
 }
