@@ -22,6 +22,20 @@ var (
 	ErrServiceUnavailable = errors.New("notion: service is unavailable")
 )
 
+var errMap = map[string]error{
+	"invalid_json":          ErrInvalidJSON,
+	"invalid_request_url":   ErrInvalidRequestURL,
+	"invalid_request":       ErrInvalidRequest,
+	"validation_error":      ErrValidation,
+	"unauthorized":          ErrUnauthorized,
+	"restricted_resource":   ErrRestrictedResource,
+	"object_not_found":      ErrObjectNotFound,
+	"conflict_error":        ErrConflict,
+	"rate_limited":          ErrRateLimited,
+	"internal_server_error": ErrInternalServer,
+	"service_unavailable":   ErrServiceUnavailable,
+}
+
 type APIError struct {
 	Object  string `json:"object"`
 	Status  int    `json:"status"`
@@ -35,32 +49,12 @@ func (err *APIError) Error() string {
 }
 
 func (err *APIError) Unwrap() error {
-	switch err.Code {
-	case "invalid_json":
-		return ErrInvalidJSON
-	case "invalid_request_url":
-		return ErrInvalidRequestURL
-	case "invalid_request":
-		return ErrInvalidRequest
-	case "validation_error":
-		return ErrValidation
-	case "unauthorized":
-		return ErrUnauthorized
-	case "restricted_resource":
-		return ErrRestrictedResource
-	case "object_not_found":
-		return ErrObjectNotFound
-	case "conflict_error":
-		return ErrConflict
-	case "rate_limited":
-		return ErrRateLimited
-	case "internal_server_error":
-		return ErrInternalServer
-	case "service_unavailable":
-		return ErrServiceUnavailable
-	default:
-		return fmt.Errorf("notion: unknown error (%v)", err.Code)
+	mapped, ok := errMap[err.Code]
+	if !ok {
+		return fmt.Errorf("notion: %v", err.Error())
 	}
+
+	return mapped
 }
 
 func parseErrorResponse(res *http.Response) error {

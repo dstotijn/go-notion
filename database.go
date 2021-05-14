@@ -91,22 +91,22 @@ type DatabaseProperty struct {
 func (c *Client) FindDatabaseByID(id string) (db Database, err error) {
 	req, err := c.newRequest("GET", "/databases/"+id, nil)
 	if err != nil {
-		return Database{}, fmt.Errorf("invalid URL: %w", err)
+		return Database{}, fmt.Errorf("notion: invalid URL: %w", err)
 	}
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return Database{}, fmt.Errorf("failed to make HTTP request: %w", err)
+		return Database{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		return Database{}, fmt.Errorf("notion: failed to get database: %w", parseErrorResponse(res))
+		return Database{}, fmt.Errorf("notion: failed to find database: %w", parseErrorResponse(res))
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&db)
 	if err != nil {
-		return Database{}, fmt.Errorf("failed to parse HTTP response: %w", err)
+		return Database{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
 	}
 
 	return db, nil
