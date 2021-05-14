@@ -15,7 +15,7 @@ Go client for the [Notion API](https://developers.notion.com/reference).
 
 ## Pages
 
-- [ ] Retrieve a page
+- [x] [Retrieve a page](client.go)
 - [ ] Create a page
 - [ ] Update page properties
 
