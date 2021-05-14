@@ -120,3 +120,29 @@ func (c *Client) QueryDatabase(ctx context.Context, id string, query DatabaseQue
 
 	return result, nil
 }
+
+// FindPageByID fetches a page by ID.
+// See: https://developers.notion.com/reference/get-page
+func (c *Client) FindPageByID(ctx context.Context, id string) (page Page, err error) {
+	req, err := c.newRequest(ctx, http.MethodGet, "/pages/"+id, nil)
+	if err != nil {
+		return Page{}, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return Page{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return Page{}, fmt.Errorf("notion: failed to find page: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&page)
+	if err != nil {
+		return Page{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return page, nil
+}
