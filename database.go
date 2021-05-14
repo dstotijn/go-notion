@@ -18,37 +18,23 @@ type Database struct {
 
 type DatabaseProperties map[string]DatabaseProperty
 
-// Database property types.
+// Database property metadata types.
 type (
-	TitleDatabaseProperty          struct{}
-	RichTextDatabaseProperty       struct{}
-	DateDatabaseProperty           struct{}
-	PeopleDatabaseProperty         struct{}
-	FileDatabaseProperty           struct{}
-	CheckboxDatabaseProperty       struct{}
-	URLDatabaseProperty            struct{}
-	EmailDatabaseProperty          struct{}
-	PhoneNumberDatabaseProperty    struct{}
-	CreatedTimeDatabaseProperty    struct{}
-	CreatedByDatabaseProperty      struct{}
-	LastEditedTimeDatabaseProperty struct{}
-	LastEditedByDatabaseProperty   struct{}
-
-	NumberDatabaseProperty struct {
+	NumberMetadata struct {
 		Format string `json:"format"`
 	}
-	SelectDatabaseProperty struct {
+	SelectMetadata struct {
 		Options []SelectOptions `json:"options"`
 	}
-	FormulaDatabaseProperty struct {
+	FormulaMetadata struct {
 		Expression string `json:"expression"`
 	}
-	RelationDatabaseProperty struct {
+	RelationMetadata struct {
 		DatabaseID     string  `json:"database_id"`
 		SyncedPropName *string `json:"synced_property_name"`
 		SyncedPropID   *string `json:"synced_property_id"`
 	}
-	RollupDatabaseProperty struct {
+	RollupMetadata struct {
 		RelationPropName string `json:"relation_property_name"`
 		RelationPropID   string `json:"relation_property_id"`
 		RollupPropName   string `json:"rollup_property_name"`
@@ -67,25 +53,33 @@ type DatabaseProperty struct {
 	ID   string `json:"id"`
 	Type string `json:"type"`
 
-	Title          *TitleDatabaseProperty          `json:"title"`
-	RichText       *RichTextDatabaseProperty       `json:"rich_text"`
-	Number         *NumberDatabaseProperty         `json:"number"`
-	Select         *SelectDatabaseProperty         `json:"select"`
-	MultiSelect    *SelectDatabaseProperty         `json:"multi_select"`
-	Date           *DateDatabaseProperty           `json:"date"`
-	People         *PeopleDatabaseProperty         `json:"people"`
-	File           *FileDatabaseProperty           `json:"file"`
-	Checkbox       *CheckboxDatabaseProperty       `json:"checkbox"`
-	URL            *URLDatabaseProperty            `json:"url"`
-	Email          *EmailDatabaseProperty          `json:"email"`
-	PhoneNumber    *PhoneNumberDatabaseProperty    `json:"phone_number"`
-	Formula        *FormulaDatabaseProperty        `json:"formula"`
-	Relation       *RelationDatabaseProperty       `json:"relation"`
-	Rollup         *RollupDatabaseProperty         `json:"rollup"`
-	CreatedTime    *CreatedTimeDatabaseProperty    `json:"created_time"`
-	CreatedBy      *CreatedByDatabaseProperty      `json:"created_by"`
-	LastEditedTime *LastEditedTimeDatabaseProperty `json:"last_edited_time"`
-	LastEditedBy   *LastEditedByDatabaseProperty   `json:"last_edited_by"`
+	Number      *NumberMetadata   `json:"number"`
+	Select      *SelectMetadata   `json:"select"`
+	MultiSelect *SelectMetadata   `json:"multi_select"`
+	Formula     *FormulaMetadata  `json:"formula"`
+	Relation    *RelationMetadata `json:"relation"`
+	Rollup      *RollupMetadata   `json:"rollup"`
+}
+
+// Metadata returns the underlying property metadata, based on its `type` field.
+// When type is unknown/unmapped or doesn't have additional properies, `nil` is returned.
+func (prop DatabaseProperty) Metadata() interface{} {
+	switch prop.Type {
+	case "number":
+		return prop.Number
+	case "select":
+		return prop.Select
+	case "multi_select":
+		return prop.MultiSelect
+	case "formula":
+		return prop.Formula
+	case "relation":
+		return prop.Relation
+	case "rollup":
+		return prop.Rollup
+	default:
+		return nil
+	}
 }
 
 func (c *Client) FindDatabaseByID(id string) (db Database, err error) {
