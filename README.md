@@ -10,8 +10,8 @@ Go client for the [Notion API](https://developers.notion.com/reference).
 
 ### Databases
 
-- [x] [Retrieve a database](database.go)
-- [x] [Query a database](database.go)
+- [x] [Retrieve a database](client.go)
+- [x] [Query a database](client.go)
 
 ## Pages
 
