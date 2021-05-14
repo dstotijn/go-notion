@@ -16,7 +16,7 @@ type Database struct {
 	Properties     DatabaseProperties `json:"properties"`
 }
 
-type DatabaseProperties map[string]interface{}
+type DatabaseProperties map[string]DatabaseProperty
 
 // Database property types.
 type (
