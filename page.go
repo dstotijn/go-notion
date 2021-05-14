@@ -40,9 +40,9 @@ type DatabasePageProperties map[string]DatabasePageProperty
 
 type DatabasePageProperty struct {
 	DatabaseProperty
-	RichText    []RichText       `json:"rich_text"`
-	Select      *SelectMetadata  `json:"select"`
-	MultiSelect []SelectMetadata `json:"multi_select"`
+	RichText    []RichText      `json:"rich_text"`
+	Select      *SelectOptions  `json:"select"`
+	MultiSelect []SelectOptions `json:"multi_select"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
