@@ -17,7 +17,7 @@ type Block struct {
 	Heading2         *Heading       `json:"heading_2,omitempty"`
 	Heading3         *Heading       `json:"heading_3,omitempty"`
 	BulletedListItem *RichTextBlock `json:"bulleted_list_item,omitempty"`
-	NumberedListItem *RichText      `json:"numbered_list_item,omitempty"`
+	NumberedListItem *RichTextBlock `json:"numbered_list_item,omitempty"`
 	ToDo             *ToDo          `json:"to_do,omitempty"`
 	Toggle           *RichTextBlock `json:"toggle,omitempty"`
 	ChildPage        *ChildPage     `json:"rich_text,omitempty"`
@@ -55,3 +55,15 @@ const (
 	BlockTypeChildPage        BlockType = "child_page"
 	BlockTypeUnsupported      BlockType = "unsupported"
 )
+
+type FindBlockChildrenQuery struct {
+	StartCursor string
+	PageSize    int
+}
+
+// BlockChildrenResponse contains results (block children) and pagination data returned from a find request.
+type BlockChildrenResponse struct {
+	Results    []Block `json:"results"`
+	HasMore    bool    `json:"has_more"`
+	NextCursor *string `json:"next_cursor"`
+}

@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"strconv"
 )
 
 const (
@@ -219,4 +221,43 @@ func (c *Client) UpdatePageProps(ctx context.Context, pageID string, params Upda
 	}
 
 	return page, nil
+}
+
+// FindBlockChildrenByID returns a list of block children for a given block ID.
+// See: https://developers.notion.com/reference/post-database-query
+func (c *Client) FindBlockChildrenByID(ctx context.Context, blockID string, query *FindBlockChildrenQuery) (result BlockChildrenResponse, err error) {
+	body := &bytes.Buffer{}
+
+	req, err := c.newRequest(ctx, http.MethodGet, fmt.Sprintf("/blocks/%v/children", blockID), body)
+	if err != nil {
+		return BlockChildrenResponse{}, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	if query != nil {
+		q := url.Values{}
+		if query.StartCursor != "" {
+			q.Set("start_cursor", query.StartCursor)
+		}
+		if query.PageSize != 0 {
+			q.Set("page_size", strconv.Itoa(query.PageSize))
+		}
+		req.URL.RawQuery = q.Encode()
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return BlockChildrenResponse{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return BlockChildrenResponse{}, fmt.Errorf("notion: failed to find block children: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&result)
+	if err != nil {
+		return BlockChildrenResponse{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return result, nil
 }
