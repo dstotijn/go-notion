@@ -27,7 +27,7 @@ Go client for the [Notion API](https://developers.notion.com/reference).
 ### Users
 
 - [x] [Retrieve a user](client.go)
-- [ ] List all users
+- [x] [List all users](client.go)
 
 ### Search
 

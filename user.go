@@ -15,3 +15,10 @@ type User struct {
 	Person *Person `json:"person"`
 	Bot    *Bot    `json:"bot"`
 }
+
+// ListUsersResponse contains results (users) and pagination data returned from a list request.
+type ListUsersResponse struct {
+	Results    []User  `json:"results"`
+	HasMore    bool    `json:"has_more"`
+	NextCursor *string `json:"next_cursor"`
+}

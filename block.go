@@ -56,7 +56,7 @@ const (
 	BlockTypeUnsupported      BlockType = "unsupported"
 )
 
-type FindBlockChildrenQuery struct {
+type PaginationQuery struct {
 	StartCursor string
 	PageSize    int
 }
