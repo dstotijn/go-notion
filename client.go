@@ -297,3 +297,29 @@ func (c *Client) AppendBlockChildren(ctx context.Context, blockID string, childr
 
 	return block, nil
 }
+
+// FindUserByID fetches a user by ID.
+// See: https://developers.notion.com/reference/get-user
+func (c *Client) FindUserByID(ctx context.Context, id string) (user User, err error) {
+	req, err := c.newRequest(ctx, http.MethodGet, "/users/"+id, nil)
+	if err != nil {
+		return User{}, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return User{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return User{}, fmt.Errorf("notion: failed to find user: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&user)
+	if err != nil {
+		return User{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return user, nil
+}
