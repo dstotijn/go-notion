@@ -10,7 +10,7 @@ type Block struct {
 	Type           BlockType  `json:"type"`
 	CreatedTime    *time.Time `json:"created_time,omitempty"`
 	LastEditedTime *time.Time `json:"last_edited_time,omitempty"`
-	HasChildren    bool       `json:"has_children"`
+	HasChildren    bool       `json:"has_children,omitempty"`
 
 	Paragraph        *RichTextBlock `json:"paragraph,omitempty"`
 	Heading1         *Heading       `json:"heading_1,omitempty"`

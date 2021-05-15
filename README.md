@@ -22,7 +22,7 @@ Go client for the [Notion API](https://developers.notion.com/reference).
 ### Blocks
 
 - [x] [Retrieve block children](client.go)
-- [ ] Append block children
+- [x] [Append block children](client.go)
 
 ### Users
 
