@@ -186,3 +186,40 @@ func (c *Client) CreatePage(ctx context.Context, params CreatePageParams) (page 
 
 	return page, nil
 }
+
+// UpdatePageProps updates page property values for a page.
+// See: https://developers.notion.com/reference/patch-page
+func (c *Client) UpdatePageProps(ctx context.Context, pageID string, params UpdatePageParams) (page Page, err error) {
+	if err := params.Validate(); err != nil {
+		return Page{}, fmt.Errorf("notion: invalid page params: %w", err)
+	}
+
+	body := &bytes.Buffer{}
+
+	err = json.NewEncoder(body).Encode(params)
+	if err != nil {
+		return Page{}, fmt.Errorf("notion: failed to encode body params to JSON: %w", err)
+	}
+
+	req, err := c.newRequest(ctx, http.MethodPatch, "/pages/"+pageID, body)
+	if err != nil {
+		return Page{}, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return Page{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return Page{}, fmt.Errorf("notion: failed to update page properties: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&page)
+	if err != nil {
+		return Page{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return page, nil
+}

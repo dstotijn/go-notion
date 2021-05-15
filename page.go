@@ -42,10 +42,16 @@ type PageTitle struct {
 type DatabasePageProperties map[string]DatabasePageProperty
 
 type DatabasePageProperty struct {
-	DatabaseProperty
-	RichText    []RichText      `json:"rich_text"`
-	Select      *SelectOptions  `json:"select"`
-	MultiSelect []SelectOptions `json:"multi_select"`
+	ID   string               `json:"id,omitempty"`
+	Type DatabasePropertyType `json:"type"`
+
+	RichText    []RichText        `json:"rich_text,omitempty"`
+	Number      *NumberMetadata   `json:"number,omitempty"`
+	Select      *SelectOptions    `json:"select,omitempty"`
+	MultiSelect []SelectOptions   `json:"multi_select,omitempty"`
+	Formula     *FormulaMetadata  `json:"formula,omitempty"`
+	Relation    *RelationMetadata `json:"relation,omitempty"`
+	Rollup      *RollupMetadata   `json:"rollup,omitempty"`
 }
 
 // CreatePageParams are the params used for creating a page.
@@ -59,6 +65,12 @@ type CreatePageParams struct {
 
 	// Optionally, children blocks are added to the page.
 	Children []Block
+}
+
+type UpdatePageParams struct {
+	// Either DatabasePageProperties or Title must be not nil.
+	DatabasePageProperties *DatabasePageProperties
+	Title                  []RichText
 }
 
 type ParentType string
@@ -165,4 +177,29 @@ func (p *Page) UnmarshalJSON(b []byte) error {
 	*p = Page(page)
 
 	return nil
+}
+
+func (p UpdatePageParams) Validate() error {
+	if p.DatabasePageProperties == nil && p.Title == nil {
+		return errors.New("either database page properties or title is required")
+	}
+	return nil
+}
+
+func (p UpdatePageParams) MarshalJSON() ([]byte, error) {
+	type UpdatePageParamsDTO struct {
+		Properties interface{} `json:"properties"`
+	}
+
+	var dto UpdatePageParamsDTO
+
+	if p.DatabasePageProperties != nil {
+		dto.Properties = p.DatabasePageProperties
+	} else if p.Title != nil {
+		dto.Properties = PageTitle{
+			Title: p.Title,
+		}
+	}
+
+	return json.Marshal(dto)
 }

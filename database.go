@@ -29,35 +29,35 @@ type (
 		Expression string `json:"expression"`
 	}
 	RelationMetadata struct {
-		DatabaseID     string  `json:"database_id"`
-		SyncedPropName *string `json:"synced_property_name"`
-		SyncedPropID   *string `json:"synced_property_id"`
+		DatabaseID     string  `json:"database_id,omitempty"`
+		SyncedPropName *string `json:"synced_property_name,omitempty"`
+		SyncedPropID   *string `json:"synced_property_id,omitempty"`
 	}
 	RollupMetadata struct {
-		RelationPropName string `json:"relation_property_name"`
-		RelationPropID   string `json:"relation_property_id"`
-		RollupPropName   string `json:"rollup_property_name"`
-		RollupPropID     string `json:"rollup_property_id"`
-		Function         string `json:"function"`
+		RelationPropName string `json:"relation_property_name,omitempty"`
+		RelationPropID   string `json:"relation_property_id,omitempty"`
+		RollupPropName   string `json:"rollup_property_name,omitempty"`
+		RollupPropID     string `json:"rollup_property_id,omitempty"`
+		Function         string `json:"function,omitempty"`
 	}
 )
 
 type SelectOptions struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Color string `json:"color"`
+	ID    string `json:"id,omitempty"`
+	Name  string `json:"name,omitempty"`
+	Color Color  `json:"color,omitempty"`
 }
 
 type DatabaseProperty struct {
 	ID   string               `json:"id"`
 	Type DatabasePropertyType `json:"type"`
 
-	Number      *NumberMetadata   `json:"number"`
-	Select      *SelectMetadata   `json:"select"`
-	MultiSelect *SelectMetadata   `json:"multi_select"`
-	Formula     *FormulaMetadata  `json:"formula"`
-	Relation    *RelationMetadata `json:"relation"`
-	Rollup      *RollupMetadata   `json:"rollup"`
+	Number      *NumberMetadata   `json:"number,omitempty"`
+	Select      *SelectMetadata   `json:"select,omitempty"`
+	MultiSelect *SelectMetadata   `json:"multi_select,omitempty"`
+	Formula     *FormulaMetadata  `json:"formula,omitempty"`
+	Relation    *RelationMetadata `json:"relation,omitempty"`
+	Rollup      *RollupMetadata   `json:"rollup,omitempty"`
 }
 
 // DatabaseQuery is used for quering a database.
