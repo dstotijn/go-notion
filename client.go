@@ -360,3 +360,39 @@ func (c *Client) ListUsers(ctx context.Context, query *PaginationQuery) (result 
 
 	return result, nil
 }
+
+// Search fetches all pages and child pages that are shared with the integration. Optionally uses query, filter and
+// pagination options.
+// See: https://developers.notion.com/reference/post-search
+func (c *Client) Search(ctx context.Context, opts *SearchOpts) (result SearchResponse, err error) {
+	body := &bytes.Buffer{}
+
+	if opts != nil {
+		err = json.NewEncoder(body).Encode(opts)
+		if err != nil {
+			return SearchResponse{}, fmt.Errorf("notion: failed to encode filter to JSON: %w", err)
+		}
+	}
+
+	req, err := c.newRequest(ctx, http.MethodPost, "/search", body)
+	if err != nil {
+		return SearchResponse{}, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return SearchResponse{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return SearchResponse{}, fmt.Errorf("notion: failed to search: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&result)
+	if err != nil {
+		return SearchResponse{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return result, nil
+}

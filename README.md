@@ -31,7 +31,7 @@ Go client for the [Notion API](https://developers.notion.com/reference).
 
 ### Search
 
-- [ ] Search
+- [x] [Search](client.go)
 
 ## License
 
