@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 )
 
 const (
@@ -156,8 +155,6 @@ func (c *Client) CreatePage(ctx context.Context, params CreatePageParams) (page 
 	}
 
 	body := &bytes.Buffer{}
-
-	_ = json.NewEncoder(os.Stderr).Encode(params)
 
 	err = json.NewEncoder(body).Encode(params)
 	if err != nil {
