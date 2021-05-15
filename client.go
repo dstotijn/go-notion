@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 )
 
 const (
@@ -137,6 +138,45 @@ func (c *Client) FindPageByID(ctx context.Context, id string) (page Page, err er
 
 	if res.StatusCode != http.StatusOK {
 		return Page{}, fmt.Errorf("notion: failed to find page: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&page)
+	if err != nil {
+		return Page{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return page, nil
+}
+
+// CreatePage creates a new page in the specified database or as a child of an existing page.
+// See: https://developers.notion.com/reference/post-page
+func (c *Client) CreatePage(ctx context.Context, params CreatePageParams) (page Page, err error) {
+	if err := params.Validate(); err != nil {
+		return Page{}, fmt.Errorf("notion: invalid page params: %w", err)
+	}
+
+	body := &bytes.Buffer{}
+
+	_ = json.NewEncoder(os.Stderr).Encode(params)
+
+	err = json.NewEncoder(body).Encode(params)
+	if err != nil {
+		return Page{}, fmt.Errorf("notion: failed to encode body params to JSON: %w", err)
+	}
+
+	req, err := c.newRequest(ctx, http.MethodPost, "/pages", body)
+	if err != nil {
+		return Page{}, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return Page{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return Page{}, fmt.Errorf("notion: failed to create page: %w", parseErrorResponse(res))
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&page)

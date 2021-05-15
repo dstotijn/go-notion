@@ -2,6 +2,7 @@ package notion
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 )
@@ -24,15 +25,17 @@ type Page struct {
 type PageParent struct {
 	Type string `json:"type"`
 
-	PageID     *string `json:"page_id"`
-	DatabaseID *string `json:"database_id"`
+	PageID     *string `json:"page_id,omitempty"`
+	DatabaseID *string `json:"database_id,omitempty"`
 }
 
 // PageProperties are properties of a page whose parent is a page or a workspace.
 type PageProperties struct {
-	Title struct {
-		Title []RichText `json:"title"`
-	} `json:"title"`
+	Title PageTitle `json:"title"`
+}
+
+type PageTitle struct {
+	Title []RichText `json:"title"`
 }
 
 // DatabasePageProperties are properties of a page whose parent is a database.
@@ -43,6 +46,76 @@ type DatabasePageProperty struct {
 	RichText    []RichText      `json:"rich_text"`
 	Select      *SelectOptions  `json:"select"`
 	MultiSelect []SelectOptions `json:"multi_select"`
+}
+
+// CreatePageParams are the params used for creating a page.
+type CreatePageParams struct {
+	ParentType ParentType
+	ParentID   string
+
+	// Either DatabasePageProperties or Title must be not nil.
+	DatabasePageProperties *DatabasePageProperties
+	Title                  []RichText
+
+	// Optionally, children blocks are added to the page.
+	Children []Block
+}
+
+type ParentType string
+
+const (
+	ParentTypeDatabase ParentType = "database_id"
+	ParentTypePage     ParentType = "page_id"
+)
+
+func (p CreatePageParams) Validate() error {
+	if p.ParentType == "" {
+		return errors.New("parent type is required")
+	}
+	if p.ParentID == "" {
+		return errors.New("parent ID is required")
+	}
+	if p.ParentType == ParentTypeDatabase && p.DatabasePageProperties == nil {
+		return errors.New("database page properties is required when parent type is database")
+	}
+	if p.ParentType == ParentTypePage && p.Title == nil {
+		return errors.New("title is required when parent type is page")
+	}
+
+	return nil
+}
+
+func (p CreatePageParams) MarshalJSON() ([]byte, error) {
+	type CreatePageParamsDTO struct {
+		Parent     PageParent  `json:"parent"`
+		Properties interface{} `json:"properties"`
+		Children   []Block     `json:"children,omitempty"`
+	}
+
+	var parent PageParent
+
+	if p.DatabasePageProperties != nil {
+		parent.Type = "database_id"
+		parent.DatabaseID = StringPtr(p.ParentID)
+	} else if p.Title != nil {
+		parent.Type = "page_id"
+		parent.PageID = StringPtr(p.ParentID)
+	}
+
+	dto := CreatePageParamsDTO{
+		Parent:   parent,
+		Children: p.Children,
+	}
+
+	if p.DatabasePageProperties != nil {
+		dto.Properties = p.DatabasePageProperties
+	} else if p.Title != nil {
+		dto.Properties = PageTitle{
+			Title: p.Title,
+		}
+	}
+
+	return json.Marshal(dto)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

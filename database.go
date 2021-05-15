@@ -49,8 +49,8 @@ type SelectOptions struct {
 }
 
 type DatabaseProperty struct {
-	ID   string `json:"id"`
-	Type string `json:"type"`
+	ID   string               `json:"id"`
+	Type DatabasePropertyType `json:"type"`
 
 	Number      *NumberMetadata   `json:"number"`
 	Select      *SelectMetadata   `json:"select"`
@@ -136,19 +136,19 @@ type MultiSelectDatabaseQueryFilter struct {
 }
 
 type DateDatabaseQueryFilter struct {
-	Equals     time.Time `json:"equals,omitempty"`
-	Before     time.Time `json:"before,omitempty"`
-	After      time.Time `json:"after,omitempty"`
-	OnOrBefore time.Time `json:"on_or_before,omitempty"`
-	OnOrAfter  time.Time `json:"on_or_after,omitempty"`
-	IsEmpty    bool      `json:"is_empty,omitempty"`
-	IsNotEmpty bool      `json:"is_not_empty,omitempty"`
-	PastWeek   *struct{} `json:"past_week,omitempty"`
-	PastMonth  *struct{} `json:"past_month,omitempty"`
-	PastYear   *struct{} `json:"past_year,omitempty"`
-	NextWeek   *struct{} `json:"next_week,omitempty"`
-	NextMonth  *struct{} `json:"next_month,omitempty"`
-	NextYear   *struct{} `json:"next_year,omitempty"`
+	Equals     *time.Time `json:"equals,omitempty"`
+	Before     *time.Time `json:"before,omitempty"`
+	After      *time.Time `json:"after,omitempty"`
+	OnOrBefore *time.Time `json:"on_or_before,omitempty"`
+	OnOrAfter  *time.Time `json:"on_or_after,omitempty"`
+	IsEmpty    bool       `json:"is_empty,omitempty"`
+	IsNotEmpty bool       `json:"is_not_empty,omitempty"`
+	PastWeek   *struct{}  `json:"past_week,omitempty"`
+	PastMonth  *struct{}  `json:"past_month,omitempty"`
+	PastYear   *struct{}  `json:"past_year,omitempty"`
+	NextWeek   *struct{}  `json:"next_week,omitempty"`
+	NextMonth  *struct{}  `json:"next_month,omitempty"`
+	NextYear   *struct{}  `json:"next_year,omitempty"`
 }
 
 type PeopleDatabaseQueryFilter struct {
@@ -184,11 +184,33 @@ type DatabaseQuerySort struct {
 }
 
 type (
-	SortTimestamp string
-	SortDirection string
+	DatabasePropertyType string
+	SortTimestamp        string
+	SortDirection        string
 )
 
 const (
+	// Database property type enums.
+	DBPropTypeTitle          DatabasePropertyType = "title"
+	DBPropTypeRichText       DatabasePropertyType = "rich_text"
+	DBPropTypeNumber         DatabasePropertyType = "number"
+	DBPropTypeSelect         DatabasePropertyType = "select"
+	DBPropTypeMultiSelect    DatabasePropertyType = "multi_select"
+	DBPropTypeDate           DatabasePropertyType = "date"
+	DBPropTypePeople         DatabasePropertyType = "people"
+	DBPropTypeFile           DatabasePropertyType = "file"
+	DBPropTypeCheckbox       DatabasePropertyType = "checkbox"
+	DBPropTypeURL            DatabasePropertyType = "url"
+	DBPropTypeEmail          DatabasePropertyType = "email"
+	DBPropTypePhoneNumber    DatabasePropertyType = "phone_number"
+	DBPropTypeFormula        DatabasePropertyType = "formula"
+	DBPropTypeRelation       DatabasePropertyType = "relation"
+	DBPropTypeRollup         DatabasePropertyType = "rollup"
+	DBPropTypeCreatedTime    DatabasePropertyType = "created_time"
+	DBPropTypeCreatedBy      DatabasePropertyType = "created_by"
+	DBPropTypeLastEditedTime DatabasePropertyType = "last_edited_time"
+	DBPropTypeLastEditedBy   DatabasePropertyType = "last_edited_by"
+
 	// Sort timestamp enums.
 	SortTimeStampCreatedTime    SortTimestamp = "created_time"
 	SortTimeStampLastEditedTime SortTimestamp = "last_edited_time"
