@@ -226,9 +226,7 @@ func (c *Client) UpdatePageProps(ctx context.Context, pageID string, params Upda
 // FindBlockChildrenByID returns a list of block children for a given block ID.
 // See: https://developers.notion.com/reference/post-database-query
 func (c *Client) FindBlockChildrenByID(ctx context.Context, blockID string, query *FindBlockChildrenQuery) (result BlockChildrenResponse, err error) {
-	body := &bytes.Buffer{}
-
-	req, err := c.newRequest(ctx, http.MethodGet, fmt.Sprintf("/blocks/%v/children", blockID), body)
+	req, err := c.newRequest(ctx, http.MethodGet, fmt.Sprintf("/blocks/%v/children", blockID), nil)
 	if err != nil {
 		return BlockChildrenResponse{}, fmt.Errorf("notion: invalid request: %w", err)
 	}
