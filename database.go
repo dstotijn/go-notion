@@ -80,15 +80,15 @@ type DatabaseQueryResponse struct {
 type DatabaseQueryFilter struct {
 	Property string `json:"property,omitempty"`
 
-	Text        TextDatabaseQueryFilter        `json:"text,omitempty"`
-	Number      NumberDatabaseQueryFilter      `json:"number,omitempty"`
-	Checkbox    CheckboxDatabaseQueryFilter    `json:"checkbox,omitempty"`
-	Select      SelectDatabaseQueryFilter      `json:"select,omitempty"`
-	MultiSelect MultiSelectDatabaseQueryFilter `json:"multi_select,omitempty"`
-	Date        DateDatabaseQueryFilter        `json:"date,omitempty"`
-	People      PeopleDatabaseQueryFilter      `json:"people,omitempty"`
-	Files       FilesDatabaseQueryFilter       `json:"files,omitempty"`
-	Relation    RelationDatabaseQueryFilter    `json:"relation,omitempty"`
+	Text        *TextDatabaseQueryFilter        `json:"text,omitempty"`
+	Number      *NumberDatabaseQueryFilter      `json:"number,omitempty"`
+	Checkbox    *CheckboxDatabaseQueryFilter    `json:"checkbox,omitempty"`
+	Select      *SelectDatabaseQueryFilter      `json:"select,omitempty"`
+	MultiSelect *MultiSelectDatabaseQueryFilter `json:"multi_select,omitempty"`
+	Date        *DateDatabaseQueryFilter        `json:"date,omitempty"`
+	People      *PeopleDatabaseQueryFilter      `json:"people,omitempty"`
+	Files       *FilesDatabaseQueryFilter       `json:"files,omitempty"`
+	Relation    *RelationDatabaseQueryFilter    `json:"relation,omitempty"`
 
 	Or  []DatabaseQueryFilter `json:"or,omitempty"`
 	And []DatabaseQueryFilter `json:"and,omitempty"`
