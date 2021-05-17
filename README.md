@@ -51,7 +51,7 @@ Then, use the methods defined on `Client` to make requests to the API. For
 example:
 
 ```go
-page, err := client.FindPageByID("18d35eb5-91f1-4dcb-85b0-c340fd965015")
+page, err := client.FindPageByID(context.Background(), "18d35eb5-91f1-4dcb-85b0-c340fd965015")
 if err != nil {
     // Handle error...
 }
