@@ -20,7 +20,7 @@ type DatabaseProperties map[string]DatabaseProperty
 // Database property metadata types.
 type (
 	NumberMetadata struct {
-		Format string `json:"format"`
+		Format NumberFormat `json:"format"`
 	}
 	SelectMetadata struct {
 		Options []SelectOptions `json:"options"`
@@ -29,9 +29,9 @@ type (
 		Expression string `json:"expression"`
 	}
 	RelationMetadata struct {
-		DatabaseID     string  `json:"database_id,omitempty"`
-		SyncedPropName *string `json:"synced_property_name,omitempty"`
-		SyncedPropID   *string `json:"synced_property_id,omitempty"`
+		DatabaseID     string `json:"database_id,omitempty"`
+		SyncedPropName string `json:"synced_property_name,omitempty"`
+		SyncedPropID   string `json:"synced_property_id,omitempty"`
 	}
 	RollupMetadata struct {
 		RelationPropName string `json:"relation_property_name,omitempty"`
@@ -185,6 +185,7 @@ type DatabaseQuerySort struct {
 
 type (
 	DatabasePropertyType string
+	NumberFormat         string
 	SortTimestamp        string
 	SortDirection        string
 )
@@ -210,6 +211,19 @@ const (
 	DBPropTypeCreatedBy      DatabasePropertyType = "created_by"
 	DBPropTypeLastEditedTime DatabasePropertyType = "last_edited_time"
 	DBPropTypeLastEditedBy   DatabasePropertyType = "last_edited_by"
+
+	// Number format enums.
+	NumberFormatNumber           NumberFormat = "number"
+	NumberFormatNumberWithCommas NumberFormat = "number_with_commas"
+	NumberFormatPercent          NumberFormat = "percent"
+	NumberFormatDollar           NumberFormat = "dollar"
+	NumberFormatEuro             NumberFormat = "euro"
+	NumberFormatPound            NumberFormat = "pound"
+	NumberFormatPonud            NumberFormat = "yen"
+	NumberFormatRuble            NumberFormat = "ruble"
+	NumberFormatRupee            NumberFormat = "rupee"
+	NumberFormatWon              NumberFormat = "won"
+	NumberformatYuan             NumberFormat = "yuan"
 
 	// Sort timestamp enums.
 	SortTimeStampCreatedTime    SortTimestamp = "created_time"
