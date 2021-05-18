@@ -57,7 +57,7 @@ func (c *Client) newRequest(ctx context.Context, method, url string, body io.Rea
 	req.Header.Set("Notion-Version", apiVersion)
 	req.Header.Set("User-Agent", "go-notion/"+clientVersion)
 
-	if method == http.MethodPost || method == http.MethodPatch {
+	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
 
@@ -92,12 +92,14 @@ func (c *Client) FindDatabaseByID(ctx context.Context, id string) (db Database, 
 
 // QueryDatabase returns database contents, with optional filters, sorts and pagination.
 // See: https://developers.notion.com/reference/post-database-query
-func (c *Client) QueryDatabase(ctx context.Context, id string, query DatabaseQuery) (result DatabaseQueryResponse, err error) {
+func (c *Client) QueryDatabase(ctx context.Context, id string, query *DatabaseQuery) (result DatabaseQueryResponse, err error) {
 	body := &bytes.Buffer{}
 
-	err = json.NewEncoder(body).Encode(query)
-	if err != nil {
-		return DatabaseQueryResponse{}, fmt.Errorf("notion: failed to encode filter to JSON: %w", err)
+	if query != nil {
+		err = json.NewEncoder(body).Encode(query)
+		if err != nil {
+			return DatabaseQueryResponse{}, fmt.Errorf("notion: failed to encode filter to JSON: %w", err)
+		}
 	}
 
 	req, err := c.newRequest(ctx, http.MethodPost, fmt.Sprintf("/databases/%v/query", id), body)
@@ -112,7 +114,7 @@ func (c *Client) QueryDatabase(ctx context.Context, id string, query DatabaseQue
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return DatabaseQueryResponse{}, fmt.Errorf("notion: failed to find database: %w", parseErrorResponse(res))
+		return DatabaseQueryResponse{}, fmt.Errorf("notion: failed to query database: %w", parseErrorResponse(res))
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&result)
