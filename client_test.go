@@ -637,3 +637,135 @@ func TestQueryDatabase(t *testing.T) {
 		})
 	}
 }
+
+func TestFindPageByID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expPage        notion.Page
+		expError       error
+	}{
+		{
+			name: "successful response",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "page",
+						"id": "606ed832-7d79-46de-bbed-5b4896e7bc02",
+						"created_time": "2021-05-19T18:34:00.000Z",
+						"last_edited_time": "2021-05-19T18:34:00.000Z",
+						"parent": {
+							"type": "page_id",
+							"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
+						},
+						"archived": false,
+						"properties": {
+							"title": {
+								"id": "title",
+								"type": "title",
+								"title": [
+									{
+										"type": "text",
+										"text": {
+											"content": "Lorem ipsum",
+											"link": null
+										},
+										"annotations": {
+											"bold": false,
+											"italic": false,
+											"strikethrough": false,
+											"underline": false,
+											"code": false,
+											"color": "default"
+										},
+										"plain_text": "Lorem ipsum",
+										"href": null
+									}
+								]
+							}
+						}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPage: notion.Page{
+				ID:             "606ed832-7d79-46de-bbed-5b4896e7bc02",
+				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-19T18:34:00.000Z"),
+				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-19T18:34:00.000Z"),
+				Parent: notion.PageParent{
+					Type:   notion.ParentTypePage,
+					PageID: notion.StringPtr("b0668f48-8d66-4733-9bdb-2f82215707f7"),
+				},
+				Properties: notion.PageProperties{
+					Title: notion.PageTitle{
+						Title: []notion.RichText{
+							{
+								Type: notion.RichTextTypeText,
+								Text: &notion.Text{
+									Content: "Lorem ipsum",
+								},
+								Annotations: &notion.Annotations{
+									Color: notion.ColorDefault,
+								},
+								PlainText: "Lorem ipsum",
+							},
+						},
+					},
+				},
+			},
+			expError: nil,
+		},
+		{
+			name: "error response",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 404,
+						"code": "object_not_found",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusNotFound,
+			expPage:        notion.Page{},
+			expError:       errors.New("notion: failed to find page: foobar (code: object_not_found, status: 404)"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			page, err := client.FindPageByID(context.Background(), "00000000-0000-0000-0000-000000000000")
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expPage, page); diff != "" {
+				t.Fatalf("page not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}
