@@ -769,3 +769,146 @@ func TestFindPageByID(t *testing.T) {
 		})
 	}
 }
+
+func TestListDatabases(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name             string
+		respBody         func(r *http.Request) io.Reader
+		respStatusCode   int
+		expDatabasesResp notion.ListDatabasesResponse
+		expError         error
+	}{
+		{
+			name: "successful response",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						  "object": "list",
+						  "results": [
+							{
+							  "object": "database",
+							  "id": "3950c7c6-127c-4a9c-8dd3-0f6cdb426c60",
+							  "created_time": "2021-05-19T14:15:27.324Z",
+							  "last_edited_time": "2021-05-19T15:13:00.000Z",
+							  "title": [
+								{
+								  "type": "text",
+								  "text": {
+									"content": "Foo",
+									"link": null
+								  },
+								  "annotations": {
+									"bold": false,
+									"italic": false,
+									"strikethrough": false,
+									"underline": false,
+									"code": false,
+									"color": "default"
+								  },
+								  "plain_text": "Foo",
+								  "href": null
+								}
+							  ],
+							  "properties": {
+								"Content": {
+								  "id": "123",
+								  "type": "rich_text",
+								  "rich_text": {}
+								}
+							  }
+							}
+						  ],
+						  "next_cursor": null,
+						  "has_more": false
+						}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expDatabasesResp: notion.ListDatabasesResponse{
+				Object: "list",
+				Results: []notion.Database{
+					{
+						ID:             "3950c7c6-127c-4a9c-8dd3-0f6cdb426c60",
+						CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-19T14:15:27.324Z"),
+						LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-19T15:13:00.000Z"),
+						Properties: notion.DatabaseProperties{
+							"Content": notion.DatabaseProperty{
+								ID:   "123",
+								Type: "rich_text",
+							},
+						},
+						Title: []notion.RichText{
+							{
+								Type: "text",
+								Text: &notion.Text{
+									Content: "Foo",
+								},
+								Annotations: &notion.Annotations{
+									Bold:          false,
+									Italic:        false,
+									Strikethrough: false,
+									Underline:     false,
+									Code:          false,
+									Color:         "default",
+								},
+								PlainText: "Foo",
+							},
+						},
+					},
+				},
+			},
+			expError: nil,
+		},
+		{
+			name: "error response",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 404,
+						"code": "object_not_found",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode:   http.StatusNotFound,
+			expDatabasesResp: notion.ListDatabasesResponse{},
+			expError:         errors.New("notion: failed to list databases: foobar (code: object_not_found, status: 404)"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			page, err := client.ListDatabases(context.Background())
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expDatabasesResp, page); diff != "" {
+				t.Fatalf("page not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}

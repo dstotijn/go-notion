@@ -14,6 +14,12 @@ type Database struct {
 	Properties     DatabaseProperties `json:"properties"`
 }
 
+// ListDatabasesResponse contains the results of a list databases request.
+type ListDatabasesResponse struct {
+	Object  string     `json:"object"`
+	Results []Database `json:"results"`
+}
+
 // DatabaseProperties is a mapping of properties defined on a database.
 type DatabaseProperties map[string]DatabaseProperty
 

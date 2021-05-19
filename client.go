@@ -90,6 +90,32 @@ func (c *Client) FindDatabaseByID(ctx context.Context, id string) (db Database, 
 	return db, nil
 }
 
+// ListDatabases returns all databases.
+// See: https://developers.notion.com/reference/get-databases
+func (c *Client) ListDatabases(ctx context.Context) (result ListDatabasesResponse, err error) {
+	req, err := c.newRequest(ctx, http.MethodGet, "/databases", nil)
+	if err != nil {
+		return result, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return result, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return result, fmt.Errorf("notion: failed to list databases: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&result)
+	if err != nil {
+		return result, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return result, nil
+}
+
 // QueryDatabase returns database contents, with optional filters, sorts and pagination.
 // See: https://developers.notion.com/reference/post-database-query
 func (c *Client) QueryDatabase(ctx context.Context, id string, query *DatabaseQuery) (result DatabaseQueryResponse, err error) {
