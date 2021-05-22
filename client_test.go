@@ -1052,3 +1052,302 @@ func TestCreatePage(t *testing.T) {
 		})
 	}
 }
+
+func TestUpdatePageProps(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		params         notion.UpdatePageParams
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expPostBody    map[string]interface{}
+		expResponse    notion.Page
+		expError       error
+	}{
+		{
+			name: "page props, successful response",
+			params: notion.UpdatePageParams{
+				Title: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Foobar",
+						},
+					},
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "page",
+						"id": "cb261dc5-6c85-4767-8585-3852382fb466",
+						"created_time": "2021-05-14T09:15:46.796Z",
+						"last_edited_time": "2021-05-22T15:54:31.116Z",
+						"parent": {
+							"type": "page_id",
+							"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
+						},
+						"archived": false,
+						"properties": {
+							"title": {
+								"id": "title",
+								"type": "title",
+								"title": [
+									{
+										"type": "text",
+										"text": {
+											"content": "Lorem ipsum",
+											"link": null
+										},
+										"annotations": {
+											"bold": false,
+											"italic": false,
+											"strikethrough": false,
+											"underline": false,
+											"code": false,
+											"color": "default"
+										},
+										"plain_text": "Lorem ipsum",
+										"href": null
+									}
+								]
+							}
+						}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPostBody: map[string]interface{}{
+				"properties": map[string]interface{}{
+					"title": []interface{}{
+						map[string]interface{}{
+							"text": map[string]interface{}{
+								"content": "Foobar",
+							},
+						},
+					},
+				},
+			},
+			expResponse: notion.Page{
+				ID:             "cb261dc5-6c85-4767-8585-3852382fb466",
+				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:46.796Z"),
+				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-22T15:54:31.116Z"),
+				Parent: notion.PageParent{
+					Type:   notion.ParentTypePage,
+					PageID: notion.StringPtr("b0668f48-8d66-4733-9bdb-2f82215707f7"),
+				},
+				Properties: notion.PageProperties{
+					Title: notion.PageTitle{
+						Title: []notion.RichText{
+							{
+								Type: notion.RichTextTypeText,
+								Text: &notion.Text{
+									Content: "Lorem ipsum",
+								},
+								Annotations: &notion.Annotations{
+									Color: notion.ColorDefault,
+								},
+								PlainText: "Lorem ipsum",
+							},
+						},
+					},
+				},
+			},
+			expError: nil,
+		},
+		{
+			name: "database page props, successful response",
+			params: notion.UpdatePageParams{
+				DatabasePageProperties: &notion.DatabasePageProperties{
+					"Name": notion.DatabasePageProperty{
+						Title: []notion.RichText{
+							{
+								Text: &notion.Text{
+									Content: "Lorem ipsum",
+								},
+							},
+						},
+					},
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "page",
+						"id": "e4f419a7-f01f-4d5b-af58-ff4786a429fe",
+						"created_time": "2021-05-17T17:56:00.000Z",
+						"last_edited_time": "2021-05-22T16:24:23.007Z",
+						"parent": {
+							"type": "database_id",
+							"database_id": "4cb17949-f08d-4d5c-ab50-fe6ba689d2c8"
+						},
+						"archived": false,
+						"properties": {
+							"Name": {
+								"id": "title",
+								"type": "title",
+								"title": [
+									{
+										"type": "text",
+										"text": {
+											"content": "Lorem ipsum",
+											"link": null
+										},
+										"annotations": {
+											"bold": false,
+											"italic": false,
+											"strikethrough": false,
+											"underline": false,
+											"code": false,
+											"color": "default"
+										},
+										"plain_text": "Lorem ipsum",
+										"href": null
+									}
+								]
+							}
+						}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPostBody: map[string]interface{}{
+				"properties": map[string]interface{}{
+					"Name": map[string]interface{}{
+						"title": []interface{}{
+							map[string]interface{}{
+								"text": map[string]interface{}{
+									"content": "Lorem ipsum",
+								},
+							},
+						},
+					},
+				},
+			},
+			expResponse: notion.Page{
+				ID:             "e4f419a7-f01f-4d5b-af58-ff4786a429fe",
+				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-17T17:56:00.000Z"),
+				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-22T16:24:23.007Z"),
+				Parent: notion.PageParent{
+					Type:       notion.ParentTypeDatabase,
+					DatabaseID: notion.StringPtr("4cb17949-f08d-4d5c-ab50-fe6ba689d2c8"),
+				},
+				Properties: notion.DatabasePageProperties{
+					"Name": notion.DatabasePageProperty{
+						ID:   "title",
+						Type: notion.DBPropTypeTitle,
+						Title: []notion.RichText{
+							{
+								Type: notion.RichTextTypeText,
+								Text: &notion.Text{
+									Content: "Lorem ipsum",
+								},
+								Annotations: &notion.Annotations{
+									Color: notion.ColorDefault,
+								},
+								PlainText: "Lorem ipsum",
+							},
+						},
+					},
+				},
+			},
+			expError: nil,
+		},
+		{
+			name: "error response",
+			params: notion.UpdatePageParams{
+				Title: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Foobar",
+						},
+					},
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 400,
+						"code": "validation_error",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusBadRequest,
+			expPostBody: map[string]interface{}{
+				"properties": map[string]interface{}{
+					"title": []interface{}{
+						map[string]interface{}{
+							"text": map[string]interface{}{
+								"content": "Foobar",
+							},
+						},
+					},
+				},
+			},
+			expResponse: notion.Page{},
+			expError:    errors.New("notion: failed to update page properties: foobar (code: validation_error, status: 400)"),
+		},
+		{
+			name:        "missing page title and database properties",
+			params:      notion.UpdatePageParams{},
+			expResponse: notion.Page{},
+			expError:    errors.New("notion: invalid page params: either database page properties or title is required"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					postBody := make(map[string]interface{})
+
+					err := json.NewDecoder(r.Body).Decode(&postBody)
+					if err != nil && err != io.EOF {
+						t.Fatal(err)
+					}
+
+					if len(tt.expPostBody) == 0 && len(postBody) != 0 {
+						t.Errorf("unexpected post body: %#v", postBody)
+					}
+
+					if len(tt.expPostBody) != 0 && len(postBody) == 0 {
+						t.Errorf("post body not equal (expected %+v, got: nil)", tt.expPostBody)
+					}
+
+					if len(tt.expPostBody) != 0 && len(postBody) != 0 {
+						if diff := cmp.Diff(tt.expPostBody, postBody); diff != "" {
+							t.Errorf("post body not equal (-exp, +got):\n%v", diff)
+						}
+					}
+
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			page, err := client.UpdatePageProps(context.Background(), "00000000-0000-0000-0000-000000000000", tt.params)
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expResponse, page); diff != "" {
+				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}

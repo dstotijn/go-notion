@@ -43,7 +43,7 @@ type DatabasePageProperties map[string]DatabasePageProperty
 
 type DatabasePageProperty struct {
 	ID   string               `json:"id,omitempty"`
-	Type DatabasePropertyType `json:"type"`
+	Type DatabasePropertyType `json:"type,omitempty"`
 
 	Title       []RichText        `json:"title,omitempty"`
 	RichText    []RichText        `json:"rich_text,omitempty"`
