@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -1346,6 +1347,188 @@ func TestUpdatePageProps(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(tt.expResponse, page); diff != "" {
+				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}
+
+func TestFindBlockChildrenById(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		query          *notion.PaginationQuery
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expQueryParams url.Values
+		expResponse    notion.BlockChildrenResponse
+		expError       error
+	}{
+		{
+			name: "with query, successful response",
+			query: &notion.PaginationQuery{
+				StartCursor: "7c6b1c95-de50-45ca-94e6-af1d9fd295ab",
+				PageSize:    42,
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "list",
+						"results": [
+							{
+								"object": "block",
+								"id": "ae9c9a31-1c1e-4ae2-a5ee-c539a2d43113",
+								"created_time": "2021-05-14T09:15:00.000Z",
+								"last_edited_time": "2021-05-14T09:15:00.000Z",
+								"has_children": false,
+								"type": "paragraph",
+								"paragraph": {
+									"text": [
+										{
+											"type": "text",
+											"text": {
+												"content": "Lorem ipsum dolor sit amet.",
+												"link": null
+											},
+											"annotations": {
+												"bold": false,
+												"italic": false,
+												"strikethrough": false,
+												"underline": false,
+												"code": false,
+												"color": "default"
+											},
+											"plain_text": "Lorem ipsum dolor sit amet.",
+											"href": null
+										}
+									]
+								}
+							}
+						],
+						"next_cursor": "A^hd",
+						"has_more": true
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expQueryParams: url.Values{
+				"start_cursor": []string{"7c6b1c95-de50-45ca-94e6-af1d9fd295ab"},
+				"page_size":    []string{"42"},
+			},
+			expResponse: notion.BlockChildrenResponse{
+				Results: []notion.Block{
+					{
+						Object:         "block",
+						ID:             "ae9c9a31-1c1e-4ae2-a5ee-c539a2d43113",
+						CreatedTime:    notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:00.000Z")),
+						LastEditedTime: notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:00.000Z")),
+						Type:           notion.BlockTypeParagraph,
+						Paragraph: &notion.RichTextBlock{
+							Text: []notion.RichText{
+								{
+									Type: notion.RichTextTypeText,
+									Text: &notion.Text{
+										Content: "Lorem ipsum dolor sit amet.",
+									},
+									Annotations: &notion.Annotations{
+										Color: notion.ColorDefault,
+									},
+									PlainText: "Lorem ipsum dolor sit amet.",
+								},
+							},
+						},
+					},
+				},
+				HasMore:    true,
+				NextCursor: notion.StringPtr("A^hd"),
+			},
+			expError: nil,
+		},
+		{
+			name:  "without query, successful response",
+			query: nil,
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "list",
+						"results": [],
+						"next_cursor": null,
+						"has_more": false
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expQueryParams: nil,
+			expResponse: notion.BlockChildrenResponse{
+				Results:    []notion.Block{},
+				HasMore:    false,
+				NextCursor: nil,
+			},
+			expError: nil,
+		},
+		{
+			name: "error response",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 400,
+						"code": "validation_error",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusBadRequest,
+			expResponse:    notion.BlockChildrenResponse{},
+			expError:       errors.New("notion: failed to find block children: foobar (code: validation_error, status: 400)"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					q := r.URL.Query()
+
+					if len(tt.expQueryParams) == 0 && len(q) != 0 {
+						t.Errorf("unexpected query params: %+v", q)
+					}
+
+					if len(tt.expQueryParams) != 0 && len(q) == 0 {
+						t.Errorf("query params not equal (expected %+v, got: nil)", tt.expQueryParams)
+					}
+
+					if len(tt.expQueryParams) != 0 && len(q) != 0 {
+						if diff := cmp.Diff(tt.expQueryParams, q); diff != "" {
+							t.Errorf("query params not equal (-exp, +got):\n%v", diff)
+						}
+					}
+
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			resp, err := client.FindBlockChildrenByID(context.Background(), "00000000-0000-0000-0000-000000000000", tt.query)
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expResponse, resp); diff != "" {
 				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
 			}
 		})
