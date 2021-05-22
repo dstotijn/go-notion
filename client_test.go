@@ -1534,3 +1534,181 @@ func TestFindBlockChildrenById(t *testing.T) {
 		})
 	}
 }
+
+func TestAppendBlockChildren(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		children       []notion.Block
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expPostBody    map[string]interface{}
+		expBlock       notion.Block
+		expError       error
+	}{
+		{
+			name: "successful response",
+			children: []notion.Block{
+				{
+					Type: notion.BlockTypeParagraph,
+					Paragraph: &notion.RichTextBlock{
+						Text: []notion.RichText{
+							{
+								Text: &notion.Text{
+									Content: "Lorem ipsum dolor sit amet.",
+								},
+							},
+						},
+					},
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "block",
+						"id": "cb261dc5-6c85-4767-8585-3852382fb466",
+						"created_time": "2021-05-14T09:15:46.796Z",
+						"last_edited_time": "2021-05-22T20:31:43.231Z",
+						"has_children": true,
+						"type": "child_page",
+						"child_page": {
+							"title": "Sub page"
+						}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPostBody: map[string]interface{}{
+				"children": []interface{}{
+					map[string]interface{}{
+						"object": "block",
+						"type":   "paragraph",
+						"paragraph": map[string]interface{}{
+							"text": []interface{}{
+								map[string]interface{}{
+									"text": map[string]interface{}{
+										"content": "Lorem ipsum dolor sit amet.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expBlock: notion.Block{
+				Object:         "block",
+				ID:             "cb261dc5-6c85-4767-8585-3852382fb466",
+				CreatedTime:    notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:46.796Z")),
+				LastEditedTime: notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-22T20:31:43.231Z")),
+				HasChildren:    true,
+				Type:           notion.BlockTypeChildPage,
+				ChildPage: &notion.ChildPage{
+					Title: "Sub page",
+				},
+			},
+			expError: nil,
+		},
+		{
+			name: "error response",
+			children: []notion.Block{
+				{
+					Type: notion.BlockTypeParagraph,
+					Paragraph: &notion.RichTextBlock{
+						Text: []notion.RichText{
+							{
+								Text: &notion.Text{
+									Content: "Lorem ipsum dolor sit amet.",
+								},
+							},
+						},
+					},
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 400,
+						"code": "validation_error",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusBadRequest,
+			expPostBody: map[string]interface{}{
+				"children": []interface{}{
+					map[string]interface{}{
+						"object": "block",
+						"type":   "paragraph",
+						"paragraph": map[string]interface{}{
+							"text": []interface{}{
+								map[string]interface{}{
+									"text": map[string]interface{}{
+										"content": "Lorem ipsum dolor sit amet.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expBlock: notion.Block{},
+			expError: errors.New("notion: failed to append block children: foobar (code: validation_error, status: 400)"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					postBody := make(map[string]interface{})
+
+					err := json.NewDecoder(r.Body).Decode(&postBody)
+					if err != nil && err != io.EOF {
+						t.Fatal(err)
+					}
+
+					if len(tt.expPostBody) == 0 && len(postBody) != 0 {
+						t.Errorf("unexpected post body: %#v", postBody)
+					}
+
+					if len(tt.expPostBody) != 0 && len(postBody) == 0 {
+						t.Errorf("post body not equal (expected %+v, got: nil)", tt.expPostBody)
+					}
+
+					if len(tt.expPostBody) != 0 && len(postBody) != 0 {
+						if diff := cmp.Diff(tt.expPostBody, postBody); diff != "" {
+							t.Errorf("post body not equal (-exp, +got):\n%v", diff)
+						}
+					}
+
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			block, err := client.AppendBlockChildren(context.Background(), "00000000-0000-0000-0000-000000000000", tt.children)
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expBlock, block); diff != "" {
+				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}

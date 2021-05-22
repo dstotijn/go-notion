@@ -1,6 +1,9 @@
 package notion
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 // Block represents content on the Notion platform.
 // See: https://developers.notion.com/reference/block
@@ -20,7 +23,7 @@ type Block struct {
 	NumberedListItem *RichTextBlock `json:"numbered_list_item,omitempty"`
 	ToDo             *ToDo          `json:"to_do,omitempty"`
 	Toggle           *RichTextBlock `json:"toggle,omitempty"`
-	ChildPage        *ChildPage     `json:"rich_text,omitempty"`
+	ChildPage        *ChildPage     `json:"child_page,omitempty"`
 }
 
 type RichTextBlock struct {
@@ -66,4 +69,14 @@ type BlockChildrenResponse struct {
 	Results    []Block `json:"results"`
 	HasMore    bool    `json:"has_more"`
 	NextCursor *string `json:"next_cursor"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (b Block) MarshalJSON() ([]byte, error) {
+	type blockAlias Block
+
+	alias := blockAlias(b)
+	alias.Object = "block"
+
+	return json.Marshal(alias)
 }
