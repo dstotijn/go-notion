@@ -12,7 +12,7 @@ func IntPtr(i int) *int {
 	return &i
 }
 
-// TimePtr returns the pointer of a time.Time value.
+// BoolPtr returns the pointer of a bool value.
 func BoolPtr(b bool) *bool {
 	return &b
 }
