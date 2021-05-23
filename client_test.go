@@ -979,7 +979,7 @@ func TestCreatePage(t *testing.T) {
 			expError: nil,
 		},
 		{
-			name: "successful response",
+			name: "database parent, successful response",
 			params: notion.CreatePageParams{
 				ParentType: notion.ParentTypePage,
 				ParentID:   "b0668f48-8d66-4733-9bdb-2f82215707f7",
