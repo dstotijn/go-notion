@@ -517,7 +517,7 @@ func TestQueryDatabase(t *testing.T) {
 								ID:   "Q]uT",
 								Type: notion.DBPropTypeDate,
 								Date: &notion.Date{
-									Start: mustParseTime(time.RFC3339Nano, "2021-05-18T12:49:00.000-05:00"),
+									Start: mustParseDateTime("2021-05-18T12:49:00.000-05:00"),
 								},
 							},
 							"Name": notion.DatabasePageProperty{

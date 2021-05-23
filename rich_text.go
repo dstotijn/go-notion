@@ -1,7 +1,5 @@
 package notion
 
-import "time"
-
 type RichText struct {
 	Type        RichTextType `json:"type,omitempty"`
 	Annotations *Annotations `json:"annotations,omitempty"`
@@ -36,8 +34,8 @@ type Mention struct {
 }
 
 type Date struct {
-	Start time.Time  `json:"start"`
-	End   *time.Time `json:"end,omitempty"`
+	Start DateTime  `json:"start"`
+	End   *DateTime `json:"end,omitempty"`
 }
 
 type Text struct {
