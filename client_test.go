@@ -981,12 +981,16 @@ func TestCreatePage(t *testing.T) {
 		{
 			name: "database parent, successful response",
 			params: notion.CreatePageParams{
-				ParentType: notion.ParentTypePage,
+				ParentType: notion.ParentTypeDatabase,
 				ParentID:   "b0668f48-8d66-4733-9bdb-2f82215707f7",
-				Title: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Foobar",
+				DatabasePageProperties: &notion.DatabasePageProperties{
+					"title": notion.DatabasePageProperty{
+						Title: []notion.RichText{
+							{
+								Text: &notion.Text{
+									Content: "Foobar",
+								},
+							},
 						},
 					},
 				},
@@ -1014,8 +1018,8 @@ func TestCreatePage(t *testing.T) {
 						"created_time": "2021-05-19T19:34:05.068Z",
 						"last_edited_time": "2021-05-19T19:34:05.069Z",
 						"parent": {
-							"type": "page_id",
-							"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
+							"type": "database_id",
+							"database_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
 						},
 						"archived": false,
 						"properties": {
@@ -1023,7 +1027,6 @@ func TestCreatePage(t *testing.T) {
 								"id": "title",
 								"title": [
 									{
-										"type": "text",
 										"text": {
 											"content": "Foobar",
 											"link": null
@@ -1036,7 +1039,6 @@ func TestCreatePage(t *testing.T) {
 											"code": false,
 											"color": "default"
 										},
-										"plain_text": "Foobar",
 										"href": null
 									}
 								]
@@ -1048,7 +1050,7 @@ func TestCreatePage(t *testing.T) {
 			respStatusCode: http.StatusOK,
 			expPostBody: map[string]interface{}{
 				"parent": map[string]interface{}{
-					"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7",
+					"database_id": "b0668f48-8d66-4733-9bdb-2f82215707f7",
 				},
 				"properties": map[string]interface{}{
 					"title": []interface{}{
@@ -1080,21 +1082,19 @@ func TestCreatePage(t *testing.T) {
 				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.068Z"),
 				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.069Z"),
 				Parent: notion.PageParent{
-					Type:   notion.ParentTypePage,
+					Type:   notion.ParentTypeDatabase,
 					PageID: notion.StringPtr("b0668f48-8d66-4733-9bdb-2f82215707f7"),
 				},
 				Properties: notion.PageProperties{
 					Title: notion.PageTitle{
 						Title: []notion.RichText{
 							{
-								Type: notion.RichTextTypeText,
 								Text: &notion.Text{
 									Content: "Foobar",
 								},
 								Annotations: &notion.Annotations{
 									Color: notion.ColorDefault,
 								},
-								PlainText: "Foobar",
 							},
 						},
 					},
