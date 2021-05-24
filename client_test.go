@@ -471,6 +471,41 @@ func TestQueryDatabase(t *testing.T) {
 												"href": null
 											}
 										]
+									},
+									"Age": {
+										"id": "$9nb",
+										"type": "number",
+										"number": 42
+									},
+									"Calculation": {
+										"id": "s(4f",
+										"type": "formula",
+										"formula": {
+											"type": "number",
+											"number": 42
+										}
+									},
+									"Relation": {
+										"id": "Cxl[",
+										"type": "relation",
+										"relation": [
+											{
+												"id": "2be9597f-693f-4b87-baf9-efc545d38ebe"
+											}
+										]
+									},
+									"Rollup": {
+										"id": "xyA}",
+										"type": "rollup",
+										"rollup": {
+											"type": "array",
+											"array": [
+												{
+													"type": "number",
+													"number": 42
+												}
+											]
+										}
 									}
 								}
 							}
@@ -532,6 +567,41 @@ func TestQueryDatabase(t *testing.T) {
 										PlainText: "Foobar",
 										Annotations: &notion.Annotations{
 											Color: notion.ColorDefault,
+										},
+									},
+								},
+							},
+							"Age": notion.DatabasePageProperty{
+								ID:     "$9nb",
+								Type:   notion.DBPropTypeNumber,
+								Number: notion.Float64Ptr(42),
+							},
+							"Calculation": notion.DatabasePageProperty{
+								ID:   "s(4f",
+								Type: notion.DBPropTypeFormula,
+								Formula: &notion.FormulaResult{
+									Type:   notion.FormulaResultTypeNumber,
+									Number: notion.Float64Ptr(float64(42)),
+								},
+							},
+							"Relation": notion.DatabasePageProperty{
+								ID:   "Cxl[",
+								Type: notion.DBPropTypeRelation,
+								Relation: []notion.Relation{
+									{
+										ID: "2be9597f-693f-4b87-baf9-efc545d38ebe",
+									},
+								},
+							},
+							"Rollup": notion.DatabasePageProperty{
+								ID:   "xyA}",
+								Type: notion.DBPropTypeRollup,
+								Rollup: &notion.RollupResult{
+									Type: notion.RollupResultTypeArray,
+									Array: []notion.DatabasePageProperty{
+										{
+											Type:   notion.DBPropTypeNumber,
+											Number: notion.Float64Ptr(42),
 										},
 									},
 								},

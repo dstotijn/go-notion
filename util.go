@@ -21,3 +21,8 @@ func BoolPtr(b bool) *bool {
 func TimePtr(t time.Time) *time.Time {
 	return &t
 }
+
+// Float64Ptr returns the pointer of a float64 value.
+func Float64Ptr(f float64) *float64 {
+	return &f
+}

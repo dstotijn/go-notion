@@ -45,15 +45,15 @@ type DatabasePageProperty struct {
 	ID   string               `json:"id,omitempty"`
 	Type DatabasePropertyType `json:"type,omitempty"`
 
-	Title       []RichText        `json:"title,omitempty"`
-	RichText    []RichText        `json:"rich_text,omitempty"`
-	Number      *NumberMetadata   `json:"number,omitempty"`
-	Select      *SelectOptions    `json:"select,omitempty"`
-	MultiSelect []SelectOptions   `json:"multi_select,omitempty"`
-	Date        *Date             `json:"date,omitempty"`
-	Formula     *FormulaMetadata  `json:"formula,omitempty"`
-	Relation    *RelationMetadata `json:"relation,omitempty"`
-	Rollup      *RollupMetadata   `json:"rollup,omitempty"`
+	Title       []RichText      `json:"title,omitempty"`
+	RichText    []RichText      `json:"rich_text,omitempty"`
+	Number      *float64        `json:"number,omitempty"`
+	Select      *SelectOptions  `json:"select,omitempty"`
+	MultiSelect []SelectOptions `json:"multi_select,omitempty"`
+	Date        *Date           `json:"date,omitempty"`
+	Formula     *FormulaResult  `json:"formula,omitempty"`
+	Relation    []Relation      `json:"relation,omitempty"`
+	Rollup      *RollupResult   `json:"rollup,omitempty"`
 }
 
 // CreatePageParams are the params used for creating a page.

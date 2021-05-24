@@ -48,6 +48,27 @@ type SelectOptions struct {
 	Color Color  `json:"color,omitempty"`
 }
 
+type FormulaResult struct {
+	Type FormulaResultType `json:"type"`
+
+	String  *string  `json:"string,omitempty"`
+	Number  *float64 `json:"number,omitempty"`
+	Boolean *bool    `json:"boolean,omitempty"`
+	Date    *Date    `json:"date,omitempty"`
+}
+
+type Relation struct {
+	ID string `json:"id"`
+}
+
+type RollupResult struct {
+	Type RollupResultType `json:"type"`
+
+	Number *float64               `json:"number,omitempty"`
+	Date   *Date                  `json:"date,omitempty"`
+	Array  []DatabasePageProperty `json:"array,omitempty"`
+}
+
 type DatabaseProperty struct {
 	ID   string               `json:"id"`
 	Type DatabasePropertyType `json:"type"`
@@ -186,6 +207,8 @@ type DatabaseQuerySort struct {
 type (
 	DatabasePropertyType string
 	NumberFormat         string
+	FormulaResultType    string
+	RollupResultType     string
 	SortTimestamp        string
 	SortDirection        string
 )
@@ -225,6 +248,17 @@ const (
 	NumberFormatWon              NumberFormat = "won"
 	NumberformatYuan             NumberFormat = "yuan"
 
+	// Formula result type enums.
+	FormulaResultTypeString  FormulaResultType = "string"
+	FormulaResultTypeNumber  FormulaResultType = "number"
+	FormulaResultTypeBoolean FormulaResultType = "boolean"
+	FormulaResultTypeDate    FormulaResultType = "date"
+
+	// Rollup result type enums.
+	RollupResultTypeNumber RollupResultType = "number"
+	RollupResultTypeDate   RollupResultType = "date"
+	RollupResultTypeArray  RollupResultType = "array"
+
 	// Sort timestamp enums.
 	SortTimeStampCreatedTime    SortTimestamp = "created_time"
 	SortTimeStampLastEditedTime SortTimestamp = "last_edited_time"
@@ -250,6 +284,36 @@ func (prop DatabaseProperty) Metadata() interface{} {
 		return prop.Relation
 	case "rollup":
 		return prop.Rollup
+	default:
+		return nil
+	}
+}
+
+// Value returns the underlying result value of an evaluated formula.
+func (f FormulaResult) Value() interface{} {
+	switch f.Type {
+	case FormulaResultTypeString:
+		return f.String
+	case FormulaResultTypeNumber:
+		return f.Number
+	case FormulaResultTypeBoolean:
+		return f.Boolean
+	case FormulaResultTypeDate:
+		return f.Date
+	default:
+		return nil
+	}
+}
+
+// Value returns the underlying result value of an evaluated rollup.
+func (r RollupResult) Value() interface{} {
+	switch r.Type {
+	case RollupResultTypeNumber:
+		return r.Number
+	case RollupResultTypeDate:
+		return r.Date
+	case RollupResultTypeArray:
+		return r.Array
 	default:
 		return nil
 	}
