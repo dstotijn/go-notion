@@ -69,6 +69,50 @@ type RollupResult struct {
 	Array  []DatabasePageProperty `json:"array,omitempty"`
 }
 
+type People struct {
+	People []User `json:"people"`
+}
+
+type Files struct {
+	Files []File `json:"people"`
+}
+
+type File struct {
+	Name string `json:"name"`
+}
+
+type Checkbox struct {
+	Checkbox bool `json:"checked"`
+}
+
+type URL struct {
+	URL string `json:"url"`
+}
+
+type Email struct {
+	Email string `json:"email"`
+}
+
+type PhoneNumber struct {
+	PhoneNumber string `json:"phone_number"`
+}
+
+type CreatedTime struct {
+	CreatedTime time.Time `json:"created_time"`
+}
+
+type CreatedBy struct {
+	CreatedBy User `json:"created_by"`
+}
+
+type LastEditedTime struct {
+	LastEditedTime time.Time `json:"last_edited_time"`
+}
+
+type LastEditedBy struct {
+	LastEditedBy User `json:"last_edited_by"`
+}
+
 type DatabaseProperty struct {
 	ID   string               `json:"id"`
 	Type DatabasePropertyType `json:"type"`
@@ -222,7 +266,7 @@ const (
 	DBPropTypeMultiSelect    DatabasePropertyType = "multi_select"
 	DBPropTypeDate           DatabasePropertyType = "date"
 	DBPropTypePeople         DatabasePropertyType = "people"
-	DBPropTypeFile           DatabasePropertyType = "file"
+	DBPropTypeFiles          DatabasePropertyType = "files"
 	DBPropTypeCheckbox       DatabasePropertyType = "checkbox"
 	DBPropTypeURL            DatabasePropertyType = "url"
 	DBPropTypeEmail          DatabasePropertyType = "email"

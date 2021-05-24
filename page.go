@@ -45,15 +45,25 @@ type DatabasePageProperty struct {
 	ID   string               `json:"id,omitempty"`
 	Type DatabasePropertyType `json:"type,omitempty"`
 
-	Title       []RichText      `json:"title,omitempty"`
-	RichText    []RichText      `json:"rich_text,omitempty"`
-	Number      *float64        `json:"number,omitempty"`
-	Select      *SelectOptions  `json:"select,omitempty"`
-	MultiSelect []SelectOptions `json:"multi_select,omitempty"`
-	Date        *Date           `json:"date,omitempty"`
-	Formula     *FormulaResult  `json:"formula,omitempty"`
-	Relation    []Relation      `json:"relation,omitempty"`
-	Rollup      *RollupResult   `json:"rollup,omitempty"`
+	Title          []RichText      `json:"title,omitempty"`
+	RichText       []RichText      `json:"rich_text,omitempty"`
+	Number         *float64        `json:"number,omitempty"`
+	Select         *SelectOptions  `json:"select,omitempty"`
+	MultiSelect    []SelectOptions `json:"multi_select,omitempty"`
+	Date           *Date           `json:"date,omitempty"`
+	Formula        *FormulaResult  `json:"formula,omitempty"`
+	Relation       []Relation      `json:"relation,omitempty"`
+	Rollup         *RollupResult   `json:"rollup,omitempty"`
+	People         *People         `json:"people,omitempty"`
+	Files          *Files          `json:"files,omitempty"`
+	Checkbox       *Checkbox       `json:"checkbox,omitempty"`
+	URL            *URL            `json:"url,omitempty"`
+	Email          *Email          `json:"email,omitempty"`
+	PhoneNumber    *PhoneNumber    `json:"phone_number,omitempty"`
+	CreatedTime    *CreatedTime    `json:"created_time,omitempty"`
+	CreatedBy      *CreatedBy      `json:"created_by,omitempty"`
+	LastEditedTime *LastEditedTime `json:"last_edited_time,omitempty"`
+	LastEditedBy   *LastEditedBy   `json:"last_edited_by,omitempty"`
 }
 
 // CreatePageParams are the params used for creating a page.
@@ -81,6 +91,53 @@ const (
 	ParentTypeDatabase ParentType = "database_id"
 	ParentTypePage     ParentType = "page_id"
 )
+
+// Value returns the underlying database page property value, based on its `type` field.
+// When type is unknown/unmapped or doesn't have a value, `nil` is returned.
+func (prop DatabasePageProperty) Value() interface{} {
+	switch prop.Type {
+	case DBPropTypeTitle:
+		return prop.Title
+	case DBPropTypeRichText:
+		return prop.RichText
+	case DBPropTypeNumber:
+		return prop.Number
+	case DBPropTypeSelect:
+		return prop.Select
+	case DBPropTypeMultiSelect:
+		return prop.MultiSelect
+	case DBPropTypeDate:
+		return prop.Date
+	case DBPropTypePeople:
+		return prop.People
+	case DBPropTypeFiles:
+		return prop.Files
+	case DBPropTypeCheckbox:
+		return prop.Checkbox
+	case DBPropTypeURL:
+		return prop.URL
+	case DBPropTypeEmail:
+		return prop.Email
+	case DBPropTypePhoneNumber:
+		return prop.PhoneNumber
+	case DBPropTypeFormula:
+		return prop.Formula
+	case DBPropTypeRelation:
+		return prop.Relation
+	case DBPropTypeRollup:
+		return prop.Rollup
+	case DBPropTypeCreatedTime:
+		return prop.CreatedTime
+	case DBPropTypeCreatedBy:
+		return prop.CreatedBy
+	case DBPropTypeLastEditedTime:
+		return prop.LastEditedTime
+	case DBPropTypeLastEditedBy:
+		return prop.LastEditedBy
+	default:
+		return nil
+	}
+}
 
 func (p CreatePageParams) Validate() error {
 	if p.ParentType == "" {
