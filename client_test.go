@@ -979,7 +979,7 @@ func TestCreatePage(t *testing.T) {
 			expError: nil,
 		},
 		{
-			name: "database parent, successful response",
+			name: "valid case: ParentType is ParentTypeDatabse and successful response",
 			params: notion.CreatePageParams{
 				ParentType: notion.ParentTypeDatabase,
 				ParentID:   "b0668f48-8d66-4733-9bdb-2f82215707f7",
@@ -1053,10 +1053,12 @@ func TestCreatePage(t *testing.T) {
 					"database_id": "b0668f48-8d66-4733-9bdb-2f82215707f7",
 				},
 				"properties": map[string]interface{}{
-					"title": []interface{}{
-						map[string]interface{}{
-							"text": map[string]interface{}{
-								"content": "Foobar",
+					"title": map[string]interface{}{
+						"title": []interface{}{
+							map[string]interface{}{
+								"text": map[string]interface{}{
+									"content": "Foobar",
+								},
 							},
 						},
 					},
@@ -1082,11 +1084,12 @@ func TestCreatePage(t *testing.T) {
 				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.068Z"),
 				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.069Z"),
 				Parent: notion.PageParent{
-					Type:   notion.ParentTypeDatabase,
-					PageID: notion.StringPtr("b0668f48-8d66-4733-9bdb-2f82215707f7"),
+					Type:       notion.ParentTypeDatabase,
+					DatabaseID: notion.StringPtr("b0668f48-8d66-4733-9bdb-2f82215707f7"),
 				},
-				Properties: notion.PageProperties{
-					Title: notion.PageTitle{
+				Properties: notion.DatabasePageProperties{
+					"title": notion.DatabasePageProperty{
+						ID: "title",
 						Title: []notion.RichText{
 							{
 								Text: &notion.Text{
