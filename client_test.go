@@ -477,6 +477,86 @@ func TestQueryDatabase(t *testing.T) {
 										"type": "number",
 										"number": 42
 									},
+									"People": {
+										"id": "1#nc",
+										"type": "people",
+										"people": [
+											{
+												"id": "be32e790-8292-46df-a248-b784fdf483cf",
+												"name": "Jane Doe",
+												"avatar_url": "https://example.com/image.png",
+												"type": "person",
+												"person": {
+													"email": "jane@example.com"
+												}
+											}
+										]
+									},
+									"Files": {
+										"id": "!$9x",
+										"type": "files",
+										"files": [
+											{
+												"name": "foobar.pdf"
+											}
+										]
+									},
+									"Checkbox": {
+										"id": "49S@",
+										"type": "checkbox",
+										"checkbox": true
+									},
+									"URL": {
+										"id": "93$$",
+										"type": "url",
+										"url": "https://example.com"
+									},
+									"Email": {
+										"id": "xb3Q",
+										"type": "email",
+										"email": "jane@example.com"
+									},
+									"PhoneNumber": {
+										"id": "c2#Q",
+										"type": "phone_number",
+										"phone_number": "867-5309"
+									},
+									"CreatedTime": {
+										"id": "s#0s",
+										"type": "created_time",
+										"created_time": "2021-05-24T15:44:09.123Z"
+									},
+									"CreatedBy": {
+										"id": "49S@",
+										"type": "created_by",
+										"created_by": {
+											"id": "be32e790-8292-46df-a248-b784fdf483cf",
+											"name": "Jane Doe",
+											"avatar_url": "https://example.com/image.png",
+											"type": "person",
+											"person": {
+												"email": "jane@example.com"
+											}
+										}
+									},
+									"LastEditedTime": {
+										"id": "x#0s",
+										"type": "last_edited_time",
+										"last_edited_time": "2021-05-24T15:44:09.123Z"
+									},
+									"LastEditedBy": {
+										"id": "x9S@",
+										"type": "last_edited_by",
+										"last_edited_by": {
+											"id": "be32e790-8292-46df-a248-b784fdf483cf",
+											"name": "Jane Doe",
+											"avatar_url": "https://example.com/image.png",
+											"type": "person",
+											"person": {
+												"email": "jane@example.com"
+											}
+										}
+									},
 									"Calculation": {
 										"id": "s(4f",
 										"type": "formula",
@@ -576,12 +656,92 @@ func TestQueryDatabase(t *testing.T) {
 								Type:   notion.DBPropTypeNumber,
 								Number: notion.Float64Ptr(42),
 							},
+							"People": notion.DatabasePageProperty{
+								ID:   "1#nc",
+								Type: notion.DBPropTypePeople,
+								People: []notion.User{
+									{
+										ID:        "be32e790-8292-46df-a248-b784fdf483cf",
+										Name:      "Jane Doe",
+										AvatarURL: notion.StringPtr("https://example.com/image.png"),
+										Type:      "person",
+										Person: &notion.Person{
+											Email: "jane@example.com",
+										},
+									},
+								},
+							},
+							"Files": notion.DatabasePageProperty{
+								ID:   "!$9x",
+								Type: notion.DBPropTypeFiles,
+								Files: []notion.File{
+									{
+										Name: "foobar.pdf",
+									},
+								},
+							},
+							"Checkbox": notion.DatabasePageProperty{
+								ID:       "49S@",
+								Type:     notion.DBPropTypeCheckbox,
+								Checkbox: notion.BoolPtr(true),
+							},
 							"Calculation": notion.DatabasePageProperty{
 								ID:   "s(4f",
 								Type: notion.DBPropTypeFormula,
 								Formula: &notion.FormulaResult{
 									Type:   notion.FormulaResultTypeNumber,
 									Number: notion.Float64Ptr(float64(42)),
+								},
+							},
+							"URL": notion.DatabasePageProperty{
+								ID:   "93$$",
+								Type: notion.DBPropTypeURL,
+								URL:  notion.StringPtr("https://example.com"),
+							},
+							"Email": notion.DatabasePageProperty{
+								ID:    "xb3Q",
+								Type:  notion.DBPropTypeEmail,
+								Email: notion.StringPtr("jane@example.com"),
+							},
+							"PhoneNumber": notion.DatabasePageProperty{
+								ID:          "c2#Q",
+								Type:        notion.DBPropTypePhoneNumber,
+								PhoneNumber: notion.StringPtr("867-5309"),
+							},
+							"CreatedTime": notion.DatabasePageProperty{
+								ID:          "s#0s",
+								Type:        notion.DBPropTypeCreatedTime,
+								CreatedTime: notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z")),
+							},
+							"CreatedBy": notion.DatabasePageProperty{
+								ID:   "49S@",
+								Type: notion.DBPropTypeCreatedBy,
+								CreatedBy: &notion.User{
+									ID:        "be32e790-8292-46df-a248-b784fdf483cf",
+									Name:      "Jane Doe",
+									AvatarURL: notion.StringPtr("https://example.com/image.png"),
+									Type:      "person",
+									Person: &notion.Person{
+										Email: "jane@example.com",
+									},
+								},
+							},
+							"LastEditedTime": notion.DatabasePageProperty{
+								ID:             "x#0s",
+								Type:           notion.DBPropTypeLastEditedTime,
+								LastEditedTime: notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z")),
+							},
+							"LastEditedBy": notion.DatabasePageProperty{
+								ID:   "x9S@",
+								Type: notion.DBPropTypeLastEditedBy,
+								LastEditedBy: &notion.User{
+									ID:        "be32e790-8292-46df-a248-b784fdf483cf",
+									Name:      "Jane Doe",
+									AvatarURL: notion.StringPtr("https://example.com/image.png"),
+									Type:      "person",
+									Person: &notion.Person{
+										Email: "jane@example.com",
+									},
 								},
 							},
 							"Relation": notion.DatabasePageProperty{

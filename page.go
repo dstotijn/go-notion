@@ -54,16 +54,16 @@ type DatabasePageProperty struct {
 	Formula        *FormulaResult  `json:"formula,omitempty"`
 	Relation       []Relation      `json:"relation,omitempty"`
 	Rollup         *RollupResult   `json:"rollup,omitempty"`
-	People         *People         `json:"people,omitempty"`
-	Files          *Files          `json:"files,omitempty"`
-	Checkbox       *Checkbox       `json:"checkbox,omitempty"`
-	URL            *URL            `json:"url,omitempty"`
-	Email          *Email          `json:"email,omitempty"`
-	PhoneNumber    *PhoneNumber    `json:"phone_number,omitempty"`
-	CreatedTime    *CreatedTime    `json:"created_time,omitempty"`
-	CreatedBy      *CreatedBy      `json:"created_by,omitempty"`
-	LastEditedTime *LastEditedTime `json:"last_edited_time,omitempty"`
-	LastEditedBy   *LastEditedBy   `json:"last_edited_by,omitempty"`
+	People         []User          `json:"people,omitempty"`
+	Files          []File          `json:"files,omitempty"`
+	Checkbox       *bool           `json:"checkbox,omitempty"`
+	URL            *string         `json:"url,omitempty"`
+	Email          *string         `json:"email,omitempty"`
+	PhoneNumber    *string         `json:"phone_number,omitempty"`
+	CreatedTime    *time.Time      `json:"created_time,omitempty"`
+	CreatedBy      *User           `json:"created_by,omitempty"`
+	LastEditedTime *time.Time      `json:"last_edited_time,omitempty"`
+	LastEditedBy   *User           `json:"last_edited_by,omitempty"`
 }
 
 // CreatePageParams are the params used for creating a page.
