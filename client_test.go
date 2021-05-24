@@ -979,6 +979,133 @@ func TestCreatePage(t *testing.T) {
 			expError: nil,
 		},
 		{
+			name: "database parent, successful response",
+			params: notion.CreatePageParams{
+				ParentType: notion.ParentTypeDatabase,
+				ParentID:   "b0668f48-8d66-4733-9bdb-2f82215707f7",
+				DatabasePageProperties: &notion.DatabasePageProperties{
+					"title": notion.DatabasePageProperty{
+						Title: []notion.RichText{
+							{
+								Text: &notion.Text{
+									Content: "Foobar",
+								},
+							},
+						},
+					},
+				},
+				Children: []notion.Block{
+					{
+						Object: "block",
+						Type:   notion.BlockTypeParagraph,
+						Paragraph: &notion.RichTextBlock{
+							Text: []notion.RichText{
+								{
+									Text: &notion.Text{
+										Content: "Lorem ipsum dolor sit amet.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "page",
+						"id": "276ee233-e426-4ed0-9986-6b22af8550df",
+						"created_time": "2021-05-19T19:34:05.068Z",
+						"last_edited_time": "2021-05-19T19:34:05.069Z",
+						"parent": {
+							"type": "database_id",
+							"database_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
+						},
+						"archived": false,
+						"properties": {
+							"title": {
+								"id": "title",
+								"title": [
+									{
+										"text": {
+											"content": "Foobar",
+											"link": null
+										},
+										"annotations": {
+											"bold": false,
+											"italic": false,
+											"strikethrough": false,
+											"underline": false,
+											"code": false,
+											"color": "default"
+										},
+										"href": null
+									}
+								]
+							}
+						}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPostBody: map[string]interface{}{
+				"parent": map[string]interface{}{
+					"database_id": "b0668f48-8d66-4733-9bdb-2f82215707f7",
+				},
+				"properties": map[string]interface{}{
+					"title": map[string]interface{}{
+						"title": []interface{}{
+							map[string]interface{}{
+								"text": map[string]interface{}{
+									"content": "Foobar",
+								},
+							},
+						},
+					},
+				},
+				"children": []interface{}{
+					map[string]interface{}{
+						"object": "block",
+						"type":   "paragraph",
+						"paragraph": map[string]interface{}{
+							"text": []interface{}{
+								map[string]interface{}{
+									"text": map[string]interface{}{
+										"content": "Lorem ipsum dolor sit amet.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expResponse: notion.Page{
+				ID:             "276ee233-e426-4ed0-9986-6b22af8550df",
+				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.068Z"),
+				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.069Z"),
+				Parent: notion.PageParent{
+					Type:       notion.ParentTypeDatabase,
+					DatabaseID: notion.StringPtr("b0668f48-8d66-4733-9bdb-2f82215707f7"),
+				},
+				Properties: notion.DatabasePageProperties{
+					"title": notion.DatabasePageProperty{
+						ID: "title",
+						Title: []notion.RichText{
+							{
+								Text: &notion.Text{
+									Content: "Foobar",
+								},
+								Annotations: &notion.Annotations{
+									Color: notion.ColorDefault,
+								},
+							},
+						},
+					},
+				},
+			},
+			expError: nil,
+		},
+		{
 			name: "error response",
 			params: notion.CreatePageParams{
 				ParentType: notion.ParentTypePage,
