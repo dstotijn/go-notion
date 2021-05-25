@@ -406,7 +406,7 @@ func TestQueryDatabase(t *testing.T) {
 		{
 			name: "with query, successful response",
 			query: &notion.DatabaseQuery{
-				Filter: notion.DatabaseQueryFilter{
+				Filter: &notion.DatabaseQueryFilter{
 					Property: "Name",
 					Text: &notion.TextDatabaseQueryFilter{
 						Contains: "foobar",
