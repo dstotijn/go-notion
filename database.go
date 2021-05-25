@@ -91,10 +91,10 @@ type DatabaseProperty struct {
 
 // DatabaseQuery is used for quering a database.
 type DatabaseQuery struct {
-	Filter      DatabaseQueryFilter `json:"filter,omitempty"`
-	Sorts       []DatabaseQuerySort `json:"sorts,omitempty"`
-	StartCursor string              `json:"start_cursor,omitempty"`
-	PageSize    int                 `json:"page_size,omitempty"`
+	Filter      *DatabaseQueryFilter `json:"filter,omitempty"`
+	Sorts       []DatabaseQuerySort  `json:"sorts,omitempty"`
+	StartCursor string               `json:"start_cursor,omitempty"`
+	PageSize    int                  `json:"page_size,omitempty"`
 }
 
 // DatabaseQueryResponse contains the results and pagination data from a query request.
