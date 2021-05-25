@@ -2181,3 +2181,168 @@ func TestFindUserByID(t *testing.T) {
 		})
 	}
 }
+
+func TestListUsers(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		query          *notion.PaginationQuery
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expQueryParams url.Values
+		expResponse    notion.ListUsersResponse
+		expError       error
+	}{
+		{
+			name: "with query, successful response",
+			query: &notion.PaginationQuery{
+				StartCursor: "7c6b1c95-de50-45ca-94e6-af1d9fd295ab",
+				PageSize:    42,
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "list",
+						"results": [
+							{
+								"object": "user",
+								"id": "be32e790-8292-46df-a248-b784fdf483cf",
+								"name": "Jane Doe",
+								"avatar_url": "https://example.com/avatar.png",
+								"type": "person",
+								"person": {
+									"email": "jane@example.com"
+								}
+							},
+							{
+								"object": "user",
+								"id": "25c9cc08-1afd-4d22-b9e6-31b0f6e7b44f",
+								"name": "Johnny 5",
+								"avatar_url": null,
+								"type": "bot",
+								"bot": {}
+							}
+						],
+						"next_cursor": "A^hd",
+						"has_more": true
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expQueryParams: url.Values{
+				"start_cursor": []string{"7c6b1c95-de50-45ca-94e6-af1d9fd295ab"},
+				"page_size":    []string{"42"},
+			},
+			expResponse: notion.ListUsersResponse{
+				Results: []notion.User{
+					{
+						ID:        "be32e790-8292-46df-a248-b784fdf483cf",
+						Name:      "Jane Doe",
+						AvatarURL: notion.StringPtr("https://example.com/avatar.png"),
+						Type:      "person",
+						Person: &notion.Person{
+							Email: "jane@example.com",
+						},
+					},
+					{
+						ID:   "25c9cc08-1afd-4d22-b9e6-31b0f6e7b44f",
+						Name: "Johnny 5",
+						Type: "bot",
+						Bot:  &notion.Bot{},
+					},
+				},
+				HasMore:    true,
+				NextCursor: notion.StringPtr("A^hd"),
+			},
+			expError: nil,
+		},
+		{
+			name:  "without query, successful response",
+			query: nil,
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "list",
+						"results": [],
+						"next_cursor": null,
+						"has_more": false
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expQueryParams: nil,
+			expResponse: notion.ListUsersResponse{
+				Results:    []notion.User{},
+				HasMore:    false,
+				NextCursor: nil,
+			},
+			expError: nil,
+		},
+		{
+			name: "error response",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 400,
+						"code": "validation_error",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusBadRequest,
+			expResponse:    notion.ListUsersResponse{},
+			expError:       errors.New("notion: failed to list users: foobar (code: validation_error, status: 400)"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					q := r.URL.Query()
+
+					if len(tt.expQueryParams) == 0 && len(q) != 0 {
+						t.Errorf("unexpected query params: %+v", q)
+					}
+
+					if len(tt.expQueryParams) != 0 && len(q) == 0 {
+						t.Errorf("query params not equal (expected %+v, got: nil)", tt.expQueryParams)
+					}
+
+					if len(tt.expQueryParams) != 0 && len(q) != 0 {
+						if diff := cmp.Diff(tt.expQueryParams, q); diff != "" {
+							t.Errorf("query params not equal (-exp, +got):\n%v", diff)
+						}
+					}
+
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			resp, err := client.ListUsers(context.Background(), tt.query)
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expResponse, resp); diff != "" {
+				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}
