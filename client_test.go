@@ -775,7 +775,7 @@ func TestQueryDatabase(t *testing.T) {
 			expError: nil,
 		},
 		{
-			name:  "without query, successful response",
+			name:  "without query, doesn't send POST body",
 			query: nil,
 			respBody: func(_ *http.Request) io.Reader {
 				return strings.NewReader(
@@ -789,6 +789,28 @@ func TestQueryDatabase(t *testing.T) {
 			},
 			respStatusCode: http.StatusOK,
 			expPostBody:    nil,
+			expResponse: notion.DatabaseQueryResponse{
+				Results:    []notion.Page{},
+				HasMore:    false,
+				NextCursor: nil,
+			},
+			expError: nil,
+		},
+		{
+			name:  "with non nil query, but without fields, omits all fields from POST body",
+			query: &notion.DatabaseQuery{},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "list",
+						"results": [],
+						"next_cursor": null,
+						"has_more": false
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPostBody:    map[string]interface{}{},
 			expResponse: notion.DatabaseQueryResponse{
 				Results:    []notion.Page{},
 				HasMore:    false,
