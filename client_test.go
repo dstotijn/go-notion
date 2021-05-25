@@ -2091,3 +2091,93 @@ func TestAppendBlockChildren(t *testing.T) {
 		})
 	}
 }
+
+func TestFindUserByID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expUser        notion.User
+		expError       error
+	}{
+		{
+			name: "successful response",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "user",
+						"id": "be32e790-8292-46df-a248-b784fdf483cf",
+						"name": "Jane Doe",
+						"avatar_url": "https://example.com/avatar.png",
+						"type": "person",
+						"person": {
+							"email": "jane@example.com"
+						}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expUser: notion.User{
+				ID:        "be32e790-8292-46df-a248-b784fdf483cf",
+				Name:      "Jane Doe",
+				AvatarURL: notion.StringPtr("https://example.com/avatar.png"),
+				Type:      "person",
+				Person: &notion.Person{
+					Email: "jane@example.com",
+				},
+			},
+			expError: nil,
+		},
+		{
+			name: "error response",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 404,
+						"code": "object_not_found",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusNotFound,
+			expUser:        notion.User{},
+			expError:       errors.New("notion: failed to find user: foobar (code: object_not_found, status: 404)"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			user, err := client.FindUserByID(context.Background(), "00000000-0000-0000-0000-000000000000")
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expUser, user); diff != "" {
+				t.Fatalf("user not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}
