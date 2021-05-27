@@ -2346,3 +2346,296 @@ func TestListUsers(t *testing.T) {
 		})
 	}
 }
+
+func TestSearch(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		opts           *notion.SearchOpts
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expPostBody    map[string]interface{}
+		expResponse    notion.SearchResponse
+		expError       error
+	}{
+		{
+			name: "with query, successful response",
+			opts: &notion.SearchOpts{
+				Query: "foobar",
+				Filter: &notion.SearchFilter{
+					Property: "object",
+					Value:    "database",
+				},
+				Sort: &notion.SearchSort{
+					Direction: notion.SortDirAsc,
+					Timestamp: notion.SearchSortTimestampLastEditedTime,
+				},
+				StartCursor: "39ddfc9d-33c9-404c-89cf-79f01c42dd0c",
+				PageSize:    42,
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "list",
+						"results": [
+							{
+								"object": "database",
+								"id": "668d797c-76fa-4934-9b05-ad288df2d136",
+								"created_time": "2020-03-17T19:10:04.968Z",
+								"last_edited_time": "2020-03-17T21:49:37.913Z",
+								"title": [
+									{
+										"type": "text",
+										"text": {
+											"content": "Foobar",
+											"link": null
+										},
+										"annotations": {
+											"bold": false,
+											"italic": false,
+											"strikethrough": false,
+											"underline": false,
+											"code": false,
+											"color": "default"
+										},
+										"plain_text": "Foobar",
+										"href": null
+									}
+								],
+								"properties": {
+									"Name": {
+										"id": "title",
+										"type": "title",
+										"title": {}
+									}
+								}
+							},
+							{
+								"object": "page",
+								"id": "276ee233-e426-4ed0-9986-6b22af8550df",
+								"created_time": "2021-05-19T19:34:05.068Z",
+								"last_edited_time": "2021-05-19T19:34:05.069Z",
+								"parent": {
+									"type": "page_id",
+									"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
+								},
+								"archived": false,
+								"properties": {
+									"title": {
+										"id": "title",
+										"type": "title",
+										"title": [
+											{
+												"type": "text",
+												"text": {
+													"content": "Foobar",
+													"link": null
+												},
+												"annotations": {
+													"bold": false,
+													"italic": false,
+													"strikethrough": false,
+													"underline": false,
+													"code": false,
+													"color": "default"
+												},
+												"plain_text": "Foobar",
+												"href": null
+											}
+										]
+									}
+								}
+							}
+						],
+						"next_cursor": "A^hd",
+						"has_more": true
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPostBody: map[string]interface{}{
+				"query": "foobar",
+				"filter": map[string]interface{}{
+					"property": "object",
+					"value":    "database",
+				},
+				"sort": map[string]interface{}{
+					"direction": "ascending",
+					"timestamp": "last_edited_time",
+				},
+				"start_cursor": "39ddfc9d-33c9-404c-89cf-79f01c42dd0c",
+				"page_size":    float64(42),
+			},
+			expResponse: notion.SearchResponse{
+				Results: notion.SearchResults{
+					notion.Database{
+						ID:             "668d797c-76fa-4934-9b05-ad288df2d136",
+						CreatedTime:    mustParseTime(time.RFC3339, "2020-03-17T19:10:04.968Z"),
+						LastEditedTime: mustParseTime(time.RFC3339, "2020-03-17T21:49:37.913Z"),
+						Title: []notion.RichText{
+							{
+								Type: notion.RichTextTypeText,
+								Text: &notion.Text{
+									Content: "Foobar",
+								},
+								Annotations: &notion.Annotations{
+									Color: notion.ColorDefault,
+								},
+								PlainText: "Foobar",
+							},
+						},
+						Properties: notion.DatabaseProperties{
+							"Name": notion.DatabaseProperty{
+								ID:   "title",
+								Type: notion.DBPropTypeTitle,
+							},
+						},
+					},
+					notion.Page{
+						ID:             "276ee233-e426-4ed0-9986-6b22af8550df",
+						CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.068Z"),
+						LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.069Z"),
+						Parent: notion.PageParent{
+							Type:   notion.ParentTypePage,
+							PageID: notion.StringPtr("b0668f48-8d66-4733-9bdb-2f82215707f7"),
+						},
+						Properties: notion.PageProperties{
+							Title: notion.PageTitle{
+								Title: []notion.RichText{
+									{
+										Type: notion.RichTextTypeText,
+										Text: &notion.Text{
+											Content: "Foobar",
+										},
+										Annotations: &notion.Annotations{
+											Color: notion.ColorDefault,
+										},
+										PlainText: "Foobar",
+									},
+								},
+							},
+						},
+					},
+				},
+				HasMore:    true,
+				NextCursor: notion.StringPtr("A^hd"),
+			},
+			expError: nil,
+		},
+		{
+			name: "without query, doesn't send POST body",
+			opts: nil,
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "list",
+						"results": [],
+						"next_cursor": null,
+						"has_more": false
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPostBody:    nil,
+			expResponse: notion.SearchResponse{
+				Results:    notion.SearchResults{},
+				HasMore:    false,
+				NextCursor: nil,
+			},
+			expError: nil,
+		},
+		{
+			name: "with non nil query, but without fields, omits all fields from POST body",
+			opts: &notion.SearchOpts{},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "list",
+						"results": [],
+						"next_cursor": null,
+						"has_more": false
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPostBody:    map[string]interface{}{},
+			expResponse: notion.SearchResponse{
+				Results:    notion.SearchResults{},
+				HasMore:    false,
+				NextCursor: nil,
+			},
+			expError: nil,
+		},
+		{
+			name: "error response",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 400,
+						"code": "validation_error",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusBadRequest,
+			expResponse:    notion.SearchResponse{},
+			expError:       errors.New("notion: failed to search: foobar (code: validation_error, status: 400)"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					postBody := make(map[string]interface{})
+
+					err := json.NewDecoder(r.Body).Decode(&postBody)
+					if err != nil && err != io.EOF {
+						t.Fatal(err)
+					}
+
+					if len(tt.expPostBody) == 0 && len(postBody) != 0 {
+						t.Errorf("unexpected post body: %+v", postBody)
+					}
+
+					if len(tt.expPostBody) != 0 && len(postBody) == 0 {
+						t.Errorf("post body not equal (expected %+v, got: nil)", tt.expPostBody)
+					}
+
+					if len(tt.expPostBody) != 0 && len(postBody) != 0 {
+						if diff := cmp.Diff(tt.expPostBody, postBody); diff != "" {
+							t.Errorf("post body not equal (-exp, +got):\n%v", diff)
+						}
+					}
+
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			resp, err := client.Search(context.Background(), tt.opts)
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expResponse, resp); diff != "" {
+				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}
