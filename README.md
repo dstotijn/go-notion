@@ -70,7 +70,7 @@ changes in its code until `v1.0` of the module is released.
 
 ### To do
 
-- [ ] Write tests
+- [x] Write tests
 - [ ] Provide examples
 
 ## License
