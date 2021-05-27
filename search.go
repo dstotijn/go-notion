@@ -7,16 +7,18 @@ import (
 
 type SearchOpts struct {
 	Query       string        `json:"query,omitempty"`
-	Sort        *SearchFilter `json:"sort,omitempty"`
+	Sort        *SearchSort   `json:"sort,omitempty"`
 	Filter      *SearchFilter `json:"filter,omitempty"`
 	StartCursor string        `json:"start_cursor,omitempty"`
 	PageSize    int           `json:"page_size,omitempty"`
 }
 
 type SearchSort struct {
-	Direction SortDirection `json:"direction,omitempty"`
-	Timestamp string        `json:"timestamp"`
+	Direction SortDirection       `json:"direction,omitempty"`
+	Timestamp SearchSortTimestamp `json:"timestamp"`
 }
+
+type SearchSortTimestamp string
 
 type SearchFilter struct {
 	Value    string `json:"value"`
@@ -31,6 +33,8 @@ type SearchResponse struct {
 }
 
 type SearchResults []interface{}
+
+const SearchSortTimestampLastEditedTime SearchSortTimestamp = "last_edited_time"
 
 func (sr *SearchResults) UnmarshalJSON(b []byte) error {
 	rawResults := []json.RawMessage{}
