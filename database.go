@@ -1,6 +1,8 @@
 package notion
 
 import (
+	"encoding/json"
+	"errors"
 	"time"
 )
 
@@ -20,6 +22,7 @@ type DatabaseProperties map[string]DatabaseProperty
 
 // Database property metadata types.
 type (
+	EmptyMetadata  struct{}
 	NumberMetadata struct {
 		Format NumberFormat `json:"format"`
 	}
@@ -79,8 +82,22 @@ type File struct {
 }
 
 type DatabaseProperty struct {
-	ID   string               `json:"id"`
+	ID   string               `json:"id,omitempty"`
 	Type DatabasePropertyType `json:"type"`
+
+	Title          *EmptyMetadata `json:"title,omitempty"`
+	RichText       *EmptyMetadata `json:"rich_text,omitempty"`
+	Date           *EmptyMetadata `json:"date,omitempty"`
+	People         *EmptyMetadata `json:"people,omitempty"`
+	Files          *EmptyMetadata `json:"files,omitempty"`
+	Checkbox       *EmptyMetadata `json:"checkbox,omitempty"`
+	URL            *EmptyMetadata `json:"url,omitempty"`
+	Email          *EmptyMetadata `json:"email,omitempty"`
+	PhoneNumber    *EmptyMetadata `json:"phone_number,omitempty"`
+	CreatedTime    *EmptyMetadata `json:"created_time,omitempty"`
+	CreatedBy      *EmptyMetadata `json:"created_by,omitempty"`
+	LastEditedTime *EmptyMetadata `json:"last_edited_time,omitempty"`
+	LastEditedBy   *EmptyMetadata `json:"last_edited_by,omitempty"`
 
 	Number      *NumberMetadata   `json:"number,omitempty"`
 	Select      *SelectMetadata   `json:"select,omitempty"`
@@ -213,6 +230,13 @@ type DatabaseQuerySort struct {
 	Direction SortDirection `json:"direction,omitempty"`
 }
 
+// CreateDatabaseParams are the params used for creating a database.
+type CreateDatabaseParams struct {
+	ParentPageID string
+	Title        []RichText
+	Properties   DatabaseProperties
+}
+
 type (
 	DatabasePropertyType string
 	NumberFormat         string
@@ -281,6 +305,8 @@ const (
 // When type is unknown/unmapped or doesn't have additional properies, `nil` is returned.
 func (prop DatabaseProperty) Metadata() interface{} {
 	switch prop.Type {
+	case "title":
+		return prop.Title
 	case "number":
 		return prop.Number
 	case "select":
@@ -326,4 +352,38 @@ func (r RollupResult) Value() interface{} {
 	default:
 		return nil
 	}
+}
+
+// Validate validates params for creating a database.
+func (p CreateDatabaseParams) Validate() error {
+	if p.ParentPageID == "" {
+		return errors.New("parent page ID is required")
+	}
+	if p.Properties == nil {
+		return errors.New("database properties are required")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements json.Marshaler.
+func (p CreateDatabaseParams) MarshalJSON() ([]byte, error) {
+	type CreatePageParamsDTO struct {
+		Parent     Parent             `json:"parent"`
+		Title      []RichText         `json:"title,omitempty"`
+		Properties DatabaseProperties `json:"properties"`
+	}
+
+	parent := Parent{
+		Type:   ParentTypePage,
+		PageID: p.ParentPageID,
+	}
+
+	dto := CreatePageParamsDTO{
+		Parent:     parent,
+		Title:      p.Title,
+		Properties: p.Properties,
+	}
+
+	return json.Marshal(dto)
 }

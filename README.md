@@ -12,10 +12,11 @@
 ## Features
 
 The client supports all (non-deprecated) endpoints available in the Notion API,
-as of May 15, 2021:
+as of July 20, 2021:
 
 - [x] [Retrieve a database](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.FindDatabaseByID)
 - [x] [Query a database](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.QueryDatabase)
+- [x] [Create a database](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.CreateDatabase)
 - [x] [Retrieve a page](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.FindPageByID)
 - [x] [Create a page](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.CreatePage)
 - [x] [Update page properties](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.UpdatePageProps)

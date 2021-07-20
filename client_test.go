@@ -242,16 +242,18 @@ func TestFindDatabaseByID(t *testing.T) {
 				},
 				Properties: notion.DatabaseProperties{
 					"Name": notion.DatabaseProperty{
-						ID:   "title",
-						Type: notion.DBPropTypeTitle,
+						ID:    "title",
+						Type:  notion.DBPropTypeTitle,
+						Title: &notion.EmptyMetadata{},
 					},
 					"Description": notion.DatabaseProperty{
 						ID:   "J@cS",
 						Type: notion.DBPropTypeRichText,
 					},
 					"In stock": notion.DatabaseProperty{
-						ID:   "{xYx",
-						Type: notion.DBPropTypeCheckbox,
+						ID:       "{xYx",
+						Type:     notion.DBPropTypeCheckbox,
+						Checkbox: &notion.EmptyMetadata{},
 					},
 					"Food group": notion.DatabaseProperty{
 						ID:   "TJmr",
@@ -293,6 +295,7 @@ func TestFindDatabaseByID(t *testing.T) {
 					"Last ordered": notion.DatabaseProperty{
 						ID:   "]\\R[",
 						Type: notion.DBPropTypeDate,
+						Date: &notion.EmptyMetadata{},
 					},
 					"Meals": notion.DatabaseProperty{
 						ID:   "lV]M",
@@ -333,12 +336,14 @@ func TestFindDatabaseByID(t *testing.T) {
 						},
 					},
 					"+1": notion.DatabaseProperty{
-						ID:   "aGut",
-						Type: notion.DBPropTypePeople,
+						ID:     "aGut",
+						Type:   notion.DBPropTypePeople,
+						People: &notion.EmptyMetadata{},
 					},
 					"Photo": {
-						ID:   "aTIT",
-						Type: "files",
+						ID:    "aTIT",
+						Type:  "files",
+						Files: &notion.EmptyMetadata{},
 					},
 				},
 				Parent: notion.Parent{
@@ -896,6 +901,249 @@ func TestQueryDatabase(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(tt.expResponse, resp); diff != "" {
+				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}
+func TestCreateDatabase(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		params         notion.CreateDatabaseParams
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expPostBody    map[string]interface{}
+		expResponse    notion.Database
+		expError       error
+	}{
+		{
+			name: "successful response",
+			params: notion.CreateDatabaseParams{
+				ParentPageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
+				Title: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Foobar",
+						},
+					},
+				},
+				Properties: notion.DatabaseProperties{
+					"Title": notion.DatabaseProperty{
+						Type:  notion.DBPropTypeTitle,
+						Title: &notion.EmptyMetadata{},
+					},
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "database",
+						"id": "b89664e3-30b4-474a-9cce-c72a4827d1e4",
+						"created_time": "2021-07-20T20:09:00.000Z",
+						"last_edited_time": "2021-07-20T20:09:00.000Z",
+						"title": [
+							{
+								"type": "text",
+								"text": {
+									"content": "Foobar",
+									"link": null
+								},
+								"annotations": {
+									"bold": false,
+									"italic": false,
+									"strikethrough": false,
+									"underline": false,
+									"code": false,
+									"color": "default"
+								},
+								"plain_text": "Foobar",
+								"href": null
+							}
+						],
+						"properties": {
+							"Title": {
+								"id": "title",
+								"type": "title",
+								"title": {}
+							}
+						},
+						"parent": {
+							"type": "page_id",
+							"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
+						}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPostBody: map[string]interface{}{
+				"parent": map[string]interface{}{
+					"type":    "page_id",
+					"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7",
+				},
+				"title": []interface{}{
+					map[string]interface{}{
+						"text": map[string]interface{}{
+							"content": "Foobar",
+						},
+					},
+				},
+				"properties": map[string]interface{}{
+					"Title": map[string]interface{}{
+						"type":  "title",
+						"title": map[string]interface{}{},
+					},
+				},
+			},
+			expResponse: notion.Database{
+				ID:             "b89664e3-30b4-474a-9cce-c72a4827d1e4",
+				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-07-20T20:09:00Z"),
+				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-07-20T20:09:00Z"),
+				Parent: notion.Parent{
+					Type:   notion.ParentTypePage,
+					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
+				},
+				Title: []notion.RichText{
+					{
+						Type: notion.RichTextTypeText,
+						Text: &notion.Text{
+							Content: "Foobar",
+						},
+						Annotations: &notion.Annotations{
+							Color: notion.ColorDefault,
+						},
+						PlainText: "Foobar",
+					},
+				},
+				Properties: notion.DatabaseProperties{
+					"Title": notion.DatabaseProperty{
+						ID:    "title",
+						Type:  notion.DBPropTypeTitle,
+						Title: &notion.EmptyMetadata{},
+					},
+				},
+			},
+			expError: nil,
+		},
+		{
+			name: "error response",
+			params: notion.CreateDatabaseParams{
+				ParentPageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
+				Title: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Foobar",
+						},
+					},
+				},
+				Properties: notion.DatabaseProperties{
+					"Title": notion.DatabaseProperty{
+						Type:  notion.DBPropTypeTitle,
+						Title: &notion.EmptyMetadata{},
+					},
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 400,
+						"code": "validation_error",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusBadRequest,
+			expPostBody: map[string]interface{}{
+				"parent": map[string]interface{}{
+					"type":    "page_id",
+					"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7",
+				},
+				"title": []interface{}{
+					map[string]interface{}{
+						"text": map[string]interface{}{
+							"content": "Foobar",
+						},
+					},
+				},
+				"properties": map[string]interface{}{
+					"Title": map[string]interface{}{
+						"type":  "title",
+						"title": map[string]interface{}{},
+					},
+				},
+			},
+			expResponse: notion.Database{},
+			expError:    errors.New("notion: failed to create database: foobar (code: validation_error, status: 400)"),
+		},
+		{
+			name: "parent id required error",
+			params: notion.CreateDatabaseParams{
+				Properties: notion.DatabaseProperties{},
+			},
+			expResponse: notion.Database{},
+			expError:    errors.New("notion: invalid database params: parent page ID is required"),
+		},
+		{
+			name: "database properties required error",
+			params: notion.CreateDatabaseParams{
+				ParentPageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
+			},
+			expResponse: notion.Database{},
+			expError:    errors.New("notion: invalid database params: database properties are required"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					postBody := make(map[string]interface{})
+
+					err := json.NewDecoder(r.Body).Decode(&postBody)
+					if err != nil && err != io.EOF {
+						t.Fatal(err)
+					}
+
+					if len(tt.expPostBody) == 0 && len(postBody) != 0 {
+						t.Errorf("unexpected post body: %#v", postBody)
+					}
+
+					if len(tt.expPostBody) != 0 && len(postBody) == 0 {
+						t.Errorf("post body not equal (expected %+v, got: nil)", tt.expPostBody)
+					}
+
+					if len(tt.expPostBody) != 0 && len(postBody) != 0 {
+						if diff := cmp.Diff(tt.expPostBody, postBody); diff != "" {
+							t.Errorf("post body not equal (-exp, +got):\n%v", diff)
+						}
+					}
+
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			page, err := client.CreateDatabase(context.Background(), tt.params)
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expResponse, page); diff != "" {
 				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
 			}
 		})
@@ -2504,8 +2752,9 @@ func TestSearch(t *testing.T) {
 						},
 						Properties: notion.DatabaseProperties{
 							"Name": notion.DatabaseProperty{
-								ID:   "title",
-								Type: notion.DBPropTypeTitle,
+								ID:    "title",
+								Type:  notion.DBPropTypeTitle,
+								Title: &notion.EmptyMetadata{},
 							},
 						},
 					},

@@ -125,6 +125,43 @@ func (c *Client) QueryDatabase(ctx context.Context, id string, query *DatabaseQu
 	return result, nil
 }
 
+// CreateDatabase creates a new database as a child of an existing page.
+// See: https://developers.notion.com/reference/create-a-database
+func (c *Client) CreateDatabase(ctx context.Context, params CreateDatabaseParams) (db Database, err error) {
+	if err := params.Validate(); err != nil {
+		return Database{}, fmt.Errorf("notion: invalid database params: %w", err)
+	}
+
+	body := &bytes.Buffer{}
+
+	err = json.NewEncoder(body).Encode(params)
+	if err != nil {
+		return Database{}, fmt.Errorf("notion: failed to encode body params to JSON: %w", err)
+	}
+
+	req, err := c.newRequest(ctx, http.MethodPost, "/databases", body)
+	if err != nil {
+		return Database{}, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return Database{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return Database{}, fmt.Errorf("notion: failed to create database: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&db)
+	if err != nil {
+		return Database{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return db, nil
+}
+
 // FindPageByID fetches a page by ID.
 // See: https://developers.notion.com/reference/get-page
 func (c *Client) FindPageByID(ctx context.Context, id string) (page Page, err error) {
