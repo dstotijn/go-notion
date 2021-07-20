@@ -11,22 +11,15 @@ import (
 // another page, or a database.
 // See: https://developers.notion.com/reference/page
 type Page struct {
-	ID             string     `json:"id"`
-	CreatedTime    time.Time  `json:"created_time"`
-	LastEditedTime time.Time  `json:"last_edited_time"`
-	Parent         PageParent `json:"parent"`
-	Archived       bool       `json:"archived"`
+	ID             string    `json:"id"`
+	CreatedTime    time.Time `json:"created_time"`
+	LastEditedTime time.Time `json:"last_edited_time"`
+	Parent         Parent    `json:"parent"`
+	Archived       bool      `json:"archived"`
 
 	// Properties differ between parent type.
 	// See the `UnmarshalJSON` method.
 	Properties interface{} `json:"properties"`
-}
-
-type PageParent struct {
-	Type ParentType `json:"type,omitempty"`
-
-	PageID     *string `json:"page_id,omitempty"`
-	DatabaseID *string `json:"database_id,omitempty"`
 }
 
 // PageProperties are properties of a page whose parent is a page or a workspace.
@@ -84,13 +77,6 @@ type UpdatePageParams struct {
 	DatabasePageProperties *DatabasePageProperties
 	Title                  []RichText
 }
-
-type ParentType string
-
-const (
-	ParentTypeDatabase ParentType = "database_id"
-	ParentTypePage     ParentType = "page_id"
-)
 
 // Value returns the underlying database page property value, based on its `type` field.
 // When type is unknown/unmapped or doesn't have a value, `nil` is returned.
@@ -158,17 +144,17 @@ func (p CreatePageParams) Validate() error {
 
 func (p CreatePageParams) MarshalJSON() ([]byte, error) {
 	type CreatePageParamsDTO struct {
-		Parent     PageParent  `json:"parent"`
+		Parent     Parent      `json:"parent"`
 		Properties interface{} `json:"properties"`
 		Children   []Block     `json:"children,omitempty"`
 	}
 
-	var parent PageParent
+	var parent Parent
 
 	if p.DatabasePageProperties != nil {
-		parent.DatabaseID = StringPtr(p.ParentID)
+		parent.DatabaseID = p.ParentID
 	} else if p.Title != nil {
-		parent.PageID = StringPtr(p.ParentID)
+		parent.PageID = p.ParentID
 	}
 
 	dto := CreatePageParamsDTO{

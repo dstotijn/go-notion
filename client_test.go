@@ -214,6 +214,11 @@ func TestFindDatabaseByID(t *testing.T) {
 								"type": "files",
 								"files": {}
 							}
+						},
+						    "parent": {
+								"type": "page_id",
+								"page_id": "b8595b75-abd1-4cad-8dfe-f935a8ef57cb"
+							}
 						}
 					}`,
 				)
@@ -335,6 +340,10 @@ func TestFindDatabaseByID(t *testing.T) {
 						ID:   "aTIT",
 						Type: "files",
 					},
+				},
+				Parent: notion.Parent{
+					Type:   notion.ParentTypePage,
+					PageID: "b8595b75-abd1-4cad-8dfe-f935a8ef57cb",
 				},
 			},
 			expError: nil,
@@ -622,9 +631,9 @@ func TestQueryDatabase(t *testing.T) {
 						ID:             "7c6b1c95-de50-45ca-94e6-af1d9fd295ab",
 						CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-18T17:50:22.371Z"),
 						LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-18T17:50:22.371Z"),
-						Parent: notion.PageParent{
+						Parent: notion.Parent{
 							Type:       notion.ParentTypeDatabase,
-							DatabaseID: notion.StringPtr("39ddfc9d-33c9-404c-89cf-79f01c42dd0c"),
+							DatabaseID: "39ddfc9d-33c9-404c-89cf-79f01c42dd0c",
 						},
 						Archived: false,
 						Properties: notion.DatabasePageProperties{
@@ -948,9 +957,9 @@ func TestFindPageByID(t *testing.T) {
 				ID:             "606ed832-7d79-46de-bbed-5b4896e7bc02",
 				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-19T18:34:00.000Z"),
 				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-19T18:34:00.000Z"),
-				Parent: notion.PageParent{
+				Parent: notion.Parent{
 					Type:   notion.ParentTypePage,
-					PageID: notion.StringPtr("b0668f48-8d66-4733-9bdb-2f82215707f7"),
+					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
 				},
 				Properties: notion.PageProperties{
 					Title: notion.PageTitle{
@@ -1137,9 +1146,9 @@ func TestCreatePage(t *testing.T) {
 				ID:             "276ee233-e426-4ed0-9986-6b22af8550df",
 				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.068Z"),
 				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.069Z"),
-				Parent: notion.PageParent{
+				Parent: notion.Parent{
 					Type:   notion.ParentTypePage,
-					PageID: notion.StringPtr("b0668f48-8d66-4733-9bdb-2f82215707f7"),
+					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
 				},
 				Properties: notion.PageProperties{
 					Title: notion.PageTitle{
@@ -1265,9 +1274,9 @@ func TestCreatePage(t *testing.T) {
 				ID:             "276ee233-e426-4ed0-9986-6b22af8550df",
 				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.068Z"),
 				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.069Z"),
-				Parent: notion.PageParent{
+				Parent: notion.Parent{
 					Type:       notion.ParentTypeDatabase,
-					DatabaseID: notion.StringPtr("b0668f48-8d66-4733-9bdb-2f82215707f7"),
+					DatabaseID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
 				},
 				Properties: notion.DatabasePageProperties{
 					"title": notion.DatabasePageProperty{
@@ -1512,9 +1521,9 @@ func TestUpdatePageProps(t *testing.T) {
 				ID:             "cb261dc5-6c85-4767-8585-3852382fb466",
 				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:46.796Z"),
 				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-22T15:54:31.116Z"),
-				Parent: notion.PageParent{
+				Parent: notion.Parent{
 					Type:   notion.ParentTypePage,
-					PageID: notion.StringPtr("b0668f48-8d66-4733-9bdb-2f82215707f7"),
+					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
 				},
 				Properties: notion.PageProperties{
 					Title: notion.PageTitle{
@@ -1608,9 +1617,9 @@ func TestUpdatePageProps(t *testing.T) {
 				ID:             "e4f419a7-f01f-4d5b-af58-ff4786a429fe",
 				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-17T17:56:00.000Z"),
 				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-22T16:24:23.007Z"),
-				Parent: notion.PageParent{
+				Parent: notion.Parent{
 					Type:       notion.ParentTypeDatabase,
-					DatabaseID: notion.StringPtr("4cb17949-f08d-4d5c-ab50-fe6ba689d2c8"),
+					DatabaseID: "4cb17949-f08d-4d5c-ab50-fe6ba689d2c8",
 				},
 				Properties: notion.DatabasePageProperties{
 					"Name": notion.DatabasePageProperty{
@@ -2496,9 +2505,9 @@ func TestSearch(t *testing.T) {
 						ID:             "276ee233-e426-4ed0-9986-6b22af8550df",
 						CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.068Z"),
 						LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.069Z"),
-						Parent: notion.PageParent{
+						Parent: notion.Parent{
 							Type:   notion.ParentTypePage,
-							PageID: notion.StringPtr("b0668f48-8d66-4733-9bdb-2f82215707f7"),
+							PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
 						},
 						Properties: notion.PageProperties{
 							Title: notion.PageTitle{
