@@ -449,6 +449,7 @@ func TestQueryDatabase(t *testing.T) {
 									"database_id": "39ddfc9d-33c9-404c-89cf-79f01c42dd0c"
 								},
 								"archived": false,
+								"url": "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
 								"properties": {
 									"Date": {
 										"id": "Q]uT",
@@ -631,6 +632,7 @@ func TestQueryDatabase(t *testing.T) {
 						ID:             "7c6b1c95-de50-45ca-94e6-af1d9fd295ab",
 						CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-18T17:50:22.371Z"),
 						LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-18T17:50:22.371Z"),
+						URL:            "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
 						Parent: notion.Parent{
 							Type:       notion.ParentTypeDatabase,
 							DatabaseID: "39ddfc9d-33c9-404c-89cf-79f01c42dd0c",
@@ -924,6 +926,7 @@ func TestFindPageByID(t *testing.T) {
 							"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
 						},
 						"archived": false,
+						"url": "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
 						"properties": {
 							"title": {
 								"id": "title",
@@ -957,6 +960,7 @@ func TestFindPageByID(t *testing.T) {
 				ID:             "606ed832-7d79-46de-bbed-5b4896e7bc02",
 				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-19T18:34:00.000Z"),
 				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-19T18:34:00.000Z"),
+				URL:            "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
 				Parent: notion.Parent{
 					Type:   notion.ParentTypePage,
 					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
@@ -1084,6 +1088,7 @@ func TestCreatePage(t *testing.T) {
 							"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
 						},
 						"archived": false,
+						"url": "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
 						"properties": {
 							"title": {
 								"id": "title",
@@ -1146,6 +1151,7 @@ func TestCreatePage(t *testing.T) {
 				ID:             "276ee233-e426-4ed0-9986-6b22af8550df",
 				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.068Z"),
 				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-19T19:34:05.069Z"),
+				URL:            "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
 				Parent: notion.Parent{
 					Type:   notion.ParentTypePage,
 					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
@@ -1477,6 +1483,7 @@ func TestUpdatePageProps(t *testing.T) {
 							"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
 						},
 						"archived": false,
+						"url": "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
 						"properties": {
 							"title": {
 								"id": "title",
@@ -1521,6 +1528,7 @@ func TestUpdatePageProps(t *testing.T) {
 				ID:             "cb261dc5-6c85-4767-8585-3852382fb466",
 				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:46.796Z"),
 				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-22T15:54:31.116Z"),
+				URL:            "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
 				Parent: notion.Parent{
 					Type:   notion.ParentTypePage,
 					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",

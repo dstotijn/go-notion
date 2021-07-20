@@ -16,6 +16,7 @@ type Page struct {
 	LastEditedTime time.Time `json:"last_edited_time"`
 	Parent         Parent    `json:"parent"`
 	Archived       bool      `json:"archived"`
+	URL            string    `json:"url"`
 
 	// Properties differ between parent type.
 	// See the `UnmarshalJSON` method.
