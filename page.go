@@ -76,7 +76,7 @@ type CreatePageParams struct {
 type UpdatePageParams struct {
 	// Either DatabasePageProperties or Title must be not nil.
 	DatabasePageProperties *DatabasePageProperties
-	Title                  []RichText
+	Archived               bool `json:"archived,omitempty"`
 }
 
 // Value returns the underlying database page property value, based on its `type` field.
@@ -224,8 +224,8 @@ func (p *Page) UnmarshalJSON(b []byte) error {
 }
 
 func (p UpdatePageParams) Validate() error {
-	if p.DatabasePageProperties == nil && p.Title == nil {
-		return errors.New("either database page properties or title is required")
+	if p.DatabasePageProperties == nil {
+		return errors.New("database page properties is required")
 	}
 	return nil
 }
@@ -239,11 +239,6 @@ func (p UpdatePageParams) MarshalJSON() ([]byte, error) {
 
 	if p.DatabasePageProperties != nil {
 		dto.Properties = p.DatabasePageProperties
-	} else if p.Title != nil {
-		dto.Properties = PageTitle{
-			Title: p.Title,
-		}
 	}
-
 	return json.Marshal(dto)
 }

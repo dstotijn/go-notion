@@ -1711,13 +1711,7 @@ func TestUpdatePageProps(t *testing.T) {
 		{
 			name: "page props, successful response",
 			params: notion.UpdatePageParams{
-				Title: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Foobar",
-						},
-					},
-				},
+				DatabasePageProperties: &notion.DatabasePageProperties{},
 			},
 			respBody: func(_ *http.Request) io.Reader {
 				return strings.NewReader(
@@ -1762,15 +1756,7 @@ func TestUpdatePageProps(t *testing.T) {
 			},
 			respStatusCode: http.StatusOK,
 			expPostBody: map[string]interface{}{
-				"properties": map[string]interface{}{
-					"title": []interface{}{
-						map[string]interface{}{
-							"text": map[string]interface{}{
-								"content": "Foobar",
-							},
-						},
-					},
-				},
+				"properties": map[string]interface{}{},
 			},
 			expResponse: notion.Page{
 				ID:             "cb261dc5-6c85-4767-8585-3852382fb466",
@@ -1901,13 +1887,7 @@ func TestUpdatePageProps(t *testing.T) {
 		{
 			name: "error response",
 			params: notion.UpdatePageParams{
-				Title: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Foobar",
-						},
-					},
-				},
+				DatabasePageProperties: &notion.DatabasePageProperties{},
 			},
 			respBody: func(_ *http.Request) io.Reader {
 				return strings.NewReader(
@@ -1921,15 +1901,7 @@ func TestUpdatePageProps(t *testing.T) {
 			},
 			respStatusCode: http.StatusBadRequest,
 			expPostBody: map[string]interface{}{
-				"properties": map[string]interface{}{
-					"title": []interface{}{
-						map[string]interface{}{
-							"text": map[string]interface{}{
-								"content": "Foobar",
-							},
-						},
-					},
-				},
+				"properties": map[string]interface{}{},
 			},
 			expResponse: notion.Page{},
 			expError:    errors.New("notion: failed to update page properties: foobar (code: validation_error, status: 400)"),
@@ -1938,7 +1910,7 @@ func TestUpdatePageProps(t *testing.T) {
 			name:        "missing page title and database properties",
 			params:      notion.UpdatePageParams{},
 			expResponse: notion.Page{},
-			expError:    errors.New("notion: invalid page params: either database page properties or title is required"),
+			expError:    errors.New("notion: invalid page params: database page properties is required"),
 		},
 	}
 
