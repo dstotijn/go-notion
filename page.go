@@ -233,10 +233,12 @@ func (p UpdatePageParams) Validate() error {
 func (p UpdatePageParams) MarshalJSON() ([]byte, error) {
 	type UpdatePageParamsDTO struct {
 		Properties interface{} `json:"properties"`
+		Archived   bool        `json:"archived"`
 	}
 
 	var dto UpdatePageParamsDTO
 
+	dto.Archived = p.Archived
 	if p.DatabasePageProperties != nil {
 		dto.Properties = p.DatabasePageProperties
 	}
