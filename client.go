@@ -337,6 +337,32 @@ func (c *Client) AppendBlockChildren(ctx context.Context, blockID string, childr
 	return block, nil
 }
 
+// FindBlockByID returns a list of block for a given block ID.
+// See: https://developers.notion.com/reference/retrieve-a-block
+func (c *Client) FindBlockByID(ctx context.Context, blockID string) (result Block, err error) {
+	req, err := c.newRequest(ctx, http.MethodGet, fmt.Sprintf("/blocks/%v", blockID), nil)
+	if err != nil {
+		return Block{}, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return Block{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return Block{}, fmt.Errorf("notion: failed to find block children: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&result)
+	if err != nil {
+		return Block{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return result, nil
+}
+
 // FindUserByID fetches a user by ID.
 // See: https://developers.notion.com/reference/get-user
 func (c *Client) FindUserByID(ctx context.Context, id string) (user User, err error) {
