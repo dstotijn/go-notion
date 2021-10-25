@@ -352,7 +352,7 @@ func (c *Client) FindBlockByID(ctx context.Context, blockID string) (result Bloc
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return Block{}, fmt.Errorf("notion: failed to find block children: %w", parseErrorResponse(res))
+		return Block{}, fmt.Errorf("notion: failed to find block: %w", parseErrorResponse(res))
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&result)
