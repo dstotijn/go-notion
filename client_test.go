@@ -1801,6 +1801,85 @@ func TestUpdatePageProps(t *testing.T) {
 			expError: nil,
 		},
 		{
+			name: "page icon, successful response",
+			params: notion.UpdatePageParams{
+				Title: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Foobar",
+						},
+					},
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "page",
+						"id": "cb261dc5-6c85-4767-8585-3852382fb466",
+						"created_time": "2021-05-14T09:15:46.796Z",
+						"last_edited_time": "2021-05-22T15:54:31.116Z",
+						"parent": {
+							"type": "page_id",
+							"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
+						},
+						"archived": false,
+						"url": "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
+						"properties": {
+							"title": {
+								"id": "title",
+								"type": "title",
+								"title": [
+									{
+										"type": "text",
+										"text": {
+											"content": "Lorem ipsum",
+											"link": null
+										},
+										"annotations": {
+											"bold": false,
+											"italic": false,
+											"strikethrough": false,
+											"underline": false,
+											"code": false,
+											"color": "default"
+										},
+										"plain_text": "Lorem ipsum",
+										"href": null
+									}
+								]
+							}
+						}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPostBody: map[string]interface{}{
+				"icon": map[string]interface{}{
+					"type": "external",
+					"external": map[string]interface{}{
+						"url": "https://www.notion.so/front-static/pages/pricing/pro.png",
+					},
+				},
+			},
+			expResponse: notion.Page{
+				ID:             "cb261dc5-6c85-4767-8585-3852382fb466",
+				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:46.796Z"),
+				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-22T15:54:31.116Z"),
+				URL:            "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
+				Parent: notion.Parent{
+					Type:   notion.ParentTypePage,
+					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
+				},
+				Icon: &notion.Icon{
+					Type: "external",
+					External: &notion.IconExternal{
+						Url: "https://www.notion.so/front-static/pages/pricing/pro.png",
+					},
+				},
+			},
+			expError: nil,
+		},
+		{
 			name: "database page props, successful response",
 			params: notion.UpdatePageParams{
 				DatabasePageProperties: &notion.DatabasePageProperties{

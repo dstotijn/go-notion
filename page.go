@@ -17,10 +17,36 @@ type Page struct {
 	Parent         Parent    `json:"parent"`
 	Archived       bool      `json:"archived"`
 	URL            string    `json:"url"`
+	Icon           *Icon     `json:"icon"`
 
 	// Properties differ between parent type.
 	// See the `UnmarshalJSON` method.
 	Properties interface{} `json:"properties"`
+}
+
+// Icon can have different value in Type
+// For each Type its corresponding attribute will be populated
+// The rest stays nil
+type Icon struct {
+	Type string `json:"type"`
+
+	// Type == "emoji"
+	Emoji *string `json:"emoji,omitempty"`
+
+	// Type == "file
+	File *IconFile `json:"file,omitempty"`
+
+	// Type == "external"
+	External *IconExternal `json:"external,omitempty"`
+}
+
+type IconFile struct {
+	Url        string `json:"url"`
+	ExpiryTime string `json:"expiry_time"`
+}
+
+type IconExternal struct {
+	Url string `json:"url"`
 }
 
 // PageProperties are properties of a page whose parent is a page or a workspace.
@@ -77,6 +103,7 @@ type UpdatePageParams struct {
 	// Either DatabasePageProperties or Title must be not nil.
 	DatabasePageProperties *DatabasePageProperties
 	Title                  []RichText
+	Icon                   *Icon
 }
 
 // Value returns the underlying database page property value, based on its `type` field.
@@ -224,8 +251,10 @@ func (p *Page) UnmarshalJSON(b []byte) error {
 }
 
 func (p UpdatePageParams) Validate() error {
-	if p.DatabasePageProperties == nil && p.Title == nil {
-		return errors.New("either database page properties or title is required")
+	if p.Icon == nil { // We can either change Icon, properties, or both
+		if p.DatabasePageProperties == nil && p.Title == nil {
+			return errors.New("either database page properties or title is required")
+		}
 	}
 	return nil
 }
@@ -233,6 +262,7 @@ func (p UpdatePageParams) Validate() error {
 func (p UpdatePageParams) MarshalJSON() ([]byte, error) {
 	type UpdatePageParamsDTO struct {
 		Properties interface{} `json:"properties"`
+		Icon       *Icon       `json:"icon,omitempty"`
 	}
 
 	var dto UpdatePageParamsDTO
@@ -244,6 +274,8 @@ func (p UpdatePageParams) MarshalJSON() ([]byte, error) {
 			Title: p.Title,
 		}
 	}
+
+	dto.Icon = p.Icon
 
 	return json.Marshal(dto)
 }
