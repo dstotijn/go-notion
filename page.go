@@ -97,6 +97,8 @@ type CreatePageParams struct {
 
 	// Optionally, children blocks are added to the page.
 	Children []Block
+
+	Icon *Icon
 }
 
 type UpdatePageParams struct {
@@ -175,6 +177,7 @@ func (p CreatePageParams) MarshalJSON() ([]byte, error) {
 		Parent     Parent      `json:"parent"`
 		Properties interface{} `json:"properties"`
 		Children   []Block     `json:"children,omitempty"`
+		Icon       *Icon       `json:"icon,omitempty"`
 	}
 
 	var parent Parent
@@ -188,6 +191,7 @@ func (p CreatePageParams) MarshalJSON() ([]byte, error) {
 	dto := CreatePageParamsDTO{
 		Parent:   parent,
 		Children: p.Children,
+		Icon:     p.Icon,
 	}
 
 	if p.DatabasePageProperties != nil {
