@@ -339,7 +339,7 @@ func (c *Client) AppendBlockChildren(ctx context.Context, blockID string, childr
 
 // FindBlockByID returns a list of block for a given block ID.
 // See: https://developers.notion.com/reference/retrieve-a-block
-func (c *Client) FindBlockByID(ctx context.Context, blockID string) (result Block, err error) {
+func (c *Client) FindBlockByID(ctx context.Context, blockID string) (block Block, err error) {
 	req, err := c.newRequest(ctx, http.MethodGet, fmt.Sprintf("/blocks/%v", blockID), nil)
 	if err != nil {
 		return Block{}, fmt.Errorf("notion: invalid request: %w", err)
