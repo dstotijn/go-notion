@@ -2914,7 +2914,7 @@ func TestSearch(t *testing.T) {
 	}
 }
 
-func TestClient_FindBlockByID(t *testing.T) {
+func TestFindBlockByID(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
