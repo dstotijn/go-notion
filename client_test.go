@@ -935,6 +935,10 @@ func TestCreateDatabase(t *testing.T) {
 						Title: &notion.EmptyMetadata{},
 					},
 				},
+				Icon: &notion.Icon{
+					Type:  notion.IconTypeEmoji,
+					Emoji: notion.StringPtr("✌️"),
+				},
 			},
 			respBody: func(_ *http.Request) io.Reader {
 				return strings.NewReader(
@@ -972,6 +976,10 @@ func TestCreateDatabase(t *testing.T) {
 						"parent": {
 							"type": "page_id",
 							"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
+						},
+						"icon": {
+							"type": "emoji",
+							"emoji": "✌️"
 						}
 					}`,
 				)
@@ -994,6 +1002,10 @@ func TestCreateDatabase(t *testing.T) {
 						"type":  "title",
 						"title": map[string]interface{}{},
 					},
+				},
+				"icon": map[string]interface{}{
+					"type":  "emoji",
+					"emoji": "✌️",
 				},
 			},
 			expResponse: notion.Database{
@@ -1022,6 +1034,10 @@ func TestCreateDatabase(t *testing.T) {
 						Type:  notion.DBPropTypeTitle,
 						Title: &notion.EmptyMetadata{},
 					},
+				},
+				Icon: notion.Icon{
+					Type:  notion.IconTypeEmoji,
+					Emoji: notion.StringPtr("✌️"),
 				},
 			},
 			expError: nil,
