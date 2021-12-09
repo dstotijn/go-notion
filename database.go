@@ -15,6 +15,7 @@ type Database struct {
 	Title          []RichText         `json:"title"`
 	Properties     DatabaseProperties `json:"properties"`
 	Parent         Parent             `json:"parent"`
+	Icon           Icon               `json:"icon"`
 }
 
 // DatabaseProperties is a mapping of properties defined on a database.
@@ -235,6 +236,7 @@ type CreateDatabaseParams struct {
 	ParentPageID string
 	Title        []RichText
 	Properties   DatabaseProperties
+	Icon         *Icon
 }
 
 type (
@@ -362,6 +364,11 @@ func (p CreateDatabaseParams) Validate() error {
 	if p.Properties == nil {
 		return errors.New("database properties are required")
 	}
+	if p.Icon != nil {
+		if err := p.Icon.Validate(); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -372,6 +379,7 @@ func (p CreateDatabaseParams) MarshalJSON() ([]byte, error) {
 		Parent     Parent             `json:"parent"`
 		Title      []RichText         `json:"title,omitempty"`
 		Properties DatabaseProperties `json:"properties"`
+		Icon       *Icon              `json:"icon,omitempty"`
 	}
 
 	parent := Parent{
@@ -383,6 +391,7 @@ func (p CreateDatabaseParams) MarshalJSON() ([]byte, error) {
 		Parent:     parent,
 		Title:      p.Title,
 		Properties: p.Properties,
+		Icon:       p.Icon,
 	}
 
 	return json.Marshal(dto)
