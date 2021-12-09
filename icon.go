@@ -6,23 +6,16 @@ type IconType string
 
 const (
 	IconTypeEmoji    IconType = "emoji"
-	IconTypeFile     IconType = "file"
 	IconTypeExternal IconType = "external"
 )
 
-// Icon has one non-nil Emoji, File or External field, denoted by the
-// corresponding IconType.
+// Icon has one non-nil Emoji or External field, denoted by the corresponding
+// IconType.
 type Icon struct {
 	Type IconType `json:"type"`
 
 	Emoji    *string       `json:"emoji,omitempty"`
-	File     *IconFile     `json:"file,omitempty"`
 	External *IconExternal `json:"external,omitempty"`
-}
-
-type IconFile struct {
-	URL        string `json:"url"`
-	ExpiryTime string `json:"expiry_time"`
 }
 
 type IconExternal struct {
@@ -36,9 +29,6 @@ func (icon Icon) Validate() error {
 
 	if icon.Type == IconTypeEmoji && icon.Emoji == nil {
 		return errors.New("icon emoji cannot be empty")
-	}
-	if icon.Type == IconTypeFile && icon.File == nil {
-		return errors.New("icon file cannot be empty")
 	}
 	if icon.Type == IconTypeExternal && icon.External == nil {
 		return errors.New("icon external cannot be empty")
