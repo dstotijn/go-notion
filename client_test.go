@@ -1803,11 +1803,10 @@ func TestUpdatePageProps(t *testing.T) {
 		{
 			name: "page icon, successful response",
 			params: notion.UpdatePageParams{
-				Title: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Foobar",
-						},
+				Icon: &notion.Icon{
+					Type: notion.IconTypeExternal,
+					External: &notion.IconExternal{
+						URL: "https://www.notion.so/front-static/pages/pricing/pro.png",
 					},
 				},
 			},
@@ -1821,6 +1820,12 @@ func TestUpdatePageProps(t *testing.T) {
 						"parent": {
 							"type": "page_id",
 							"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
+						},
+						"icon": {
+							"type": "external",
+							"external": {
+								"url": "https://www.notion.so/front-static/pages/pricing/pro.png"
+							}
 						},
 						"archived": false,
 						"url": "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
@@ -1871,9 +1876,25 @@ func TestUpdatePageProps(t *testing.T) {
 					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
 				},
 				Icon: &notion.Icon{
-					Type: "external",
+					Type: notion.IconTypeExternal,
 					External: &notion.IconExternal{
-						Url: "https://www.notion.so/front-static/pages/pricing/pro.png",
+						URL: "https://www.notion.so/front-static/pages/pricing/pro.png",
+					},
+				},
+				Properties: notion.PageProperties{
+					Title: notion.PageTitle{
+						Title: []notion.RichText{
+							{
+								Type: notion.RichTextTypeText,
+								Text: &notion.Text{
+									Content: "Lorem ipsum",
+								},
+								Annotations: &notion.Annotations{
+									Color: notion.ColorDefault,
+								},
+								PlainText: "Lorem ipsum",
+							},
+						},
 					},
 				},
 			},
@@ -2014,10 +2035,10 @@ func TestUpdatePageProps(t *testing.T) {
 			expError:    errors.New("notion: failed to update page properties: foobar (code: validation_error, status: 400)"),
 		},
 		{
-			name:        "missing page title and database properties",
+			name:        "missing any params",
 			params:      notion.UpdatePageParams{},
 			expResponse: notion.Page{},
-			expError:    errors.New("notion: invalid page params: either database page properties or title is required"),
+			expError:    errors.New("notion: invalid page params: at least one of database page properties, title or icon is required"),
 		},
 	}
 

@@ -24,31 +24,6 @@ type Page struct {
 	Properties interface{} `json:"properties"`
 }
 
-// Icon can have different value in Type
-// For each Type its corresponding attribute will be populated
-// The rest stays nil
-type Icon struct {
-	Type string `json:"type"`
-
-	// Type == "emoji"
-	Emoji *string `json:"emoji,omitempty"`
-
-	// Type == "file
-	File *IconFile `json:"file,omitempty"`
-
-	// Type == "external"
-	External *IconExternal `json:"external,omitempty"`
-}
-
-type IconFile struct {
-	Url        string `json:"url"`
-	ExpiryTime string `json:"expiry_time"`
-}
-
-type IconExternal struct {
-	Url string `json:"url"`
-}
-
 // PageProperties are properties of a page whose parent is a page or a workspace.
 type PageProperties struct {
 	Title PageTitle `json:"title"`
@@ -102,7 +77,7 @@ type CreatePageParams struct {
 }
 
 type UpdatePageParams struct {
-	// Either DatabasePageProperties or Title must be not nil.
+	// Either DatabasePageProperties, Title or Icon must be not nil.
 	DatabasePageProperties *DatabasePageProperties
 	Title                  []RichText
 	Icon                   *Icon
@@ -167,6 +142,11 @@ func (p CreatePageParams) Validate() error {
 	}
 	if p.ParentType == ParentTypePage && p.Title == nil {
 		return errors.New("title is required when parent type is page")
+	}
+	if p.Icon != nil {
+		if err := p.Icon.Validate(); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -255,9 +235,13 @@ func (p *Page) UnmarshalJSON(b []byte) error {
 }
 
 func (p UpdatePageParams) Validate() error {
-	if p.Icon == nil { // We can either change Icon, properties, or both
-		if p.DatabasePageProperties == nil && p.Title == nil {
-			return errors.New("either database page properties or title is required")
+	// At least one of the params must be set.
+	if p.DatabasePageProperties == nil && p.Title == nil && p.Icon == nil {
+		return errors.New("at least one of database page properties, title or icon is required")
+	}
+	if p.Icon != nil {
+		if err := p.Icon.Validate(); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -265,7 +249,7 @@ func (p UpdatePageParams) Validate() error {
 
 func (p UpdatePageParams) MarshalJSON() ([]byte, error) {
 	type UpdatePageParamsDTO struct {
-		Properties interface{} `json:"properties"`
+		Properties interface{} `json:"properties,omitempty"`
 		Icon       *Icon       `json:"icon,omitempty"`
 	}
 
