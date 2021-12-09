@@ -32,6 +32,14 @@ func mustParseTime(layout, value string) time.Time {
 	return t
 }
 
+func mustParseTimePointer(layout, value string) *time.Time {
+	t, err := time.Parse(layout, value)
+	if err != nil {
+		panic(err)
+	}
+	return &t
+}
+
 func TestNewClient(t *testing.T) {
 	t.Parallel()
 
@@ -2901,6 +2909,100 @@ func TestSearch(t *testing.T) {
 
 			if diff := cmp.Diff(tt.expResponse, resp); diff != "" {
 				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}
+
+func TestFindBlockByID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		blockID        string
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expBlock       notion.Block
+		expError       error
+	}{
+		{
+			name:    "successful response",
+			blockID: "test-block-id",
+			respBody: func(r *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "block",
+						"id": "048e165e-352d-4119-8128-e46c3527d95c",
+						"created_time": "2021-10-02T06:09:00.000Z",
+						"last_edited_time": "2021-10-02T06:31:00.000Z",
+						"has_children": true,
+						"archived": false,
+						"type": "child_page",
+						"child_page": {
+							"title": "test title"
+						}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expBlock: notion.Block{
+				Object:         "block",
+				ID:             "048e165e-352d-4119-8128-e46c3527d95c",
+				Type:           "child_page",
+				CreatedTime:    mustParseTimePointer(time.RFC3339, "2021-10-02T06:09:00Z"),
+				LastEditedTime: mustParseTimePointer(time.RFC3339, "2021-10-02T06:31:00Z"),
+				HasChildren:    true,
+				ChildPage:      &notion.ChildPage{Title: "test title"},
+			},
+			expError: nil,
+		},
+		{
+			name: "error response not found",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 404,
+						"code": "object_not_found",
+						"message": "Could not find block with ID: test id."
+					}`,
+				)
+			},
+			respStatusCode: http.StatusNotFound,
+			expBlock:       notion.Block{},
+			expError:       errors.New("notion: failed to find block: Could not find block with ID: test id. (code: object_not_found, status: 404)"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			block, err := client.FindBlockByID(context.Background(), tt.blockID)
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expBlock, block); diff != "" {
+				t.Fatalf("user not equal (-exp, +got):\n%v", diff)
 			}
 		})
 	}
