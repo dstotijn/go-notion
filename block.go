@@ -24,6 +24,7 @@ type Block struct {
 	ToDo             *ToDo          `json:"to_do,omitempty"`
 	Toggle           *RichTextBlock `json:"toggle,omitempty"`
 	ChildPage        *ChildPage     `json:"child_page,omitempty"`
+	Callout          *Callout       `json:"callout,omitempty"`
 }
 
 type RichTextBlock struct {
@@ -44,6 +45,12 @@ type ChildPage struct {
 	Title string `json:"title"`
 }
 
+type Callout struct {
+	Text     []RichText `json:"text"`
+	Icon     *Icon      `json:"icon,omitempty"`
+	Children []Block    `json:"children,omitempty"`
+}
+
 type BlockType string
 
 const (
@@ -56,6 +63,7 @@ const (
 	BlockTypeToDo             BlockType = "to_do"
 	BlockTypeToggle           BlockType = "toggle"
 	BlockTypeChildPage        BlockType = "child_page"
+	BlockTypeCallout          BlockType = "callout"
 	BlockTypeUnsupported      BlockType = "unsupported"
 )
 
