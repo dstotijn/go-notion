@@ -26,6 +26,7 @@ type Block struct {
 	ChildPage        *ChildPage     `json:"child_page,omitempty"`
 	Callout          *Callout       `json:"callout,omitempty"`
 	Quote            *RichTextBlock `json:"quote,omitempty"`
+	Code             *Code          `json:"code,omitempty"`
 }
 
 type RichTextBlock struct {
@@ -51,6 +52,11 @@ type Callout struct {
 	Icon *Icon `json:"icon,omitempty"`
 }
 
+type Code struct {
+	RichTextBlock
+	Language *string `json:"language,omitempty"`
+}
+
 type BlockType string
 
 const (
@@ -65,6 +71,7 @@ const (
 	BlockTypeChildPage        BlockType = "child_page"
 	BlockTypeCallout          BlockType = "callout"
 	BlockTypeQuote            BlockType = "quote"
+	BlockTypeCode             BlockType = "code"
 	BlockTypeUnsupported      BlockType = "unsupported"
 )
 
