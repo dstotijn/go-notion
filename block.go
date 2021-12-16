@@ -24,6 +24,7 @@ type Block struct {
 	ToDo             *ToDo          `json:"to_do,omitempty"`
 	Toggle           *RichTextBlock `json:"toggle,omitempty"`
 	ChildPage        *ChildPage     `json:"child_page,omitempty"`
+	ChildDatabase    *ChildDatabase `json:"child_database,omitempty"`
 	Callout          *Callout       `json:"callout,omitempty"`
 	Quote            *RichTextBlock `json:"quote,omitempty"`
 	Code             *Code          `json:"code,omitempty"`
@@ -44,6 +45,10 @@ type ToDo struct {
 }
 
 type ChildPage struct {
+	Title string `json:"title"`
+}
+
+type ChildDatabase struct {
 	Title string `json:"title"`
 }
 
@@ -69,6 +74,7 @@ const (
 	BlockTypeToDo             BlockType = "to_do"
 	BlockTypeToggle           BlockType = "toggle"
 	BlockTypeChildPage        BlockType = "child_page"
+	BlockTypeChildDatabase    BlockType = "child_database"
 	BlockTypeCallout          BlockType = "callout"
 	BlockTypeQuote            BlockType = "quote"
 	BlockTypeCode             BlockType = "code"
