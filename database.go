@@ -301,7 +301,7 @@ const (
 	NumberFormatRuble            NumberFormat = "ruble"
 	NumberFormatRupee            NumberFormat = "rupee"
 	NumberFormatWon              NumberFormat = "won"
-	NumberformatYuan             NumberFormat = "yuan"
+	NumberFormatYuan             NumberFormat = "yuan"
 
 	// Formula result type enums.
 	FormulaResultTypeString  FormulaResultType = "string"
