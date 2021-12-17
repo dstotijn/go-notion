@@ -43,6 +43,7 @@ type Block struct {
 	LinkPreview      *LinkPreview     `json:"link_preview,omitempty"`
 	LinkToPage       *LinkToPage      `json:"link_to_page,omitempty"`
 	SyncedBlock      *SyncedBlock     `json:"synced_block,omitempty"`
+	Template         *RichTextBlock   `json:"template,omitempty"`
 }
 
 type RichTextBlock struct {
@@ -183,6 +184,7 @@ const (
 	BlockTypeLinkPreview      BlockType = "link_preview"
 	BlockTypeLinkToPage       BlockType = "link_to_page"
 	BlockTypeSyncedBlock      BlockType = "synced_block"
+	BlockTypeTemplate         BlockType = "template"
 	BlockTypeUnsupported      BlockType = "unsupported"
 )
 
