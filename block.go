@@ -42,6 +42,7 @@ type Block struct {
 	Column           *Column          `json:"column,omitempty"`
 	LinkPreview      *LinkPreview     `json:"link_preview,omitempty"`
 	LinkToPage       *LinkToPage      `json:"link_to_page,omitempty"`
+	SyncedBlock      *SyncedBlock     `json:"synced_block,omitempty"`
 }
 
 type RichTextBlock struct {
@@ -131,6 +132,20 @@ const (
 	LinkToPageTypeDatabaseID LinkToPageType = "database_id"
 )
 
+type SyncedBlock struct {
+	SyncedFrom *SyncedFrom `json:"synced_from"`
+	Children   []Block     `json:"children,omitempty"`
+}
+
+type SyncedFrom struct {
+	Type    SyncedFromType `json:"type"`
+	BlockID string         `json:"block_id"`
+}
+
+type SyncedFromType string
+
+const SyncedFromTypeBlockID SyncedFromType = "block_id"
+
 type (
 	Divider         struct{}
 	TableOfContents struct{}
@@ -167,6 +182,7 @@ const (
 	BlockTypeColumn           BlockType = "column"
 	BlockTypeLinkPreview      BlockType = "link_preview"
 	BlockTypeLinkToPage       BlockType = "link_to_page"
+	BlockTypeSyncedBlock      BlockType = "synced_block"
 	BlockTypeUnsupported      BlockType = "unsupported"
 )
 
