@@ -35,6 +35,7 @@ type Block struct {
 	PDF              *FileBlock     `json:"pdf,omitempty"`
 	Bookmark         *Bookmark      `json:"bookmark,omitempty"`
 	Equation         *Equation      `json:"equation,omitempty"`
+	Divider          *Divider       `json:"divider,omitempty"`
 }
 
 type RichTextBlock struct {
@@ -102,6 +103,8 @@ type Bookmark struct {
 	Caption []RichText `json:"caption,omitempty"`
 }
 
+type Divider struct{}
+
 type BlockType string
 
 const (
@@ -125,6 +128,7 @@ const (
 	BlockTypePDF              BlockType = "pdf"
 	BlockTypeBookmark         BlockType = "bookmark"
 	BlockTypeEquation         BlockType = "equation"
+	BlockTypeDivider          BlockType = "divider"
 	BlockTypeUnsupported      BlockType = "unsupported"
 )
 
