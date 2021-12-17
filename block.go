@@ -28,6 +28,7 @@ type Block struct {
 	Callout          *Callout       `json:"callout,omitempty"`
 	Quote            *RichTextBlock `json:"quote,omitempty"`
 	Code             *Code          `json:"code,omitempty"`
+	Embed            *Embed         `json:"embed,omitempty"`
 }
 
 type RichTextBlock struct {
@@ -62,6 +63,10 @@ type Code struct {
 	Language *string `json:"language,omitempty"`
 }
 
+type Embed struct {
+	URL string `json:"url"`
+}
+
 type BlockType string
 
 const (
@@ -78,6 +83,7 @@ const (
 	BlockTypeCallout          BlockType = "callout"
 	BlockTypeQuote            BlockType = "quote"
 	BlockTypeCode             BlockType = "code"
+	BlockTypeEmbed            BlockType = "embed"
 	BlockTypeUnsupported      BlockType = "unsupported"
 )
 
