@@ -191,7 +191,7 @@ func TestFindDatabaseByID(t *testing.T) {
 									"relation_property_name": "Meals",
 									"rollup_property_id": "title",
 									"relation_property_id": "mxp^",
-									"function": "count"
+									"function": "count_all"
 								}
 							},
 							"Store availability": {
@@ -322,7 +322,7 @@ func TestFindDatabaseByID(t *testing.T) {
 							RelationPropName: "Meals",
 							RollupPropID:     "title",
 							RelationPropID:   "mxp^",
-							Function:         "count",
+							Function:         notion.RollupFunctionCountAll,
 						},
 					},
 					"Store availability": notion.DatabaseProperty{
