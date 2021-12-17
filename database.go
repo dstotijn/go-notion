@@ -85,6 +85,7 @@ type File struct {
 type DatabaseProperty struct {
 	ID   string               `json:"id,omitempty"`
 	Type DatabasePropertyType `json:"type"`
+	Name string               `json:"name,omitempty"`
 
 	Title          *EmptyMetadata `json:"title,omitempty"`
 	RichText       *EmptyMetadata `json:"rich_text,omitempty"`

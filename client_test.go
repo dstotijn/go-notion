@@ -467,6 +467,7 @@ func TestQueryDatabase(t *testing.T) {
 									"Date": {
 										"id": "Q]uT",
 										"type": "date",
+										"name": "Date",
 										"date": {
 											"start": "2021-05-18T12:49:00.000-05:00",
 											"end": null
@@ -475,6 +476,7 @@ func TestQueryDatabase(t *testing.T) {
 									"Name": {
 										"id": "title",
 										"type": "title",
+										"name": "Name",
 										"title": [
 											{
 												"type": "text",
@@ -498,11 +500,13 @@ func TestQueryDatabase(t *testing.T) {
 									"Age": {
 										"id": "$9nb",
 										"type": "number",
+										"name": "Age",
 										"number": 42
 									},
 									"People": {
 										"id": "1#nc",
 										"type": "people",
+										"name": "People",
 										"people": [
 											{
 												"id": "be32e790-8292-46df-a248-b784fdf483cf",
@@ -518,6 +522,7 @@ func TestQueryDatabase(t *testing.T) {
 									"Files": {
 										"id": "!$9x",
 										"type": "files",
+										"name": "Files",
 										"files": [
 											{
 												"name": "foobar.pdf"
@@ -527,31 +532,37 @@ func TestQueryDatabase(t *testing.T) {
 									"Checkbox": {
 										"id": "49S@",
 										"type": "checkbox",
+										"name": "Checkbox",
 										"checkbox": true
 									},
 									"URL": {
 										"id": "93$$",
 										"type": "url",
+										"name": "URL",
 										"url": "https://example.com"
 									},
 									"Email": {
 										"id": "xb3Q",
 										"type": "email",
+										"name": "Email",
 										"email": "jane@example.com"
 									},
 									"PhoneNumber": {
 										"id": "c2#Q",
 										"type": "phone_number",
+										"name": "PhoneNumber",
 										"phone_number": "867-5309"
 									},
 									"CreatedTime": {
 										"id": "s#0s",
 										"type": "created_time",
+										"name": "Created time",
 										"created_time": "2021-05-24T15:44:09.123Z"
 									},
 									"CreatedBy": {
 										"id": "49S@",
 										"type": "created_by",
+										"name": "Created by",
 										"created_by": {
 											"id": "be32e790-8292-46df-a248-b784fdf483cf",
 											"name": "Jane Doe",
@@ -565,11 +576,13 @@ func TestQueryDatabase(t *testing.T) {
 									"LastEditedTime": {
 										"id": "x#0s",
 										"type": "last_edited_time",
+										"name": "Last edited time",
 										"last_edited_time": "2021-05-24T15:44:09.123Z"
 									},
 									"LastEditedBy": {
 										"id": "x9S@",
 										"type": "last_edited_by",
+										"name": "Last edited by",
 										"last_edited_by": {
 											"id": "be32e790-8292-46df-a248-b784fdf483cf",
 											"name": "Jane Doe",
@@ -583,6 +596,7 @@ func TestQueryDatabase(t *testing.T) {
 									"Calculation": {
 										"id": "s(4f",
 										"type": "formula",
+										"name": "Calculation",
 										"formula": {
 											"type": "number",
 											"number": 42
@@ -591,6 +605,7 @@ func TestQueryDatabase(t *testing.T) {
 									"Relation": {
 										"id": "Cxl[",
 										"type": "relation",
+										"name": "Relation",
 										"relation": [
 											{
 												"id": "2be9597f-693f-4b87-baf9-efc545d38ebe"
@@ -600,6 +615,7 @@ func TestQueryDatabase(t *testing.T) {
 									"Rollup": {
 										"id": "xyA}",
 										"type": "rollup",
+										"name": "Rollup",
 										"rollup": {
 											"type": "array",
 											"array": [
@@ -655,6 +671,7 @@ func TestQueryDatabase(t *testing.T) {
 							"Date": notion.DatabasePageProperty{
 								ID:   "Q]uT",
 								Type: notion.DBPropTypeDate,
+								Name: "Date",
 								Date: &notion.Date{
 									Start: mustParseDateTime("2021-05-18T12:49:00.000-05:00"),
 								},
@@ -662,6 +679,7 @@ func TestQueryDatabase(t *testing.T) {
 							"Name": notion.DatabasePageProperty{
 								ID:   "title",
 								Type: notion.DBPropTypeTitle,
+								Name: "Name",
 								Title: []notion.RichText{
 									{
 										Type: notion.RichTextTypeText,
@@ -678,11 +696,13 @@ func TestQueryDatabase(t *testing.T) {
 							"Age": notion.DatabasePageProperty{
 								ID:     "$9nb",
 								Type:   notion.DBPropTypeNumber,
+								Name:   "Age",
 								Number: notion.Float64Ptr(42),
 							},
 							"People": notion.DatabasePageProperty{
 								ID:   "1#nc",
 								Type: notion.DBPropTypePeople,
+								Name: "People",
 								People: []notion.User{
 									{
 										ID:        "be32e790-8292-46df-a248-b784fdf483cf",
@@ -698,6 +718,7 @@ func TestQueryDatabase(t *testing.T) {
 							"Files": notion.DatabasePageProperty{
 								ID:   "!$9x",
 								Type: notion.DBPropTypeFiles,
+								Name: "Files",
 								Files: []notion.File{
 									{
 										Name: "foobar.pdf",
@@ -707,11 +728,13 @@ func TestQueryDatabase(t *testing.T) {
 							"Checkbox": notion.DatabasePageProperty{
 								ID:       "49S@",
 								Type:     notion.DBPropTypeCheckbox,
+								Name:     "Checkbox",
 								Checkbox: notion.BoolPtr(true),
 							},
 							"Calculation": notion.DatabasePageProperty{
 								ID:   "s(4f",
 								Type: notion.DBPropTypeFormula,
+								Name: "Calculation",
 								Formula: &notion.FormulaResult{
 									Type:   notion.FormulaResultTypeNumber,
 									Number: notion.Float64Ptr(float64(42)),
@@ -720,26 +743,31 @@ func TestQueryDatabase(t *testing.T) {
 							"URL": notion.DatabasePageProperty{
 								ID:   "93$$",
 								Type: notion.DBPropTypeURL,
+								Name: "URL",
 								URL:  notion.StringPtr("https://example.com"),
 							},
 							"Email": notion.DatabasePageProperty{
 								ID:    "xb3Q",
 								Type:  notion.DBPropTypeEmail,
+								Name:  "Email",
 								Email: notion.StringPtr("jane@example.com"),
 							},
 							"PhoneNumber": notion.DatabasePageProperty{
 								ID:          "c2#Q",
 								Type:        notion.DBPropTypePhoneNumber,
+								Name:        "PhoneNumber",
 								PhoneNumber: notion.StringPtr("867-5309"),
 							},
 							"CreatedTime": notion.DatabasePageProperty{
 								ID:          "s#0s",
 								Type:        notion.DBPropTypeCreatedTime,
+								Name:        "Created time",
 								CreatedTime: notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z")),
 							},
 							"CreatedBy": notion.DatabasePageProperty{
 								ID:   "49S@",
 								Type: notion.DBPropTypeCreatedBy,
+								Name: "Created by",
 								CreatedBy: &notion.User{
 									ID:        "be32e790-8292-46df-a248-b784fdf483cf",
 									Name:      "Jane Doe",
@@ -753,11 +781,13 @@ func TestQueryDatabase(t *testing.T) {
 							"LastEditedTime": notion.DatabasePageProperty{
 								ID:             "x#0s",
 								Type:           notion.DBPropTypeLastEditedTime,
+								Name:           "Last edited time",
 								LastEditedTime: notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z")),
 							},
 							"LastEditedBy": notion.DatabasePageProperty{
 								ID:   "x9S@",
 								Type: notion.DBPropTypeLastEditedBy,
+								Name: "Last edited by",
 								LastEditedBy: &notion.User{
 									ID:        "be32e790-8292-46df-a248-b784fdf483cf",
 									Name:      "Jane Doe",
@@ -771,6 +801,7 @@ func TestQueryDatabase(t *testing.T) {
 							"Relation": notion.DatabasePageProperty{
 								ID:   "Cxl[",
 								Type: notion.DBPropTypeRelation,
+								Name: "Relation",
 								Relation: []notion.Relation{
 									{
 										ID: "2be9597f-693f-4b87-baf9-efc545d38ebe",
@@ -780,6 +811,7 @@ func TestQueryDatabase(t *testing.T) {
 							"Rollup": notion.DatabasePageProperty{
 								ID:   "xyA}",
 								Type: notion.DBPropTypeRollup,
+								Name: "Rollup",
 								Rollup: &notion.RollupResult{
 									Type: notion.RollupResultTypeArray,
 									Array: []notion.DatabasePageProperty{
