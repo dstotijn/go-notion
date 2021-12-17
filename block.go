@@ -41,6 +41,7 @@ type Block struct {
 	ColumnList       *ColumnList      `json:"column_list,omitempty"`
 	Column           *Column          `json:"column,omitempty"`
 	LinkPreview      *LinkPreview     `json:"link_preview,omitempty"`
+	LinkToPage       *LinkToPage      `json:"link_to_page,omitempty"`
 }
 
 type RichTextBlock struct {
@@ -116,6 +117,20 @@ type Column struct {
 	Children []Block `json:"children,omitempty"`
 }
 
+type LinkToPage struct {
+	Type LinkToPageType `json:"type"`
+
+	PageID     string `json:"page_id,omitempty"`
+	DatabaseID string `json:"database_id,omitempty"`
+}
+
+type LinkToPageType string
+
+const (
+	LinkToPageTypePageID     LinkToPageType = "page_id"
+	LinkToPageTypeDatabaseID LinkToPageType = "database_id"
+)
+
 type (
 	Divider         struct{}
 	TableOfContents struct{}
@@ -151,6 +166,7 @@ const (
 	BlockTypeColumnList       BlockType = "column_list"
 	BlockTypeColumn           BlockType = "column"
 	BlockTypeLinkPreview      BlockType = "link_preview"
+	BlockTypeLinkToPage       BlockType = "link_to_page"
 	BlockTypeUnsupported      BlockType = "unsupported"
 )
 
