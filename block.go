@@ -34,6 +34,7 @@ type Block struct {
 	File             *FileBlock     `json:"file,omitempty"`
 	PDF              *FileBlock     `json:"pdf,omitempty"`
 	Bookmark         *Bookmark      `json:"bookmark,omitempty"`
+	Equation         *Equation      `json:"equation,omitempty"`
 }
 
 type RichTextBlock struct {
@@ -123,6 +124,7 @@ const (
 	BlockTypeFile             BlockType = "file"
 	BlockTypePDF              BlockType = "pdf"
 	BlockTypeBookmark         BlockType = "bookmark"
+	BlockTypeEquation         BlockType = "equation"
 	BlockTypeUnsupported      BlockType = "unsupported"
 )
 
