@@ -15,27 +15,31 @@ type Block struct {
 	LastEditedTime *time.Time `json:"last_edited_time,omitempty"`
 	HasChildren    bool       `json:"has_children,omitempty"`
 
-	Paragraph        *RichTextBlock `json:"paragraph,omitempty"`
-	Heading1         *Heading       `json:"heading_1,omitempty"`
-	Heading2         *Heading       `json:"heading_2,omitempty"`
-	Heading3         *Heading       `json:"heading_3,omitempty"`
-	BulletedListItem *RichTextBlock `json:"bulleted_list_item,omitempty"`
-	NumberedListItem *RichTextBlock `json:"numbered_list_item,omitempty"`
-	ToDo             *ToDo          `json:"to_do,omitempty"`
-	Toggle           *RichTextBlock `json:"toggle,omitempty"`
-	ChildPage        *ChildPage     `json:"child_page,omitempty"`
-	ChildDatabase    *ChildDatabase `json:"child_database,omitempty"`
-	Callout          *Callout       `json:"callout,omitempty"`
-	Quote            *RichTextBlock `json:"quote,omitempty"`
-	Code             *Code          `json:"code,omitempty"`
-	Embed            *Embed         `json:"embed,omitempty"`
-	Image            *FileBlock     `json:"image,omitempty"`
-	Video            *FileBlock     `json:"video,omitempty"`
-	File             *FileBlock     `json:"file,omitempty"`
-	PDF              *FileBlock     `json:"pdf,omitempty"`
-	Bookmark         *Bookmark      `json:"bookmark,omitempty"`
-	Equation         *Equation      `json:"equation,omitempty"`
-	Divider          *Divider       `json:"divider,omitempty"`
+	Paragraph        *RichTextBlock   `json:"paragraph,omitempty"`
+	Heading1         *Heading         `json:"heading_1,omitempty"`
+	Heading2         *Heading         `json:"heading_2,omitempty"`
+	Heading3         *Heading         `json:"heading_3,omitempty"`
+	BulletedListItem *RichTextBlock   `json:"bulleted_list_item,omitempty"`
+	NumberedListItem *RichTextBlock   `json:"numbered_list_item,omitempty"`
+	ToDo             *ToDo            `json:"to_do,omitempty"`
+	Toggle           *RichTextBlock   `json:"toggle,omitempty"`
+	ChildPage        *ChildPage       `json:"child_page,omitempty"`
+	ChildDatabase    *ChildDatabase   `json:"child_database,omitempty"`
+	Callout          *Callout         `json:"callout,omitempty"`
+	Quote            *RichTextBlock   `json:"quote,omitempty"`
+	Code             *Code            `json:"code,omitempty"`
+	Embed            *Embed           `json:"embed,omitempty"`
+	Image            *FileBlock       `json:"image,omitempty"`
+	Video            *FileBlock       `json:"video,omitempty"`
+	File             *FileBlock       `json:"file,omitempty"`
+	PDF              *FileBlock       `json:"pdf,omitempty"`
+	Bookmark         *Bookmark        `json:"bookmark,omitempty"`
+	Equation         *Equation        `json:"equation,omitempty"`
+	Divider          *Divider         `json:"divider,omitempty"`
+	TableOfContents  *TableOfContents `json:"table_of_contents,omitempty"`
+	Breadcrumb       *Breadcrumb      `json:"breadcrumb,omitempty"`
+	ColumnList       *ColumnList      `json:"column_list,omitempty"`
+	Column           *Column          `json:"column,omitempty"`
 }
 
 type RichTextBlock struct {
@@ -103,7 +107,19 @@ type Bookmark struct {
 	Caption []RichText `json:"caption,omitempty"`
 }
 
-type Divider struct{}
+type ColumnList struct {
+	Children []Block `json:"children,omitempty"`
+}
+
+type Column struct {
+	Children []Block `json:"children,omitempty"`
+}
+
+type (
+	Divider         struct{}
+	TableOfContents struct{}
+	Breadcrumb      struct{}
+)
 
 type BlockType string
 
@@ -129,6 +145,10 @@ const (
 	BlockTypeBookmark         BlockType = "bookmark"
 	BlockTypeEquation         BlockType = "equation"
 	BlockTypeDivider          BlockType = "divider"
+	BlockTypeTableOfContents  BlockType = "table_of_contents"
+	BlockTypeBreadCrumb       BlockType = "breadcrumb"
+	BlockTypeColumnList       BlockType = "column_list"
+	BlockTypeColumn           BlockType = "column"
 	BlockTypeUnsupported      BlockType = "unsupported"
 )
 
