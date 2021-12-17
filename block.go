@@ -29,6 +29,11 @@ type Block struct {
 	Quote            *RichTextBlock `json:"quote,omitempty"`
 	Code             *Code          `json:"code,omitempty"`
 	Embed            *Embed         `json:"embed,omitempty"`
+	Image            *FileBlock     `json:"image,omitempty"`
+	Video            *FileBlock     `json:"video,omitempty"`
+	File             *FileBlock     `json:"file,omitempty"`
+	PDF              *FileBlock     `json:"pdf,omitempty"`
+	Bookmark         *Bookmark      `json:"bookmark,omitempty"`
 }
 
 type RichTextBlock struct {
@@ -67,6 +72,35 @@ type Embed struct {
 	URL string `json:"url"`
 }
 
+type FileBlock struct {
+	Type FileType `json:"type"`
+
+	File     *FileFile     `json:"file,omitempty"`
+	External *FileExternal `json:"external,omitempty"`
+	Caption  []RichText    `json:"caption,omitempty"`
+}
+
+type FileFile struct {
+	URL        string   `json:"url"`
+	ExpiryTime DateTime `json:"expiry_time"`
+}
+
+type FileExternal struct {
+	URL string `json:"url"`
+}
+
+type FileType string
+
+const (
+	FileTypeFile     FileType = "file"
+	FileTypeExternal FileType = "external"
+)
+
+type Bookmark struct {
+	URL     string     `json:"url"`
+	Caption []RichText `json:"caption,omitempty"`
+}
+
 type BlockType string
 
 const (
@@ -84,6 +118,11 @@ const (
 	BlockTypeQuote            BlockType = "quote"
 	BlockTypeCode             BlockType = "code"
 	BlockTypeEmbed            BlockType = "embed"
+	BlockTypeImage            BlockType = "image"
+	BlockTypeVideo            BlockType = "video"
+	BlockTypeFile             BlockType = "file"
+	BlockTypePDF              BlockType = "pdf"
+	BlockTypeBookmark         BlockType = "bookmark"
 	BlockTypeUnsupported      BlockType = "unsupported"
 )
 
