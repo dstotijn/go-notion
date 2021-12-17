@@ -40,6 +40,7 @@ type Block struct {
 	Breadcrumb       *Breadcrumb      `json:"breadcrumb,omitempty"`
 	ColumnList       *ColumnList      `json:"column_list,omitempty"`
 	Column           *Column          `json:"column,omitempty"`
+	LinkPreview      *LinkPreview     `json:"link_preview,omitempty"`
 }
 
 type RichTextBlock struct {
@@ -149,6 +150,7 @@ const (
 	BlockTypeBreadCrumb       BlockType = "breadcrumb"
 	BlockTypeColumnList       BlockType = "column_list"
 	BlockTypeColumn           BlockType = "column"
+	BlockTypeLinkPreview      BlockType = "link_preview"
 	BlockTypeUnsupported      BlockType = "unsupported"
 )
 
