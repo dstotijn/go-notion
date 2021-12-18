@@ -363,6 +363,39 @@ func (c *Client) FindBlockByID(ctx context.Context, blockID string) (block Block
 	return block, nil
 }
 
+// UpdateBlock updates a block.
+// See: https://developers.notion.com/reference/update-a-block
+func (c *Client) UpdateBlock(ctx context.Context, blockID string, block Block) (updatedBlock Block, err error) {
+	body := &bytes.Buffer{}
+
+	err = json.NewEncoder(body).Encode(block)
+	if err != nil {
+		return Block{}, fmt.Errorf("notion: failed to encode body params to JSON: %w", err)
+	}
+
+	req, err := c.newRequest(ctx, http.MethodPatch, "/blocks/"+blockID, body)
+	if err != nil {
+		return Block{}, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return Block{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return Block{}, fmt.Errorf("notion: failed to update block: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&updatedBlock)
+	if err != nil {
+		return Block{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return updatedBlock, nil
+}
+
 // FindUserByID fetches a user by ID.
 // See: https://developers.notion.com/reference/get-user
 func (c *Client) FindUserByID(ctx context.Context, id string) (user User, err error) {

@@ -3101,6 +3101,7 @@ func TestFindBlockByID(t *testing.T) {
 				LastEditedTime: mustParseTimePointer(time.RFC3339, "2021-10-02T06:31:00Z"),
 				HasChildren:    true,
 				ChildPage:      &notion.ChildPage{Title: "test title"},
+				Archived:       notion.BoolPtr(false),
 			},
 			expError: nil,
 		},
@@ -3151,6 +3152,199 @@ func TestFindBlockByID(t *testing.T) {
 
 			if diff := cmp.Diff(tt.expBlock, block); diff != "" {
 				t.Fatalf("user not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}
+
+func TestUpdateBlock(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		block          notion.Block
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expPostBody    map[string]interface{}
+		expResponse    notion.Block
+		expError       error
+	}{
+		{
+			name: "successful response",
+			block: notion.Block{
+				Paragraph: &notion.RichTextBlock{
+					Text: []notion.RichText{
+						{
+							Text: &notion.Text{
+								Content: "Foobar",
+							},
+						},
+					},
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "block",
+						"id": "048e165e-352d-4119-8128-e46c3527d95c",
+						"created_time": "2021-10-02T06:09:00.000Z",
+						"last_edited_time": "2021-10-02T06:31:00.000Z",
+						"has_children": true,
+						"archived": false,
+						"type": "paragraph",
+						"paragraph": {
+							"text": [
+								{
+									"type": "text",
+									"text": {
+										"content": "Foobar",
+										"link": null
+									},
+									"annotations": {
+										"bold": false,
+										"italic": false,
+										"strikethrough": false,
+										"underline": false,
+										"code": false,
+										"color": "default"
+									},
+									"plain_text": "Foobar",
+									"href": null
+								}
+							]
+						}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPostBody: map[string]interface{}{
+				"object": "block",
+				"paragraph": map[string]interface{}{
+					"text": []interface{}{
+						map[string]interface{}{
+							"text": map[string]interface{}{
+								"content": "Foobar",
+							},
+						},
+					},
+				},
+			},
+			expResponse: notion.Block{
+				Object:         "block",
+				ID:             "048e165e-352d-4119-8128-e46c3527d95c",
+				Type:           notion.BlockTypeParagraph,
+				CreatedTime:    mustParseTimePointer(time.RFC3339, "2021-10-02T06:09:00Z"),
+				LastEditedTime: mustParseTimePointer(time.RFC3339, "2021-10-02T06:31:00Z"),
+				HasChildren:    true,
+				Paragraph: &notion.RichTextBlock{
+					Text: []notion.RichText{
+						{
+							Type: notion.RichTextTypeText,
+							Text: &notion.Text{
+								Content: "Foobar",
+							},
+							PlainText: "Foobar",
+							Annotations: &notion.Annotations{
+								Color: notion.ColorDefault,
+							},
+						},
+					},
+				},
+				Archived: notion.BoolPtr(false),
+			},
+			expError: nil,
+		},
+		{
+			name: "error response",
+			block: notion.Block{
+				Paragraph: &notion.RichTextBlock{
+					Text: []notion.RichText{
+						{
+							Text: &notion.Text{
+								Content: "Foobar",
+							},
+						},
+					},
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 400,
+						"code": "validation_error",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusBadRequest,
+			expPostBody: map[string]interface{}{
+				"object": "block",
+				"paragraph": map[string]interface{}{
+					"text": []interface{}{
+						map[string]interface{}{
+							"text": map[string]interface{}{
+								"content": "Foobar",
+							},
+						},
+					},
+				},
+			},
+			expResponse: notion.Block{},
+			expError:    errors.New("notion: failed to update block: foobar (code: validation_error, status: 400)"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					postBody := make(map[string]interface{})
+
+					err := json.NewDecoder(r.Body).Decode(&postBody)
+					if err != nil && err != io.EOF {
+						t.Fatal(err)
+					}
+
+					if len(tt.expPostBody) == 0 && len(postBody) != 0 {
+						t.Errorf("unexpected post body: %#v", postBody)
+					}
+
+					if len(tt.expPostBody) != 0 && len(postBody) == 0 {
+						t.Errorf("post body not equal (expected %+v, got: nil)", tt.expPostBody)
+					}
+
+					if len(tt.expPostBody) != 0 && len(postBody) != 0 {
+						if diff := cmp.Diff(tt.expPostBody, postBody); diff != "" {
+							t.Errorf("post body not equal (-exp, +got):\n%v", diff)
+						}
+					}
+
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			updatedBlock, err := client.UpdateBlock(context.Background(), "00000000-0000-0000-0000-000000000000", tt.block)
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expResponse, updatedBlock); diff != "" {
+				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
 			}
 		})
 	}

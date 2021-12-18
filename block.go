@@ -10,10 +10,11 @@ import (
 type Block struct {
 	Object         string     `json:"object"`
 	ID             string     `json:"id,omitempty"`
-	Type           BlockType  `json:"type"`
+	Type           BlockType  `json:"type,omitempty"`
 	CreatedTime    *time.Time `json:"created_time,omitempty"`
 	LastEditedTime *time.Time `json:"last_edited_time,omitempty"`
 	HasChildren    bool       `json:"has_children,omitempty"`
+	Archived       *bool      `json:"archived,omitempty"`
 
 	Paragraph        *RichTextBlock   `json:"paragraph,omitempty"`
 	Heading1         *Heading         `json:"heading_1,omitempty"`
