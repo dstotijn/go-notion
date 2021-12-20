@@ -6,6 +6,7 @@ type IconType string
 
 const (
 	IconTypeEmoji    IconType = "emoji"
+	IconTypeFile     IconType = "file"
 	IconTypeExternal IconType = "external"
 )
 
@@ -15,7 +16,13 @@ type Icon struct {
 	Type IconType `json:"type"`
 
 	Emoji    *string       `json:"emoji,omitempty"`
+	File     *IconFile     `json:"file,omitempty"`
 	External *IconExternal `json:"external,omitempty"`
+}
+
+type IconFile struct {
+	URL        string   `json:"url"`
+	ExpiryTime DateTime `json:"expiry_time"`
 }
 
 type IconExternal struct {

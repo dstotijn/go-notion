@@ -979,6 +979,12 @@ func TestCreateDatabase(t *testing.T) {
 					Type:  notion.IconTypeEmoji,
 					Emoji: notion.StringPtr("✌️"),
 				},
+				Cover: &notion.Cover{
+					Type: notion.CoverTypeExternal,
+					External: &notion.CoverExternal{
+						URL: "https://example.com/image.png",
+					},
+				},
 			},
 			respBody: func(_ *http.Request) io.Reader {
 				return strings.NewReader(
@@ -1020,6 +1026,12 @@ func TestCreateDatabase(t *testing.T) {
 						"icon": {
 							"type": "emoji",
 							"emoji": "✌️"
+						},
+						"cover": {
+							"type": "external",
+							"external": {
+								"url": "https://example.com/image.png"
+							}
 						}
 					}`,
 				)
@@ -1046,6 +1058,12 @@ func TestCreateDatabase(t *testing.T) {
 				"icon": map[string]interface{}{
 					"type":  "emoji",
 					"emoji": "✌️",
+				},
+				"cover": map[string]interface{}{
+					"type": "external",
+					"external": map[string]interface{}{
+						"url": "https://example.com/image.png",
+					},
 				},
 			},
 			expResponse: notion.Database{
@@ -1075,9 +1093,15 @@ func TestCreateDatabase(t *testing.T) {
 						Title: &notion.EmptyMetadata{},
 					},
 				},
-				Icon: notion.Icon{
+				Icon: &notion.Icon{
 					Type:  notion.IconTypeEmoji,
 					Emoji: notion.StringPtr("✌️"),
+				},
+				Cover: &notion.Cover{
+					Type: notion.CoverTypeExternal,
+					External: &notion.CoverExternal{
+						URL: "https://example.com/image.png",
+					},
 				},
 			},
 			expError: nil,
@@ -1235,6 +1259,16 @@ func TestUpdateDatabase(t *testing.T) {
 					},
 					"Removed": nil,
 				},
+				Icon: &notion.Icon{
+					Type:  notion.IconTypeEmoji,
+					Emoji: notion.StringPtr("✌️"),
+				},
+				Cover: &notion.Cover{
+					Type: notion.CoverTypeExternal,
+					External: &notion.CoverExternal{
+						URL: "https://example.com/image.png",
+					},
+				},
 			},
 			respBody: func(_ *http.Request) io.Reader {
 				return strings.NewReader(
@@ -1277,6 +1311,16 @@ func TestUpdateDatabase(t *testing.T) {
 						"parent": {
 							"type": "page_id",
 							"page_id": "b8595b75-abd1-4cad-8dfe-f935a8ef57cb"
+						},
+						"icon": {
+							"type": "emoji",
+							"emoji": "✌️"
+						},
+						"cover": {
+							"type": "external",
+							"external": {
+								"url": "https://example.com/image.png"
+							}
 						}
 					}`,
 				)
@@ -1296,6 +1340,16 @@ func TestUpdateDatabase(t *testing.T) {
 						"rich_text": map[string]interface{}{},
 					},
 					"Removed": nil,
+				},
+				"icon": map[string]interface{}{
+					"type":  "emoji",
+					"emoji": "✌️",
+				},
+				"cover": map[string]interface{}{
+					"type": "external",
+					"external": map[string]interface{}{
+						"url": "https://example.com/image.png",
+					},
 				},
 			},
 			expResponse: notion.Database{
@@ -1328,6 +1382,16 @@ func TestUpdateDatabase(t *testing.T) {
 				Parent: notion.Parent{
 					Type:   notion.ParentTypePage,
 					PageID: "b8595b75-abd1-4cad-8dfe-f935a8ef57cb",
+				},
+				Icon: &notion.Icon{
+					Type:  notion.IconTypeEmoji,
+					Emoji: notion.StringPtr("✌️"),
+				},
+				Cover: &notion.Cover{
+					Type: notion.CoverTypeExternal,
+					External: &notion.CoverExternal{
+						URL: "https://example.com/image.png",
+					},
 				},
 			},
 			expError: nil,
@@ -1610,6 +1674,18 @@ func TestCreatePage(t *testing.T) {
 						},
 					},
 				},
+				Icon: &notion.Icon{
+					Type: notion.IconTypeExternal,
+					External: &notion.IconExternal{
+						URL: "https://example.com/icon.png",
+					},
+				},
+				Cover: &notion.Cover{
+					Type: notion.CoverTypeExternal,
+					External: &notion.CoverExternal{
+						URL: "https://example.com/cover.png",
+					},
+				},
 			},
 			respBody: func(_ *http.Request) io.Reader {
 				return strings.NewReader(
@@ -1648,6 +1724,18 @@ func TestCreatePage(t *testing.T) {
 									}
 								]
 							}
+						},
+						"icon": {
+							"type": "external",
+							"external": {
+								"url": "https://example.com/icon.png"
+							}
+						},
+						"cover": {
+							"type": "external",
+							"external": {
+								"url": "https://example.com/cover.png"
+							}
 						}
 					}`,
 				)
@@ -1681,6 +1769,18 @@ func TestCreatePage(t *testing.T) {
 						},
 					},
 				},
+				"icon": map[string]interface{}{
+					"type": "external",
+					"external": map[string]interface{}{
+						"url": "https://example.com/icon.png",
+					},
+				},
+				"cover": map[string]interface{}{
+					"type": "external",
+					"external": map[string]interface{}{
+						"url": "https://example.com/cover.png",
+					},
+				},
 			},
 			expResponse: notion.Page{
 				ID:             "276ee233-e426-4ed0-9986-6b22af8550df",
@@ -1705,6 +1805,18 @@ func TestCreatePage(t *testing.T) {
 								PlainText: "Foobar",
 							},
 						},
+					},
+				},
+				Icon: &notion.Icon{
+					Type: notion.IconTypeExternal,
+					External: &notion.IconExternal{
+						URL: "https://example.com/icon.png",
+					},
+				},
+				Cover: &notion.Cover{
+					Type: notion.CoverTypeExternal,
+					External: &notion.CoverExternal{
+						URL: "https://example.com/cover.png",
 					},
 				},
 			},
@@ -2188,6 +2300,106 @@ func TestUpdatePageProps(t *testing.T) {
 			expError: nil,
 		},
 		{
+			name: "page cover, successful response",
+			params: notion.UpdatePageParams{
+				Cover: &notion.Cover{
+					Type: notion.CoverTypeExternal,
+					External: &notion.CoverExternal{
+						URL: "https://example.com/image.png",
+					},
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "page",
+						"id": "cb261dc5-6c85-4767-8585-3852382fb466",
+						"created_time": "2021-05-14T09:15:46.796Z",
+						"last_edited_time": "2021-05-22T15:54:31.116Z",
+						"parent": {
+							"type": "page_id",
+							"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
+						},
+						"cover": {
+							"type": "external",
+							"external": {
+								"url": "https://example.com/image.png"
+							}
+						},
+						"archived": false,
+						"url": "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
+						"properties": {
+							"title": {
+								"id": "title",
+								"type": "title",
+								"title": [
+									{
+										"type": "text",
+										"text": {
+											"content": "Lorem ipsum",
+											"link": null
+										},
+										"annotations": {
+											"bold": false,
+											"italic": false,
+											"strikethrough": false,
+											"underline": false,
+											"code": false,
+											"color": "default"
+										},
+										"plain_text": "Lorem ipsum",
+										"href": null
+									}
+								]
+							}
+						}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPostBody: map[string]interface{}{
+				"cover": map[string]interface{}{
+					"type": "external",
+					"external": map[string]interface{}{
+						"url": "https://example.com/image.png",
+					},
+				},
+			},
+			expResponse: notion.Page{
+				ID:             "cb261dc5-6c85-4767-8585-3852382fb466",
+				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:46.796Z"),
+				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-22T15:54:31.116Z"),
+				URL:            "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
+				Parent: notion.Parent{
+					Type:   notion.ParentTypePage,
+					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
+				},
+				Cover: &notion.Cover{
+					Type: notion.CoverTypeExternal,
+					External: &notion.CoverExternal{
+						URL: "https://example.com/image.png",
+					},
+				},
+				Properties: notion.PageProperties{
+					Title: notion.PageTitle{
+						Title: []notion.RichText{
+							{
+								Type: notion.RichTextTypeText,
+								Text: &notion.Text{
+									Content: "Lorem ipsum",
+								},
+								Annotations: &notion.Annotations{
+									Color: notion.ColorDefault,
+								},
+								PlainText: "Lorem ipsum",
+							},
+						},
+					},
+				},
+			},
+			expError: nil,
+		},
+		{
 			name: "database page props, successful response",
 			params: notion.UpdatePageParams{
 				DatabasePageProperties: &notion.DatabasePageProperties{
@@ -2325,7 +2537,7 @@ func TestUpdatePageProps(t *testing.T) {
 			name:        "missing any params",
 			params:      notion.UpdatePageParams{},
 			expResponse: notion.Page{},
-			expError:    errors.New("notion: invalid page params: at least one of database page properties, title or icon is required"),
+			expError:    errors.New("notion: invalid page params: at least one of database page properties, title, icon or cover is required"),
 		},
 	}
 

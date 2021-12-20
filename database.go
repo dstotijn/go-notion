@@ -15,7 +15,8 @@ type Database struct {
 	Title          []RichText         `json:"title"`
 	Properties     DatabaseProperties `json:"properties"`
 	Parent         Parent             `json:"parent"`
-	Icon           Icon               `json:"icon"`
+	Icon           *Icon              `json:"icon,omitempty"`
+	Cover          *Cover             `json:"cover,omitempty"`
 }
 
 // DatabaseProperties is a mapping of properties defined on a database.
@@ -257,6 +258,7 @@ type CreateDatabaseParams struct {
 	Title        []RichText
 	Properties   DatabaseProperties
 	Icon         *Icon
+	Cover        *Cover
 }
 
 type (
@@ -409,6 +411,11 @@ func (p CreateDatabaseParams) Validate() error {
 			return err
 		}
 	}
+	if p.Cover != nil {
+		if err := p.Cover.Validate(); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -420,6 +427,7 @@ func (p CreateDatabaseParams) MarshalJSON() ([]byte, error) {
 		Title      []RichText         `json:"title,omitempty"`
 		Properties DatabaseProperties `json:"properties"`
 		Icon       *Icon              `json:"icon,omitempty"`
+		Cover      *Cover             `json:"cover,omitempty"`
 	}
 
 	parent := Parent{
@@ -432,6 +440,7 @@ func (p CreateDatabaseParams) MarshalJSON() ([]byte, error) {
 		Title:      p.Title,
 		Properties: p.Properties,
 		Icon:       p.Icon,
+		Cover:      p.Cover,
 	}
 
 	return json.Marshal(dto)
@@ -441,6 +450,8 @@ func (p CreateDatabaseParams) MarshalJSON() ([]byte, error) {
 type UpdateDatabaseParams struct {
 	Title      []RichText                   `json:"title,omitempty"`
 	Properties map[string]*DatabaseProperty `json:"properties,omitempty"`
+	Icon       *Icon                        `json:"icon,omitempty"`
+	Cover      *Cover                       `json:"cover,omitempty"`
 }
 
 // Validate validates params for updating a database.
@@ -448,5 +459,16 @@ func (p UpdateDatabaseParams) Validate() error {
 	if len(p.Title) == 0 && len(p.Properties) == 0 {
 		return errors.New("either title or properties are required")
 	}
+	if p.Icon != nil {
+		if err := p.Icon.Validate(); err != nil {
+			return err
+		}
+	}
+	if p.Cover != nil {
+		if err := p.Cover.Validate(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

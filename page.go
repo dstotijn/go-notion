@@ -17,7 +17,8 @@ type Page struct {
 	Parent         Parent    `json:"parent"`
 	Archived       bool      `json:"archived"`
 	URL            string    `json:"url"`
-	Icon           *Icon     `json:"icon"`
+	Icon           *Icon     `json:"icon,omitempty"`
+	Cover          *Cover    `json:"cover,omitempty"`
 
 	// Properties differ between parent type.
 	// See the `UnmarshalJSON` method.
@@ -74,7 +75,8 @@ type CreatePageParams struct {
 	// Optionally, children blocks are added to the page.
 	Children []Block
 
-	Icon *Icon
+	Icon  *Icon
+	Cover *Cover
 }
 
 type UpdatePageParams struct {
@@ -82,6 +84,7 @@ type UpdatePageParams struct {
 	DatabasePageProperties *DatabasePageProperties
 	Title                  []RichText
 	Icon                   *Icon
+	Cover                  *Cover
 }
 
 // Value returns the underlying database page property value, based on its `type` field.
@@ -149,6 +152,11 @@ func (p CreatePageParams) Validate() error {
 			return err
 		}
 	}
+	if p.Cover != nil {
+		if err := p.Cover.Validate(); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -159,6 +167,7 @@ func (p CreatePageParams) MarshalJSON() ([]byte, error) {
 		Properties interface{} `json:"properties"`
 		Children   []Block     `json:"children,omitempty"`
 		Icon       *Icon       `json:"icon,omitempty"`
+		Cover      *Cover      `json:"cover,omitempty"`
 	}
 
 	var parent Parent
@@ -173,6 +182,7 @@ func (p CreatePageParams) MarshalJSON() ([]byte, error) {
 		Parent:   parent,
 		Children: p.Children,
 		Icon:     p.Icon,
+		Cover:    p.Cover,
 	}
 
 	if p.DatabasePageProperties != nil {
@@ -237,8 +247,8 @@ func (p *Page) UnmarshalJSON(b []byte) error {
 
 func (p UpdatePageParams) Validate() error {
 	// At least one of the params must be set.
-	if p.DatabasePageProperties == nil && p.Title == nil && p.Icon == nil {
-		return errors.New("at least one of database page properties, title or icon is required")
+	if p.DatabasePageProperties == nil && p.Title == nil && p.Icon == nil && p.Cover == nil {
+		return errors.New("at least one of database page properties, title, icon or cover is required")
 	}
 	if p.Icon != nil {
 		if err := p.Icon.Validate(); err != nil {
@@ -252,9 +262,13 @@ func (p UpdatePageParams) MarshalJSON() ([]byte, error) {
 	type UpdatePageParamsDTO struct {
 		Properties interface{} `json:"properties,omitempty"`
 		Icon       *Icon       `json:"icon,omitempty"`
+		Cover      *Cover      `json:"cover,omitempty"`
 	}
 
-	var dto UpdatePageParamsDTO
+	dto := UpdatePageParamsDTO{
+		Icon:  p.Icon,
+		Cover: p.Cover,
+	}
 
 	if p.DatabasePageProperties != nil {
 		dto.Properties = p.DatabasePageProperties
@@ -263,8 +277,6 @@ func (p UpdatePageParams) MarshalJSON() ([]byte, error) {
 			Title: p.Title,
 		}
 	}
-
-	dto.Icon = p.Icon
 
 	return json.Marshal(dto)
 }
