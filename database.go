@@ -436,3 +436,17 @@ func (p CreateDatabaseParams) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(dto)
 }
+
+// UpdateDatabaseParams are the params used for updating a database.
+type UpdateDatabaseParams struct {
+	Title      []RichText                   `json:"title,omitempty"`
+	Properties map[string]*DatabaseProperty `json:"properties,omitempty"`
+}
+
+// Validate validates params for updating a database.
+func (p UpdateDatabaseParams) Validate() error {
+	if len(p.Title) == 0 && len(p.Properties) == 0 {
+		return errors.New("either title or properties are required")
+	}
+	return nil
+}

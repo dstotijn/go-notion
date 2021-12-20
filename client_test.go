@@ -1206,6 +1206,237 @@ func TestCreateDatabase(t *testing.T) {
 	}
 }
 
+func TestUpdateDatabase(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		params         notion.UpdateDatabaseParams
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expPostBody    map[string]interface{}
+		expResponse    notion.Database
+		expError       error
+	}{
+		{
+			name: "successful response",
+			params: notion.UpdateDatabaseParams{
+				Title: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Updated title",
+						},
+					},
+				},
+				Properties: map[string]*notion.DatabaseProperty{
+					"New": {
+						Type:     notion.DBPropTypeRichText,
+						RichText: &notion.EmptyMetadata{},
+					},
+					"Removed": nil,
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "database",
+						"id": "668d797c-76fa-4934-9b05-ad288df2d136",
+						"created_time": "2020-03-17T19:10:04.968Z",
+						"last_edited_time": "2020-03-17T21:49:37.913Z",
+						"title": [
+							{
+								"type": "text",
+								"text": {
+									"content": "Grocery List",
+									"link": null
+								},
+								"annotations": {
+									"bold": false,
+									"italic": false,
+									"strikethrough": false,
+									"underline": false,
+									"code": false,
+									"color": "default"
+								},
+								"plain_text": "Grocery List",
+								"href": null
+							}
+						],
+						"properties": {
+							"Name": {
+								"id": "title",
+								"type": "title",
+								"title": {}
+							},
+							"New": {
+								"id": "J@cS",
+								"type": "rich_text",
+								"text": {}
+							}
+						},
+						"parent": {
+							"type": "page_id",
+							"page_id": "b8595b75-abd1-4cad-8dfe-f935a8ef57cb"
+						}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPostBody: map[string]interface{}{
+				"title": []interface{}{
+					map[string]interface{}{
+						"text": map[string]interface{}{
+							"content": "Updated title",
+						},
+					},
+				},
+				"properties": map[string]interface{}{
+					"New": map[string]interface{}{
+						"type":      "rich_text",
+						"rich_text": map[string]interface{}{},
+					},
+					"Removed": nil,
+				},
+			},
+			expResponse: notion.Database{
+				ID:             "668d797c-76fa-4934-9b05-ad288df2d136",
+				CreatedTime:    mustParseTime(time.RFC3339, "2020-03-17T19:10:04.968Z"),
+				LastEditedTime: mustParseTime(time.RFC3339, "2020-03-17T21:49:37.913Z"),
+				Title: []notion.RichText{
+					{
+						Type: notion.RichTextTypeText,
+						Text: &notion.Text{
+							Content: "Grocery List",
+						},
+						Annotations: &notion.Annotations{
+							Color: notion.ColorDefault,
+						},
+						PlainText: "Grocery List",
+					},
+				},
+				Properties: notion.DatabaseProperties{
+					"Name": notion.DatabaseProperty{
+						ID:    "title",
+						Type:  notion.DBPropTypeTitle,
+						Title: &notion.EmptyMetadata{},
+					},
+					"New": notion.DatabaseProperty{
+						ID:   "J@cS",
+						Type: notion.DBPropTypeRichText,
+					},
+				},
+				Parent: notion.Parent{
+					Type:   notion.ParentTypePage,
+					PageID: "b8595b75-abd1-4cad-8dfe-f935a8ef57cb",
+				},
+			},
+			expError: nil,
+		},
+		{
+			name: "error response",
+			params: notion.UpdateDatabaseParams{
+				Title: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Updated title",
+						},
+					},
+				},
+				Properties: map[string]*notion.DatabaseProperty{
+					"New": {
+						Type:     notion.DBPropTypeRichText,
+						RichText: &notion.EmptyMetadata{},
+					},
+					"Removed": nil,
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 400,
+						"code": "validation_error",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusBadRequest,
+			expPostBody: map[string]interface{}{
+				"title": []interface{}{
+					map[string]interface{}{
+						"text": map[string]interface{}{
+							"content": "Updated title",
+						},
+					},
+				},
+				"properties": map[string]interface{}{
+					"New": map[string]interface{}{
+						"type":      "rich_text",
+						"rich_text": map[string]interface{}{},
+					},
+					"Removed": nil,
+				},
+			},
+			expResponse: notion.Database{},
+			expError:    errors.New("notion: failed to update database: foobar (code: validation_error, status: 400)"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					postBody := make(map[string]interface{})
+
+					err := json.NewDecoder(r.Body).Decode(&postBody)
+					if err != nil && err != io.EOF {
+						t.Fatal(err)
+					}
+
+					if len(tt.expPostBody) == 0 && len(postBody) != 0 {
+						t.Errorf("unexpected post body: %#v", postBody)
+					}
+
+					if len(tt.expPostBody) != 0 && len(postBody) == 0 {
+						t.Errorf("post body not equal (expected %+v, got: nil)", tt.expPostBody)
+					}
+
+					if len(tt.expPostBody) != 0 && len(postBody) != 0 {
+						if diff := cmp.Diff(tt.expPostBody, postBody); diff != "" {
+							t.Errorf("post body not equal (-exp, +got):\n%v", diff)
+						}
+					}
+
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			updatedDB, err := client.UpdateDatabase(context.Background(), "00000000-0000-0000-0000-000000000000", tt.params)
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expResponse, updatedDB); diff != "" {
+				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}
+
 func TestFindPageByID(t *testing.T) {
 	t.Parallel()
 
