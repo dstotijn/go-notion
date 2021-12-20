@@ -2575,7 +2575,7 @@ func TestAppendBlockChildren(t *testing.T) {
 		respBody       func(r *http.Request) io.Reader
 		respStatusCode int
 		expPostBody    map[string]interface{}
-		expBlock       notion.Block
+		expResponse    notion.BlockChildrenResponse
 		expError       error
 	}{
 		{
@@ -2597,15 +2597,40 @@ func TestAppendBlockChildren(t *testing.T) {
 			respBody: func(_ *http.Request) io.Reader {
 				return strings.NewReader(
 					`{
-						"object": "block",
-						"id": "cb261dc5-6c85-4767-8585-3852382fb466",
-						"created_time": "2021-05-14T09:15:46.796Z",
-						"last_edited_time": "2021-05-22T20:31:43.231Z",
-						"has_children": true,
-						"type": "child_page",
-						"child_page": {
-							"title": "Sub page"
-						}
+						"object": "list",
+						"results": [
+							{
+								"object": "block",
+								"id": "ae9c9a31-1c1e-4ae2-a5ee-c539a2d43113",
+								"created_time": "2021-05-14T09:15:00.000Z",
+								"last_edited_time": "2021-05-14T09:15:00.000Z",
+								"has_children": false,
+								"type": "paragraph",
+								"paragraph": {
+									"text": [
+										{
+											"type": "text",
+											"text": {
+												"content": "Lorem ipsum dolor sit amet.",
+												"link": null
+											},
+											"annotations": {
+												"bold": false,
+												"italic": false,
+												"strikethrough": false,
+												"underline": false,
+												"code": false,
+												"color": "default"
+											},
+											"plain_text": "Lorem ipsum dolor sit amet.",
+											"href": null
+										}
+									]
+								}
+							}
+						],
+						"next_cursor": "A^hd",
+						"has_more": true
 					}`,
 				)
 			},
@@ -2627,16 +2652,32 @@ func TestAppendBlockChildren(t *testing.T) {
 					},
 				},
 			},
-			expBlock: notion.Block{
-				Object:         "block",
-				ID:             "cb261dc5-6c85-4767-8585-3852382fb466",
-				CreatedTime:    notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:46.796Z")),
-				LastEditedTime: notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-22T20:31:43.231Z")),
-				HasChildren:    true,
-				Type:           notion.BlockTypeChildPage,
-				ChildPage: &notion.ChildPage{
-					Title: "Sub page",
+			expResponse: notion.BlockChildrenResponse{
+				Results: []notion.Block{
+					{
+						Object:         "block",
+						ID:             "ae9c9a31-1c1e-4ae2-a5ee-c539a2d43113",
+						CreatedTime:    notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:00.000Z")),
+						LastEditedTime: notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:00.000Z")),
+						Type:           notion.BlockTypeParagraph,
+						Paragraph: &notion.RichTextBlock{
+							Text: []notion.RichText{
+								{
+									Type: notion.RichTextTypeText,
+									Text: &notion.Text{
+										Content: "Lorem ipsum dolor sit amet.",
+									},
+									Annotations: &notion.Annotations{
+										Color: notion.ColorDefault,
+									},
+									PlainText: "Lorem ipsum dolor sit amet.",
+								},
+							},
+						},
+					},
 				},
+				HasMore:    true,
+				NextCursor: notion.StringPtr("A^hd"),
 			},
 			expError: nil,
 		},
@@ -2684,8 +2725,8 @@ func TestAppendBlockChildren(t *testing.T) {
 					},
 				},
 			},
-			expBlock: notion.Block{},
-			expError: errors.New("notion: failed to append block children: foobar (code: validation_error, status: 400)"),
+			expResponse: notion.BlockChildrenResponse{},
+			expError:    errors.New("notion: failed to append block children: foobar (code: validation_error, status: 400)"),
 		},
 	}
 
@@ -2725,7 +2766,7 @@ func TestAppendBlockChildren(t *testing.T) {
 				}},
 			}
 			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
-			block, err := client.AppendBlockChildren(context.Background(), "00000000-0000-0000-0000-000000000000", tt.children)
+			resp, err := client.AppendBlockChildren(context.Background(), "00000000-0000-0000-0000-000000000000", tt.children)
 
 			if tt.expError == nil && err != nil {
 				t.Fatalf("unexpected error: %v", err)
@@ -2737,7 +2778,7 @@ func TestAppendBlockChildren(t *testing.T) {
 				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
 			}
 
-			if diff := cmp.Diff(tt.expBlock, block); diff != "" {
+			if diff := cmp.Diff(tt.expResponse, resp); diff != "" {
 				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
 			}
 		})

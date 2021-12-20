@@ -338,7 +338,7 @@ func (c *Client) FindBlockChildrenByID(ctx context.Context, blockID string, quer
 
 // AppendBlockChildren appends child content (blocks) to an existing block.
 // See: https://developers.notion.com/reference/patch-block-children
-func (c *Client) AppendBlockChildren(ctx context.Context, blockID string, children []Block) (block Block, err error) {
+func (c *Client) AppendBlockChildren(ctx context.Context, blockID string, children []Block) (result BlockChildrenResponse, err error) {
 	type PostBody struct {
 		Children []Block `json:"children"`
 	}
@@ -348,30 +348,30 @@ func (c *Client) AppendBlockChildren(ctx context.Context, blockID string, childr
 
 	err = json.NewEncoder(body).Encode(dto)
 	if err != nil {
-		return Block{}, fmt.Errorf("notion: failed to encode body params to JSON: %w", err)
+		return BlockChildrenResponse{}, fmt.Errorf("notion: failed to encode body params to JSON: %w", err)
 	}
 
 	req, err := c.newRequest(ctx, http.MethodPatch, fmt.Sprintf("/blocks/%v/children", blockID), body)
 	if err != nil {
-		return Block{}, fmt.Errorf("notion: invalid request: %w", err)
+		return BlockChildrenResponse{}, fmt.Errorf("notion: invalid request: %w", err)
 	}
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return Block{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+		return BlockChildrenResponse{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return Block{}, fmt.Errorf("notion: failed to append block children: %w", parseErrorResponse(res))
+		return BlockChildrenResponse{}, fmt.Errorf("notion: failed to append block children: %w", parseErrorResponse(res))
 	}
 
-	err = json.NewDecoder(res.Body).Decode(&block)
+	err = json.NewDecoder(res.Body).Decode(&result)
 	if err != nil {
-		return Block{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+		return BlockChildrenResponse{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
 	}
 
-	return block, nil
+	return result, nil
 }
 
 // FindBlockByID returns a single of block for a given block ID.
