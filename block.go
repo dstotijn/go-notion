@@ -91,22 +91,6 @@ type FileBlock struct {
 	Caption  []RichText    `json:"caption,omitempty"`
 }
 
-type FileFile struct {
-	URL        string   `json:"url"`
-	ExpiryTime DateTime `json:"expiry_time"`
-}
-
-type FileExternal struct {
-	URL string `json:"url"`
-}
-
-type FileType string
-
-const (
-	FileTypeFile     FileType = "file"
-	FileTypeExternal FileType = "external"
-)
-
 type Bookmark struct {
 	URL     string     `json:"url"`
 	Caption []RichText `json:"caption,omitempty"`

@@ -980,8 +980,8 @@ func TestCreateDatabase(t *testing.T) {
 					Emoji: notion.StringPtr("✌️"),
 				},
 				Cover: &notion.Cover{
-					Type: notion.CoverTypeExternal,
-					External: &notion.CoverExternal{
+					Type: notion.FileTypeExternal,
+					External: &notion.FileExternal{
 						URL: "https://example.com/image.png",
 					},
 				},
@@ -1098,8 +1098,8 @@ func TestCreateDatabase(t *testing.T) {
 					Emoji: notion.StringPtr("✌️"),
 				},
 				Cover: &notion.Cover{
-					Type: notion.CoverTypeExternal,
-					External: &notion.CoverExternal{
+					Type: notion.FileTypeExternal,
+					External: &notion.FileExternal{
 						URL: "https://example.com/image.png",
 					},
 				},
@@ -1264,8 +1264,8 @@ func TestUpdateDatabase(t *testing.T) {
 					Emoji: notion.StringPtr("✌️"),
 				},
 				Cover: &notion.Cover{
-					Type: notion.CoverTypeExternal,
-					External: &notion.CoverExternal{
+					Type: notion.FileTypeExternal,
+					External: &notion.FileExternal{
 						URL: "https://example.com/image.png",
 					},
 				},
@@ -1388,8 +1388,8 @@ func TestUpdateDatabase(t *testing.T) {
 					Emoji: notion.StringPtr("✌️"),
 				},
 				Cover: &notion.Cover{
-					Type: notion.CoverTypeExternal,
-					External: &notion.CoverExternal{
+					Type: notion.FileTypeExternal,
+					External: &notion.FileExternal{
 						URL: "https://example.com/image.png",
 					},
 				},
@@ -1676,13 +1676,13 @@ func TestCreatePage(t *testing.T) {
 				},
 				Icon: &notion.Icon{
 					Type: notion.IconTypeExternal,
-					External: &notion.IconExternal{
+					External: &notion.FileExternal{
 						URL: "https://example.com/icon.png",
 					},
 				},
 				Cover: &notion.Cover{
-					Type: notion.CoverTypeExternal,
-					External: &notion.CoverExternal{
+					Type: notion.FileTypeExternal,
+					External: &notion.FileExternal{
 						URL: "https://example.com/cover.png",
 					},
 				},
@@ -1809,13 +1809,13 @@ func TestCreatePage(t *testing.T) {
 				},
 				Icon: &notion.Icon{
 					Type: notion.IconTypeExternal,
-					External: &notion.IconExternal{
+					External: &notion.FileExternal{
 						URL: "https://example.com/icon.png",
 					},
 				},
 				Cover: &notion.Cover{
-					Type: notion.CoverTypeExternal,
-					External: &notion.CoverExternal{
+					Type: notion.FileTypeExternal,
+					External: &notion.FileExternal{
 						URL: "https://example.com/cover.png",
 					},
 				},
@@ -2204,7 +2204,7 @@ func TestUpdatePageProps(t *testing.T) {
 			params: notion.UpdatePageParams{
 				Icon: &notion.Icon{
 					Type: notion.IconTypeExternal,
-					External: &notion.IconExternal{
+					External: &notion.FileExternal{
 						URL: "https://www.notion.so/front-static/pages/pricing/pro.png",
 					},
 				},
@@ -2276,7 +2276,7 @@ func TestUpdatePageProps(t *testing.T) {
 				},
 				Icon: &notion.Icon{
 					Type: notion.IconTypeExternal,
-					External: &notion.IconExternal{
+					External: &notion.FileExternal{
 						URL: "https://www.notion.so/front-static/pages/pricing/pro.png",
 					},
 				},
@@ -2303,8 +2303,8 @@ func TestUpdatePageProps(t *testing.T) {
 			name: "page cover, successful response",
 			params: notion.UpdatePageParams{
 				Cover: &notion.Cover{
-					Type: notion.CoverTypeExternal,
-					External: &notion.CoverExternal{
+					Type: notion.FileTypeExternal,
+					External: &notion.FileExternal{
 						URL: "https://example.com/image.png",
 					},
 				},
@@ -2375,8 +2375,8 @@ func TestUpdatePageProps(t *testing.T) {
 					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
 				},
 				Cover: &notion.Cover{
-					Type: notion.CoverTypeExternal,
-					External: &notion.CoverExternal{
+					Type: notion.FileTypeExternal,
+					External: &notion.FileExternal{
 						URL: "https://example.com/image.png",
 					},
 				},

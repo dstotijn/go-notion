@@ -16,17 +16,8 @@ type Icon struct {
 	Type IconType `json:"type"`
 
 	Emoji    *string       `json:"emoji,omitempty"`
-	File     *IconFile     `json:"file,omitempty"`
-	External *IconExternal `json:"external,omitempty"`
-}
-
-type IconFile struct {
-	URL        string   `json:"url"`
-	ExpiryTime DateTime `json:"expiry_time"`
-}
-
-type IconExternal struct {
-	URL string `json:"url"`
+	File     *FileFile     `json:"file,omitempty"`
+	External *FileExternal `json:"external,omitempty"`
 }
 
 func (icon Icon) Validate() error {

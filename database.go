@@ -99,7 +99,11 @@ type People struct {
 }
 
 type File struct {
-	Name string `json:"name"`
+	Name string   `json:"name"`
+	Type FileType `json:"type"`
+
+	File     *FileFile     `json:"file,omitempty"`
+	External *FileExternal `json:"external,omitempty"`
 }
 
 type DatabaseProperty struct {
