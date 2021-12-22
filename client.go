@@ -433,6 +433,32 @@ func (c *Client) UpdateBlock(ctx context.Context, blockID string, block Block) (
 	return updatedBlock, nil
 }
 
+// DeleteBlock sets `archived: true` on a (page) block object.
+// See: https://developers.notion.com/reference/delete-a-block
+func (c *Client) DeleteBlock(ctx context.Context, blockID string) (deletedBlock Block, err error) {
+	req, err := c.newRequest(ctx, http.MethodDelete, "/blocks/"+blockID, nil)
+	if err != nil {
+		return Block{}, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return Block{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return Block{}, fmt.Errorf("notion: failed to delete block: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&deletedBlock)
+	if err != nil {
+		return Block{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return deletedBlock, nil
+}
+
 // FindUserByID fetches a user by ID.
 // See: https://developers.notion.com/reference/get-user
 func (c *Client) FindUserByID(ctx context.Context, id string) (user User, err error) {

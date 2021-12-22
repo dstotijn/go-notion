@@ -3833,3 +3833,127 @@ func TestUpdateBlock(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteBlock(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expResponse    notion.Block
+		expError       error
+	}{
+		{
+			name: "successful response",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "block",
+						"id": "048e165e-352d-4119-8128-e46c3527d95c",
+						"created_time": "2021-10-02T06:09:00.000Z",
+						"last_edited_time": "2021-10-02T06:31:00.000Z",
+						"has_children": true,
+						"archived": true,
+						"type": "paragraph",
+						"paragraph": {
+							"text": [
+								{
+									"type": "text",
+									"text": {
+										"content": "Foobar",
+										"link": null
+									},
+									"annotations": {
+										"bold": false,
+										"italic": false,
+										"strikethrough": false,
+										"underline": false,
+										"code": false,
+										"color": "default"
+									},
+									"plain_text": "Foobar",
+									"href": null
+								}
+							]
+						}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expResponse: notion.Block{
+				Object:         "block",
+				ID:             "048e165e-352d-4119-8128-e46c3527d95c",
+				Type:           notion.BlockTypeParagraph,
+				CreatedTime:    mustParseTimePointer(time.RFC3339, "2021-10-02T06:09:00Z"),
+				LastEditedTime: mustParseTimePointer(time.RFC3339, "2021-10-02T06:31:00Z"),
+				HasChildren:    true,
+				Paragraph: &notion.RichTextBlock{
+					Text: []notion.RichText{
+						{
+							Type: notion.RichTextTypeText,
+							Text: &notion.Text{
+								Content: "Foobar",
+							},
+							PlainText: "Foobar",
+							Annotations: &notion.Annotations{
+								Color: notion.ColorDefault,
+							},
+						},
+					},
+				},
+				Archived: notion.BoolPtr(true),
+			},
+			expError: nil,
+		},
+		{
+			name: "error response",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 400,
+						"code": "validation_error",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusBadRequest,
+			expResponse:    notion.Block{},
+			expError:       errors.New("notion: failed to delete block: foobar (code: validation_error, status: 400)"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			deletedBlock, err := client.DeleteBlock(context.Background(), "00000000-0000-0000-0000-000000000000")
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expResponse, deletedBlock); diff != "" {
+				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}
