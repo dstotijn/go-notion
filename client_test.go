@@ -2752,7 +2752,8 @@ func TestFindPagePropertyByID(t *testing.T) {
 								}
 							}
 						],
-						"type": "rollup"
+						"has_more": false,
+						"type": "rollup",
 						"rollup": {
 							"type": "date",
 							"date": {
@@ -2760,8 +2761,7 @@ func TestFindPagePropertyByID(t *testing.T) {
 								"end": null
 							},
 							"function": "latest_date"
-						},
-						"has_more": false,
+						}
 					}`,
 				)
 			},
@@ -2769,8 +2769,33 @@ func TestFindPagePropertyByID(t *testing.T) {
 			expQueryParams: nil,
 			expResponse: notion.PagePropResponse{
 				PagePropItem: notion.PagePropItem{
-					Type:   notion.DBPropTypeNumber,
-					Number: 42,
+					Type: notion.DBPropTypeRollup,
+					Rollup: notion.RollupResult{
+						Type: notion.RollupResultTypeDate,
+						Date: &notion.Date{
+							Start: mustParseDateTime("2021-10-07T14:42:00.000+00:00"),
+						},
+					},
+				},
+				Results: []notion.PagePropItem{
+					{
+						Type: notion.DBPropTypeRelation,
+						Relation: notion.Relation{
+							ID: "de5d73e8-3748-40fa-9102-f1290fe2444b",
+						},
+					},
+					{
+						Type: notion.DBPropTypeRelation,
+						Relation: notion.Relation{
+							ID: "164325b0-4c9e-416b-ba9c-037b4c9acdfd",
+						},
+					},
+					{
+						Type: notion.DBPropTypeRelation,
+						Relation: notion.Relation{
+							ID: "456baa98-3239-4c1f-b0ea-bdae945aaf33",
+						},
+					},
 				},
 			},
 			expError: nil,
