@@ -97,6 +97,7 @@ func TestFindDatabaseByID(t *testing.T) {
 						"id": "668d797c-76fa-4934-9b05-ad288df2d136",
 						"created_time": "2020-03-17T19:10:04.968Z",
 						"last_edited_time": "2020-03-17T21:49:37.913Z",
+						"url": "https://www.notion.so/668d797c76fa49349b05ad288df2d136",
 						"title": [
 							{
 								"type": "text",
@@ -236,6 +237,7 @@ func TestFindDatabaseByID(t *testing.T) {
 				ID:             "668d797c-76fa-4934-9b05-ad288df2d136",
 				CreatedTime:    mustParseTime(time.RFC3339, "2020-03-17T19:10:04.968Z"),
 				LastEditedTime: mustParseTime(time.RFC3339, "2020-03-17T21:49:37.913Z"),
+				URL:            "https://www.notion.so/668d797c76fa49349b05ad288df2d136",
 				Title: []notion.RichText{
 					{
 						Type: notion.RichTextTypeText,
@@ -993,6 +995,7 @@ func TestCreateDatabase(t *testing.T) {
 						"id": "b89664e3-30b4-474a-9cce-c72a4827d1e4",
 						"created_time": "2021-07-20T20:09:00.000Z",
 						"last_edited_time": "2021-07-20T20:09:00.000Z",
+						"url": "https://www.notion.so/b89664e330b4474a9ccec72a4827d1e4",
 						"title": [
 							{
 								"type": "text",
@@ -1070,6 +1073,7 @@ func TestCreateDatabase(t *testing.T) {
 				ID:             "b89664e3-30b4-474a-9cce-c72a4827d1e4",
 				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-07-20T20:09:00Z"),
 				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-07-20T20:09:00Z"),
+				URL:            "https://www.notion.so/b89664e330b4474a9ccec72a4827d1e4",
 				Parent: notion.Parent{
 					Type:   notion.ParentTypePage,
 					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
@@ -1277,6 +1281,7 @@ func TestUpdateDatabase(t *testing.T) {
 						"id": "668d797c-76fa-4934-9b05-ad288df2d136",
 						"created_time": "2020-03-17T19:10:04.968Z",
 						"last_edited_time": "2020-03-17T21:49:37.913Z",
+						"url": "https://www.notion.so/668d797c76fa49349b05ad288df2d136",
 						"title": [
 							{
 								"type": "text",
@@ -1356,6 +1361,7 @@ func TestUpdateDatabase(t *testing.T) {
 				ID:             "668d797c-76fa-4934-9b05-ad288df2d136",
 				CreatedTime:    mustParseTime(time.RFC3339, "2020-03-17T19:10:04.968Z"),
 				LastEditedTime: mustParseTime(time.RFC3339, "2020-03-17T21:49:37.913Z"),
+				URL:            "https://www.notion.so/668d797c76fa49349b05ad288df2d136",
 				Title: []notion.RichText{
 					{
 						Type: notion.RichTextTypeText,
@@ -3289,6 +3295,7 @@ func TestSearch(t *testing.T) {
 								"id": "668d797c-76fa-4934-9b05-ad288df2d136",
 								"created_time": "2020-03-17T19:10:04.968Z",
 								"last_edited_time": "2020-03-17T21:49:37.913Z",
+								"url": "https://www.notion.so/668d797c76fa49349b05ad288df2d136",
 								"title": [
 									{
 										"type": "text",
@@ -3378,6 +3385,7 @@ func TestSearch(t *testing.T) {
 						ID:             "668d797c-76fa-4934-9b05-ad288df2d136",
 						CreatedTime:    mustParseTime(time.RFC3339, "2020-03-17T19:10:04.968Z"),
 						LastEditedTime: mustParseTime(time.RFC3339, "2020-03-17T21:49:37.913Z"),
+						URL:            "https://www.notion.so/668d797c76fa49349b05ad288df2d136",
 						Title: []notion.RichText{
 							{
 								Type: notion.RichTextTypeText,
