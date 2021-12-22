@@ -2602,6 +2602,247 @@ func TestUpdatePageProps(t *testing.T) {
 	}
 }
 
+func TestFindPagePropertyByID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		query          *notion.PaginationQuery
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expQueryParams url.Values
+		expResponse    notion.PagePropResponse
+		expError       error
+	}{
+		{
+			name: "paginated property item, with query, successful response",
+			query: &notion.PaginationQuery{
+				StartCursor: "7c6b1c95-de50-45ca-94e6-af1d9fd295ab",
+				PageSize:    42,
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "list",
+						"results": [
+							{
+								"object": "property_item",
+								"type": "rich_text",
+								"rich_text": {
+									"type": "text",
+									"text": {
+										"content": "Foobar",
+										"link": null
+									},
+									"annotations": {
+										"bold": false,
+										"italic": false,
+										"strikethrough": false,
+										"underline": false,
+										"code": false,
+										"color": "default"
+									},
+									"plain_text": "Foobar",
+									"href": null
+								}
+							}
+						],
+						"next_cursor": "A^hd",
+						"has_more": true
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expQueryParams: url.Values{
+				"start_cursor": []string{"7c6b1c95-de50-45ca-94e6-af1d9fd295ab"},
+				"page_size":    []string{"42"},
+			},
+			expResponse: notion.PagePropResponse{
+				Results: []notion.PagePropItem{
+					{
+						Type: notion.DBPropTypeRichText,
+						RichText: notion.RichText{
+							Type: notion.RichTextTypeText,
+							Text: &notion.Text{
+								Content: "Foobar",
+							},
+							PlainText: "Foobar",
+							Annotations: &notion.Annotations{
+								Color: notion.ColorDefault,
+							},
+						},
+					},
+				},
+				HasMore:    true,
+				NextCursor: "A^hd",
+			},
+			expError: nil,
+		},
+		{
+			name:  "paginated property item, successful response",
+			query: nil,
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "list",
+						"results": [],
+						"next_cursor": null,
+						"has_more": false
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expQueryParams: nil,
+			expResponse: notion.PagePropResponse{
+				Results:    []notion.PagePropItem{},
+				HasMore:    false,
+				NextCursor: "",
+			},
+			expError: nil,
+		},
+		{
+			name:  "simple property item, successful response",
+			query: nil,
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "property_item",
+						"type": "number",
+						"number": 42
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expQueryParams: nil,
+			expResponse: notion.PagePropResponse{
+				PagePropItem: notion.PagePropItem{
+					Type:   notion.DBPropTypeNumber,
+					Number: 42,
+				},
+			},
+			expError: nil,
+		},
+		{
+			name:  "rollup property item with aggregation, successful response",
+			query: nil,
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "list",
+						"results": [
+							{
+								"object": "property_item",
+								"type": "relation",
+								"relation": {
+									"id": "de5d73e8-3748-40fa-9102-f1290fe2444b"
+								}
+							},
+							{
+								"object": "property_item",
+								"type": "relation",
+								"relation": {
+									"id": "164325b0-4c9e-416b-ba9c-037b4c9acdfd"
+								}
+							},
+							{
+								"object": "property_item",
+								"type": "relation",
+								"relation": {
+									"id": "456baa98-3239-4c1f-b0ea-bdae945aaf33"
+								}
+							}
+						],
+						"type": "rollup"
+						"rollup": {
+							"type": "date",
+							"date": {
+								"start": "2021-10-07T14:42:00.000+00:00",
+								"end": null
+							},
+							"function": "latest_date"
+						},
+						"has_more": false,
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expQueryParams: nil,
+			expResponse: notion.PagePropResponse{
+				PagePropItem: notion.PagePropItem{
+					Type:   notion.DBPropTypeNumber,
+					Number: 42,
+				},
+			},
+			expError: nil,
+		},
+		{
+			name: "error response",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 400,
+						"code": "validation_error",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusBadRequest,
+			expResponse:    notion.PagePropResponse{},
+			expError:       errors.New("notion: failed to find page property: foobar (code: validation_error, status: 400)"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					q := r.URL.Query()
+
+					if len(tt.expQueryParams) == 0 && len(q) != 0 {
+						t.Errorf("unexpected query params: %+v", q)
+					}
+
+					if len(tt.expQueryParams) != 0 && len(q) == 0 {
+						t.Errorf("query params not equal (expected %+v, got: nil)", tt.expQueryParams)
+					}
+
+					if len(tt.expQueryParams) != 0 && len(q) != 0 {
+						if diff := cmp.Diff(tt.expQueryParams, q); diff != "" {
+							t.Errorf("query params not equal (-exp, +got):\n%v", diff)
+						}
+					}
+
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			resp, err := client.FindPagePropertyByID(context.Background(), "page-id", "prop-id", tt.query)
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expResponse, resp); diff != "" {
+				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}
+
 func TestFindBlockChildrenById(t *testing.T) {
 	t.Parallel()
 

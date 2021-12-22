@@ -87,6 +87,45 @@ type UpdatePageParams struct {
 	Cover                  *Cover
 }
 
+// PagePropItem is used for a *single* property object value, e.g. for a `rich_text`
+// property, a single value of an array of rich text elements.
+// This type is used when fetching single properties.
+type PagePropItem struct {
+	Type DatabasePropertyType `json:"type"`
+
+	Title          RichText      `json:"title"`
+	RichText       RichText      `json:"rich_text"`
+	Number         float64       `json:"number"`
+	Select         SelectOptions `json:"select"`
+	MultiSelect    SelectOptions `json:"multi_select"`
+	Date           Date          `json:"date"`
+	Formula        FormulaResult `json:"formula"`
+	Relation       Relation      `json:"relation"`
+	Rollup         RollupResult  `json:"rollup"`
+	People         User          `json:"people"`
+	Files          File          `json:"files"`
+	Checkbox       bool          `json:"checkbox"`
+	URL            string        `json:"url"`
+	Email          string        `json:"email"`
+	PhoneNumber    string        `json:"phone_number"`
+	CreatedTime    time.Time     `json:"created_time"`
+	CreatedBy      User          `json:"created_by"`
+	LastEditedTime time.Time     `json:"last_edited_time"`
+	LastEditedBy   User          `json:"last_edited_by"`
+}
+
+// PagePropResponse contains a single database page property item or a list
+// of items. For rollup props with an aggregation, both a `results` array and a
+// `rollup` field is included.
+// See: https://developers.notion.com/reference/retrieve-a-page-property#rollup-properties
+type PagePropResponse struct {
+	PagePropItem
+
+	Results    []PagePropItem `json:"results"`
+	HasMore    bool           `json:"has_more"`
+	NextCursor string         `json:"next_cursor"`
+}
+
 // Value returns the underlying database page property value, based on its `type` field.
 // When type is unknown/unmapped or doesn't have a value, `nil` is returned.
 func (prop DatabasePageProperty) Value() interface{} {

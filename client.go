@@ -336,6 +336,43 @@ func (c *Client) FindBlockChildrenByID(ctx context.Context, blockID string, quer
 	return result, nil
 }
 
+// FindPagePropertyByID returns a page property.
+// See: https://developers.notion.com/reference/retrieve-a-page-property
+func (c *Client) FindPagePropertyByID(ctx context.Context, pageID, propID string, query *PaginationQuery) (result PagePropResponse, err error) {
+	req, err := c.newRequest(ctx, http.MethodGet, fmt.Sprintf("/pages/%v/properties/%v", pageID, propID), nil)
+	if err != nil {
+		return PagePropResponse{}, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	if query != nil {
+		q := url.Values{}
+		if query.StartCursor != "" {
+			q.Set("start_cursor", query.StartCursor)
+		}
+		if query.PageSize != 0 {
+			q.Set("page_size", strconv.Itoa(query.PageSize))
+		}
+		req.URL.RawQuery = q.Encode()
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return PagePropResponse{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return PagePropResponse{}, fmt.Errorf("notion: failed to find page property: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&result)
+	if err != nil {
+		return PagePropResponse{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return result, nil
+}
+
 // AppendBlockChildren appends child content (blocks) to an existing block.
 // See: https://developers.notion.com/reference/patch-block-children
 func (c *Client) AppendBlockChildren(ctx context.Context, blockID string, children []Block) (result BlockChildrenResponse, err error) {
