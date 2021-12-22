@@ -79,8 +79,9 @@ type CreatePageParams struct {
 	Cover *Cover
 }
 
+// UpdatePageParams is used for updating a page. At least one field should have
+// a non-empty value.
 type UpdatePageParams struct {
-	// Either DatabasePageProperties, Title or Icon must be not nil.
 	DatabasePageProperties *DatabasePageProperties
 	Title                  []RichText
 	Icon                   *Icon

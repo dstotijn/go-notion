@@ -2101,7 +2101,7 @@ func TestCreatePage(t *testing.T) {
 	}
 }
 
-func TestUpdatePageProps(t *testing.T) {
+func TestUpdatePage(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -2583,7 +2583,7 @@ func TestUpdatePageProps(t *testing.T) {
 				}},
 			}
 			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
-			page, err := client.UpdatePageProps(context.Background(), "00000000-0000-0000-0000-000000000000", tt.params)
+			page, err := client.UpdatePage(context.Background(), "00000000-0000-0000-0000-000000000000", tt.params)
 
 			if tt.expError == nil && err != nil {
 				t.Fatalf("unexpected error: %v", err)

@@ -262,9 +262,9 @@ func (c *Client) CreatePage(ctx context.Context, params CreatePageParams) (page 
 	return page, nil
 }
 
-// UpdatePageProps updates page property values for a page.
+// UpdatePage updates a page.
 // See: https://developers.notion.com/reference/patch-page
-func (c *Client) UpdatePageProps(ctx context.Context, pageID string, params UpdatePageParams) (page Page, err error) {
+func (c *Client) UpdatePage(ctx context.Context, pageID string, params UpdatePageParams) (page Page, err error) {
 	if err := params.Validate(); err != nil {
 		return Page{}, fmt.Errorf("notion: invalid page params: %w", err)
 	}
