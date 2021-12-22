@@ -12,18 +12,38 @@
 ## Features
 
 The client supports all (non-deprecated) endpoints available in the Notion API,
-as of July 20, 2021:
+as of December 22, 2021:
 
-- [x] [Retrieve a database](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.FindDatabaseByID)
+### Databases
+
 - [x] [Query a database](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.QueryDatabase)
 - [x] [Create a database](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.CreateDatabase)
+- [x] [Update database](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.UpdateDatabase)
+- [x] [Retrieve a database](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.FindDatabaseByID)
+
+### Pages
+
 - [x] [Retrieve a page](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.FindPageByID)
 - [x] [Create a page](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.CreatePage)
-- [x] [Update page properties](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.UpdatePageProps)
+- [x] [Update page](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.UpdatePage)
+- [x] [Retrieve a page property](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.FindPagePropertyByID)
+
+### Blocks
+
+- [x] [Retrieve a block](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.FindBlockByID)
+- [x] [Update block](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.UpdateBlock)
 - [x] [Retrieve block children](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.FindBlockChildrenByID)
 - [x] [Append block children](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.AppendBlockChildren)
+- [x] [Delete block](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.DeleteBlock)
+
+### Users
+
 - [x] [Retrieve a user](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.FindUserByID)
 - [x] [List all users](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.ListUsers)
+- [x] [Retrieve your token's bot user](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.FindCurrentUser)
+
+### Search
+
 - [x] [Search](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.Search)
 
 ## Installation
@@ -78,7 +98,4 @@ changes in its code until `v1.0` of the module is released.
 
 [MIT License](LICENSE)
 
----
-
-© 2021 David Stotijn — [Twitter](https://twitter.com/dstotijn),
-[Email](mailto:dstotijn@gmail.com)
+© 2021 [David Stotijn](https://v0x.nl)
