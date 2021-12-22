@@ -35,8 +35,9 @@ type Mention struct {
 }
 
 type Date struct {
-	Start DateTime  `json:"start"`
-	End   *DateTime `json:"end,omitempty"`
+	Start    DateTime  `json:"start"`
+	End      *DateTime `json:"end,omitempty"`
+	TimeZone *string   `json:"time_zone,omitempty"`
 }
 
 type LinkPreview struct {
