@@ -709,8 +709,8 @@ func TestQueryDatabase(t *testing.T) {
 									{
 										ID:        "be32e790-8292-46df-a248-b784fdf483cf",
 										Name:      "Jane Doe",
-										AvatarURL: notion.StringPtr("https://example.com/image.png"),
-										Type:      "person",
+										AvatarURL: "https://example.com/image.png",
+										Type:      notion.UserTypePerson,
 										Person: &notion.Person{
 											Email: "jane@example.com",
 										},
@@ -773,8 +773,8 @@ func TestQueryDatabase(t *testing.T) {
 								CreatedBy: &notion.User{
 									ID:        "be32e790-8292-46df-a248-b784fdf483cf",
 									Name:      "Jane Doe",
-									AvatarURL: notion.StringPtr("https://example.com/image.png"),
-									Type:      "person",
+									AvatarURL: "https://example.com/image.png",
+									Type:      notion.UserTypePerson,
 									Person: &notion.Person{
 										Email: "jane@example.com",
 									},
@@ -793,8 +793,8 @@ func TestQueryDatabase(t *testing.T) {
 								LastEditedBy: &notion.User{
 									ID:        "be32e790-8292-46df-a248-b784fdf483cf",
 									Name:      "Jane Doe",
-									AvatarURL: notion.StringPtr("https://example.com/image.png"),
-									Type:      "person",
+									AvatarURL: "https://example.com/image.png",
+									Type:      notion.UserTypePerson,
 									Person: &notion.Person{
 										Email: "jane@example.com",
 									},
@@ -3033,8 +3033,8 @@ func TestFindUserByID(t *testing.T) {
 			expUser: notion.User{
 				ID:        "be32e790-8292-46df-a248-b784fdf483cf",
 				Name:      "Jane Doe",
-				AvatarURL: notion.StringPtr("https://example.com/avatar.png"),
-				Type:      "person",
+				AvatarURL: "https://example.com/avatar.png",
+				Type:      notion.UserTypePerson,
 				Person: &notion.Person{
 					Email: "jane@example.com",
 				},
@@ -3075,6 +3075,115 @@ func TestFindUserByID(t *testing.T) {
 			}
 			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
 			user, err := client.FindUserByID(context.Background(), "00000000-0000-0000-0000-000000000000")
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expUser, user); diff != "" {
+				t.Fatalf("user not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}
+
+func TestFindCurrentUser(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expUser        notion.User
+		expError       error
+	}{
+		{
+			name: "successful response",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "user",
+						"id": "be32e790-8292-46df-a248-b784fdf483cf",
+						"type": "bot",
+						"bot": {
+							"owner": {
+								"type": "user",
+								"user": {
+									"object": "user",
+									"id": "5389a034-eb5c-47b5-8a9e-f79c99ef166c",
+									"name": "Jane Doe",
+									"avatar_url": "https://example.com/avatar.png",
+									"type": "person",
+									"person": {
+										"email": "jane@example.com"
+									}
+								}
+							}
+						}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expUser: notion.User{
+				ID:   "be32e790-8292-46df-a248-b784fdf483cf",
+				Type: notion.UserTypeBot,
+				Bot: &notion.Bot{
+					Owner: notion.BotOwner{
+						Type: notion.BotOwnerTypeUser,
+						User: &notion.User{
+							ID:        "5389a034-eb5c-47b5-8a9e-f79c99ef166c",
+							Name:      "Jane Doe",
+							AvatarURL: "https://example.com/avatar.png",
+							Type:      notion.UserTypePerson,
+							Person: &notion.Person{
+								Email: "jane@example.com",
+							},
+						},
+					},
+				},
+			},
+			expError: nil,
+		},
+		{
+			name: "error response",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 404,
+						"code": "object_not_found",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusNotFound,
+			expUser:        notion.User{},
+			expError:       errors.New("notion: failed to find current user: foobar (code: object_not_found, status: 404)"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			user, err := client.FindCurrentUser(context.Background())
 
 			if tt.expError == nil && err != nil {
 				t.Fatalf("unexpected error: %v", err)
@@ -3150,8 +3259,8 @@ func TestListUsers(t *testing.T) {
 					{
 						ID:        "be32e790-8292-46df-a248-b784fdf483cf",
 						Name:      "Jane Doe",
-						AvatarURL: notion.StringPtr("https://example.com/avatar.png"),
-						Type:      "person",
+						AvatarURL: "https://example.com/avatar.png",
+						Type:      notion.UserTypePerson,
 						Person: &notion.Person{
 							Email: "jane@example.com",
 						},
@@ -3159,7 +3268,7 @@ func TestListUsers(t *testing.T) {
 					{
 						ID:   "25c9cc08-1afd-4d22-b9e6-31b0f6e7b44f",
 						Name: "Johnny 5",
-						Type: "bot",
+						Type: notion.UserTypeBot,
 						Bot:  &notion.Bot{},
 					},
 				},

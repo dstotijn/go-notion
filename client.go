@@ -485,6 +485,32 @@ func (c *Client) FindUserByID(ctx context.Context, id string) (user User, err er
 	return user, nil
 }
 
+// FindCurrentUser fetches the current bot user based on authentication API key.
+// See: https://developers.notion.com/reference/get-self
+func (c *Client) FindCurrentUser(ctx context.Context) (user User, err error) {
+	req, err := c.newRequest(ctx, http.MethodGet, "/users/me", nil)
+	if err != nil {
+		return User{}, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return User{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return User{}, fmt.Errorf("notion: failed to find current user: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&user)
+	if err != nil {
+		return User{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return user, nil
+}
+
 // ListUsers returns a list of all users, and pagination metadata.
 // See: https://developers.notion.com/reference/get-users
 func (c *Client) ListUsers(ctx context.Context, query *PaginationQuery) (result ListUsersResponse, err error) {
