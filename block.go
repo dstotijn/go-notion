@@ -41,6 +41,8 @@ type Block struct {
 	Breadcrumb       *Breadcrumb      `json:"breadcrumb,omitempty"`
 	ColumnList       *ColumnList      `json:"column_list,omitempty"`
 	Column           *Column          `json:"column,omitempty"`
+	Table            *Table           `json:"table,omitempty"`
+	TableRow         *TableRow        `json:"table_row,omitempty"`
 	LinkPreview      *LinkPreview     `json:"link_preview,omitempty"`
 	LinkToPage       *LinkToPage      `json:"link_to_page,omitempty"`
 	SyncedBlock      *SyncedBlock     `json:"synced_block,omitempty"`
@@ -102,6 +104,17 @@ type ColumnList struct {
 
 type Column struct {
 	Children []Block `json:"children,omitempty"`
+}
+
+type Table struct {
+	TableWidth      int     `json:"table_width"`
+	HasColumnHeader bool    `json:"has_column_header"`
+	HasRowHeader    bool    `json:"has_row_header"`
+	Children        []Block `json:"children,omitempty"`
+}
+
+type TableRow struct {
+	Cells [][]RichText `json:"cells"`
 }
 
 type LinkToPage struct {
@@ -166,6 +179,8 @@ const (
 	BlockTypeBreadCrumb       BlockType = "breadcrumb"
 	BlockTypeColumnList       BlockType = "column_list"
 	BlockTypeColumn           BlockType = "column"
+	BlockTypeTable            BlockType = "table"
+	BlockTypeTableRow         BlockType = "table_row"
 	BlockTypeLinkPreview      BlockType = "link_preview"
 	BlockTypeLinkToPage       BlockType = "link_to_page"
 	BlockTypeSyncedBlock      BlockType = "synced_block"
