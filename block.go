@@ -78,7 +78,8 @@ type Callout struct {
 
 type Code struct {
 	RichTextBlock
-	Language *string `json:"language,omitempty"`
+	Caption  []RichText `json:"caption,omitempty"`
+	Language *string    `json:"language,omitempty"`
 }
 
 type Embed struct {
