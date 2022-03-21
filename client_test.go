@@ -948,6 +948,7 @@ func TestQueryDatabase(t *testing.T) {
 		})
 	}
 }
+
 func TestCreateDatabase(t *testing.T) {
 	t.Parallel()
 
@@ -2116,10 +2117,14 @@ func TestUpdatePage(t *testing.T) {
 		{
 			name: "page props, successful response",
 			params: notion.UpdatePageParams{
-				Title: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Foobar",
+				DatabasePageProperties: notion.DatabasePageProperties{
+					"Name": notion.DatabasePageProperty{
+						Title: []notion.RichText{
+							{
+								Text: &notion.Text{
+									Content: "Foobar",
+								},
+							},
 						},
 					},
 				},
@@ -2168,10 +2173,12 @@ func TestUpdatePage(t *testing.T) {
 			respStatusCode: http.StatusOK,
 			expPostBody: map[string]interface{}{
 				"properties": map[string]interface{}{
-					"title": []interface{}{
-						map[string]interface{}{
-							"text": map[string]interface{}{
-								"content": "Foobar",
+					"Name": map[string]interface{}{
+						"title": []interface{}{
+							map[string]interface{}{
+								"text": map[string]interface{}{
+									"content": "Foobar",
+								},
 							},
 						},
 					},
@@ -2306,6 +2313,97 @@ func TestUpdatePage(t *testing.T) {
 			expError: nil,
 		},
 		{
+			name: "page archived, successful response",
+			params: notion.UpdatePageParams{
+				Archived: notion.BoolPtr(true),
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "page",
+						"id": "cb261dc5-6c85-4767-8585-3852382fb466",
+						"created_time": "2021-05-14T09:15:46.796Z",
+						"last_edited_time": "2021-05-22T15:54:31.116Z",
+						"parent": {
+							"type": "page_id",
+							"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
+						},
+						"cover": {
+							"type": "external",
+							"external": {
+								"url": "https://example.com/image.png"
+							}
+						},
+						"archived": true,
+						"url": "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
+						"properties": {
+							"title": {
+								"id": "title",
+								"type": "title",
+								"title": [
+									{
+										"type": "text",
+										"text": {
+											"content": "Lorem ipsum",
+											"link": null
+										},
+										"annotations": {
+											"bold": false,
+											"italic": false,
+											"strikethrough": false,
+											"underline": false,
+											"code": false,
+											"color": "default"
+										},
+										"plain_text": "Lorem ipsum",
+										"href": null
+									}
+								]
+							}
+						}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPostBody: map[string]interface{}{
+				"archived": true,
+			},
+			expResponse: notion.Page{
+				ID:             "cb261dc5-6c85-4767-8585-3852382fb466",
+				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:46.796Z"),
+				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-22T15:54:31.116Z"),
+				URL:            "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
+				Parent: notion.Parent{
+					Type:   notion.ParentTypePage,
+					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
+				},
+				Archived: true,
+				Cover: &notion.Cover{
+					Type: notion.FileTypeExternal,
+					External: &notion.FileExternal{
+						URL: "https://example.com/image.png",
+					},
+				},
+				Properties: notion.PageProperties{
+					Title: notion.PageTitle{
+						Title: []notion.RichText{
+							{
+								Type: notion.RichTextTypeText,
+								Text: &notion.Text{
+									Content: "Lorem ipsum",
+								},
+								Annotations: &notion.Annotations{
+									Color: notion.ColorDefault,
+								},
+								PlainText: "Lorem ipsum",
+							},
+						},
+					},
+				},
+			},
+			expError: nil,
+		},
+		{
 			name: "page cover, successful response",
 			params: notion.UpdatePageParams{
 				Cover: &notion.Cover{
@@ -2406,110 +2504,16 @@ func TestUpdatePage(t *testing.T) {
 			expError: nil,
 		},
 		{
-			name: "database page props, successful response",
-			params: notion.UpdatePageParams{
-				DatabasePageProperties: &notion.DatabasePageProperties{
-					"Name": notion.DatabasePageProperty{
-						Title: []notion.RichText{
-							{
-								Text: &notion.Text{
-									Content: "Lorem ipsum",
-								},
-							},
-						},
-					},
-				},
-			},
-			respBody: func(_ *http.Request) io.Reader {
-				return strings.NewReader(
-					`{
-						"object": "page",
-						"id": "e4f419a7-f01f-4d5b-af58-ff4786a429fe",
-						"created_time": "2021-05-17T17:56:00.000Z",
-						"last_edited_time": "2021-05-22T16:24:23.007Z",
-						"parent": {
-							"type": "database_id",
-							"database_id": "4cb17949-f08d-4d5c-ab50-fe6ba689d2c8"
-						},
-						"archived": false,
-						"properties": {
-							"Name": {
-								"id": "title",
-								"type": "title",
-								"title": [
-									{
-										"type": "text",
-										"text": {
-											"content": "Lorem ipsum",
-											"link": null
-										},
-										"annotations": {
-											"bold": false,
-											"italic": false,
-											"strikethrough": false,
-											"underline": false,
-											"code": false,
-											"color": "default"
-										},
-										"plain_text": "Lorem ipsum",
-										"href": null
-									}
-								]
-							}
-						}
-					}`,
-				)
-			},
-			respStatusCode: http.StatusOK,
-			expPostBody: map[string]interface{}{
-				"properties": map[string]interface{}{
-					"Name": map[string]interface{}{
-						"title": []interface{}{
-							map[string]interface{}{
-								"text": map[string]interface{}{
-									"content": "Lorem ipsum",
-								},
-							},
-						},
-					},
-				},
-			},
-			expResponse: notion.Page{
-				ID:             "e4f419a7-f01f-4d5b-af58-ff4786a429fe",
-				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-17T17:56:00.000Z"),
-				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-22T16:24:23.007Z"),
-				Parent: notion.Parent{
-					Type:       notion.ParentTypeDatabase,
-					DatabaseID: "4cb17949-f08d-4d5c-ab50-fe6ba689d2c8",
-				},
-				Properties: notion.DatabasePageProperties{
-					"Name": notion.DatabasePageProperty{
-						ID:   "title",
-						Type: notion.DBPropTypeTitle,
-						Title: []notion.RichText{
-							{
-								Type: notion.RichTextTypeText,
-								Text: &notion.Text{
-									Content: "Lorem ipsum",
-								},
-								Annotations: &notion.Annotations{
-									Color: notion.ColorDefault,
-								},
-								PlainText: "Lorem ipsum",
-							},
-						},
-					},
-				},
-			},
-			expError: nil,
-		},
-		{
 			name: "error response",
 			params: notion.UpdatePageParams{
-				Title: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Foobar",
+				DatabasePageProperties: notion.DatabasePageProperties{
+					"Name": notion.DatabasePageProperty{
+						Title: []notion.RichText{
+							{
+								Text: &notion.Text{
+									Content: "Foobar",
+								},
+							},
 						},
 					},
 				},
@@ -2527,10 +2531,12 @@ func TestUpdatePage(t *testing.T) {
 			respStatusCode: http.StatusBadRequest,
 			expPostBody: map[string]interface{}{
 				"properties": map[string]interface{}{
-					"title": []interface{}{
-						map[string]interface{}{
-							"text": map[string]interface{}{
-								"content": "Foobar",
+					"Name": map[string]interface{}{
+						"title": []interface{}{
+							map[string]interface{}{
+								"text": map[string]interface{}{
+									"content": "Foobar",
+								},
 							},
 						},
 					},
@@ -2543,7 +2549,7 @@ func TestUpdatePage(t *testing.T) {
 			name:        "missing any params",
 			params:      notion.UpdatePageParams{},
 			expResponse: notion.Page{},
-			expError:    errors.New("notion: invalid page params: at least one of database page properties, title, icon or cover is required"),
+			expError:    errors.New("notion: invalid page params: at least one of database page properties, archived, icon or cover is required"),
 		},
 	}
 

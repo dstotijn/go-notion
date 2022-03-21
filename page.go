@@ -82,10 +82,10 @@ type CreatePageParams struct {
 // UpdatePageParams is used for updating a page. At least one field should have
 // a non-empty value.
 type UpdatePageParams struct {
-	DatabasePageProperties *DatabasePageProperties
-	Title                  []RichText
-	Icon                   *Icon
-	Cover                  *Cover
+	DatabasePageProperties DatabasePageProperties `json:"properties,omitempty"`
+	Archived               *bool                  `json:"archived,omitempty"`
+	Icon                   *Icon                  `json:"icon,omitempty"`
+	Cover                  *Cover                 `json:"cover,omitempty"`
 }
 
 // PagePropItem is used for a *single* property object value, e.g. for a `rich_text`
@@ -287,8 +287,8 @@ func (p *Page) UnmarshalJSON(b []byte) error {
 
 func (p UpdatePageParams) Validate() error {
 	// At least one of the params must be set.
-	if p.DatabasePageProperties == nil && p.Title == nil && p.Icon == nil && p.Cover == nil {
-		return errors.New("at least one of database page properties, title, icon or cover is required")
+	if p.DatabasePageProperties == nil && p.Archived == nil && p.Icon == nil && p.Cover == nil {
+		return errors.New("at least one of database page properties, archived, icon or cover is required")
 	}
 	if p.Icon != nil {
 		if err := p.Icon.Validate(); err != nil {
@@ -296,27 +296,4 @@ func (p UpdatePageParams) Validate() error {
 		}
 	}
 	return nil
-}
-
-func (p UpdatePageParams) MarshalJSON() ([]byte, error) {
-	type UpdatePageParamsDTO struct {
-		Properties interface{} `json:"properties,omitempty"`
-		Icon       *Icon       `json:"icon,omitempty"`
-		Cover      *Cover      `json:"cover,omitempty"`
-	}
-
-	dto := UpdatePageParamsDTO{
-		Icon:  p.Icon,
-		Cover: p.Cover,
-	}
-
-	if p.DatabasePageProperties != nil {
-		dto.Properties = p.DatabasePageProperties
-	} else if p.Title != nil {
-		dto.Properties = PageTitle{
-			Title: p.Title,
-		}
-	}
-
-	return json.Marshal(dto)
 }
