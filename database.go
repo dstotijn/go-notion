@@ -153,6 +153,9 @@ type DatabaseQueryResponse struct {
 // See: https://developers.notion.com/reference/post-database-query#post-database-query-filter
 type DatabaseQueryFilter struct {
 	Property string `json:"property,omitempty"`
+	Timestamp string `json:"timestamp,omitempty"`
+	CreatedTime *DateDatabaseQueryFilter `json:"created_time,omitempty"`
+	LastEditedTime *DateDatabaseQueryFilter `json:"last_edited_time,omitempty"`
 
 	Text        *TextDatabaseQueryFilter        `json:"text,omitempty"`
 	Number      *NumberDatabaseQueryFilter      `json:"number,omitempty"`
