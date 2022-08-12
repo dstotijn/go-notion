@@ -10,6 +10,7 @@ import (
 // See: https://developers.notion.com/reference/block
 type Block interface {
 	ID() string
+	Parent() Parent
 	CreatedTime() time.Time
 	LastEditedTime() time.Time
 	HasChildren() bool
@@ -19,6 +20,7 @@ type Block interface {
 
 type blockDTO struct {
 	ID             string     `json:"id,omitempty"`
+	Parent         *Parent    `json:"parent,omitempty"`
 	Type           BlockType  `json:"type,omitempty"`
 	CreatedTime    *time.Time `json:"created_time,omitempty"`
 	LastEditedTime *time.Time `json:"last_edited_time,omitempty"`
@@ -60,6 +62,7 @@ type blockDTO struct {
 
 type baseBlock struct {
 	id             string
+	parent         Parent
 	createdTime    time.Time
 	lastEditedTime time.Time
 	hasChildren    bool
@@ -85,6 +88,10 @@ func (b baseBlock) HasChildren() bool {
 
 func (b baseBlock) Archived() bool {
 	return b.archived
+}
+
+func (b baseBlock) Parent() Parent {
+	return b.parent
 }
 
 type ParagraphBlock struct {
@@ -829,6 +836,10 @@ func (dto blockDTO) Block() Block {
 	baseBlock := baseBlock{
 		id:          dto.ID,
 		hasChildren: dto.HasChildren,
+	}
+
+	if dto.Parent != nil {
+		baseBlock.parent = *dto.Parent
 	}
 
 	if dto.CreatedTime != nil {

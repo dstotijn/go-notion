@@ -3998,6 +3998,7 @@ func TestFindBlockByID(t *testing.T) {
 		respStatusCode    int
 		expBlock          notion.Block
 		expID             string
+		expParent         notion.Parent
 		expCreatedTime    time.Time
 		expLastEditedTime time.Time
 		expHasChildren    bool
@@ -4012,6 +4013,10 @@ func TestFindBlockByID(t *testing.T) {
 					`{
 						"object": "block",
 						"id": "048e165e-352d-4119-8128-e46c3527d95c",
+						"parent": {
+							"type": "page_id",
+							"page_id": "59833787-2cf9-4fdf-8782-e53db20768a5"
+						},
 						"created_time": "2021-10-02T06:09:00.000Z",
 						"last_edited_time": "2021-10-02T06:31:00.000Z",
 						"has_children": true,
@@ -4027,7 +4032,11 @@ func TestFindBlockByID(t *testing.T) {
 			expBlock: &notion.ChildPageBlock{
 				Title: "test title",
 			},
-			expID:             "048e165e-352d-4119-8128-e46c3527d95c",
+			expID: "048e165e-352d-4119-8128-e46c3527d95c",
+			expParent: notion.Parent{
+				Type:   notion.ParentTypePage,
+				PageID: "59833787-2cf9-4fdf-8782-e53db20768a5",
+			},
 			expCreatedTime:    mustParseTime(time.RFC3339, "2021-10-02T06:09:00Z"),
 			expLastEditedTime: mustParseTime(time.RFC3339, "2021-10-02T06:31:00Z"),
 			expHasChildren:    true,
@@ -4086,6 +4095,10 @@ func TestFindBlockByID(t *testing.T) {
 			if block != nil {
 				if tt.expID != block.ID() {
 					t.Fatalf("id not equal (expected: %v, got: %v)", tt.expID, block.ID())
+				}
+
+				if tt.expParent != block.Parent() {
+					t.Fatalf("parent not equal (expected: %+v, got: %+v)", tt.expParent, block.Parent())
 				}
 
 				if tt.expCreatedTime != block.CreatedTime() {
