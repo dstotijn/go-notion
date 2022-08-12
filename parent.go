@@ -3,6 +3,7 @@ package notion
 type Parent struct {
 	Type ParentType `json:"type,omitempty"`
 
+	BlockID    string `json:"block_id,omitempty"`
 	PageID     string `json:"page_id,omitempty"`
 	DatabaseID string `json:"database_id,omitempty"`
 	Workspace  bool   `json:"workspace,omitempty"`
