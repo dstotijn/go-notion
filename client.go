@@ -413,87 +413,93 @@ func (c *Client) AppendBlockChildren(ctx context.Context, blockID string, childr
 
 // FindBlockByID returns a single of block for a given block ID.
 // See: https://developers.notion.com/reference/retrieve-a-block
-func (c *Client) FindBlockByID(ctx context.Context, blockID string) (block Block, err error) {
+func (c *Client) FindBlockByID(ctx context.Context, blockID string) (Block, error) {
 	req, err := c.newRequest(ctx, http.MethodGet, fmt.Sprintf("/blocks/%v", blockID), nil)
 	if err != nil {
-		return Block{}, fmt.Errorf("notion: invalid request: %w", err)
+		return nil, fmt.Errorf("notion: invalid request: %w", err)
 	}
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return Block{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+		return nil, fmt.Errorf("notion: failed to make HTTP request: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return Block{}, fmt.Errorf("notion: failed to find block: %w", parseErrorResponse(res))
+		return nil, fmt.Errorf("notion: failed to find block: %w", parseErrorResponse(res))
 	}
 
-	err = json.NewDecoder(res.Body).Decode(&block)
+	var dto blockDTO
+
+	err = json.NewDecoder(res.Body).Decode(&dto)
 	if err != nil {
-		return Block{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+		return nil, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
 	}
 
-	return block, nil
+	return dto.Block(), nil
 }
 
 // UpdateBlock updates a block.
 // See: https://developers.notion.com/reference/update-a-block
-func (c *Client) UpdateBlock(ctx context.Context, blockID string, block Block) (updatedBlock Block, err error) {
+func (c *Client) UpdateBlock(ctx context.Context, blockID string, block Block) (Block, error) {
 	body := &bytes.Buffer{}
 
-	err = json.NewEncoder(body).Encode(block)
+	err := json.NewEncoder(body).Encode(block)
 	if err != nil {
-		return Block{}, fmt.Errorf("notion: failed to encode body params to JSON: %w", err)
+		return nil, fmt.Errorf("notion: failed to encode body params to JSON: %w", err)
 	}
 
 	req, err := c.newRequest(ctx, http.MethodPatch, "/blocks/"+blockID, body)
 	if err != nil {
-		return Block{}, fmt.Errorf("notion: invalid request: %w", err)
+		return nil, fmt.Errorf("notion: invalid request: %w", err)
 	}
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return Block{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+		return nil, fmt.Errorf("notion: failed to make HTTP request: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return Block{}, fmt.Errorf("notion: failed to update block: %w", parseErrorResponse(res))
+		return nil, fmt.Errorf("notion: failed to update block: %w", parseErrorResponse(res))
 	}
 
-	err = json.NewDecoder(res.Body).Decode(&updatedBlock)
+	var dto blockDTO
+
+	err = json.NewDecoder(res.Body).Decode(&dto)
 	if err != nil {
-		return Block{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+		return nil, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
 	}
 
-	return updatedBlock, nil
+	return dto.Block(), nil
 }
 
 // DeleteBlock sets `archived: true` on a (page) block object.
 // See: https://developers.notion.com/reference/delete-a-block
-func (c *Client) DeleteBlock(ctx context.Context, blockID string) (deletedBlock Block, err error) {
+func (c *Client) DeleteBlock(ctx context.Context, blockID string) (Block, error) {
 	req, err := c.newRequest(ctx, http.MethodDelete, "/blocks/"+blockID, nil)
 	if err != nil {
-		return Block{}, fmt.Errorf("notion: invalid request: %w", err)
+		return nil, fmt.Errorf("notion: invalid request: %w", err)
 	}
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return Block{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+		return nil, fmt.Errorf("notion: failed to make HTTP request: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return Block{}, fmt.Errorf("notion: failed to delete block: %w", parseErrorResponse(res))
+		return nil, fmt.Errorf("notion: failed to delete block: %w", parseErrorResponse(res))
 	}
 
-	err = json.NewDecoder(res.Body).Decode(&deletedBlock)
+	var dto blockDTO
+
+	err = json.NewDecoder(res.Body).Decode(&dto)
 	if err != nil {
-		return Block{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+		return nil, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
 	}
 
-	return deletedBlock, nil
+	return dto.Block(), nil
 }
 
 // FindUserByID fetches a user by ID.

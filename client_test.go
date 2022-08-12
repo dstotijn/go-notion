@@ -14,6 +14,7 @@ import (
 
 	"github.com/dstotijn/go-notion"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 type mockRoundtripper struct {
@@ -1667,15 +1668,11 @@ func TestCreatePage(t *testing.T) {
 					},
 				},
 				Children: []notion.Block{
-					{
-						Object: "block",
-						Type:   notion.BlockTypeParagraph,
-						Paragraph: &notion.RichTextBlock{
-							Text: []notion.RichText{
-								{
-									Text: &notion.Text{
-										Content: "Lorem ipsum dolor sit amet.",
-									},
+					&notion.ParagraphBlock{
+						Text: []notion.RichText{
+							{
+								Text: &notion.Text{
+									Content: "Lorem ipsum dolor sit amet.",
 								},
 							},
 						},
@@ -1763,8 +1760,6 @@ func TestCreatePage(t *testing.T) {
 				},
 				"children": []interface{}{
 					map[string]interface{}{
-						"object": "block",
-						"type":   "paragraph",
 						"paragraph": map[string]interface{}{
 							"text": []interface{}{
 								map[string]interface{}{
@@ -1846,15 +1841,11 @@ func TestCreatePage(t *testing.T) {
 					},
 				},
 				Children: []notion.Block{
-					{
-						Object: "block",
-						Type:   notion.BlockTypeParagraph,
-						Paragraph: &notion.RichTextBlock{
-							Text: []notion.RichText{
-								{
-									Text: &notion.Text{
-										Content: "Lorem ipsum dolor sit amet.",
-									},
+					&notion.ParagraphBlock{
+						Text: []notion.RichText{
+							{
+								Text: &notion.Text{
+									Content: "Lorem ipsum dolor sit amet.",
 								},
 							},
 						},
@@ -1916,8 +1907,6 @@ func TestCreatePage(t *testing.T) {
 				},
 				"children": []interface{}{
 					map[string]interface{}{
-						"object": "block",
-						"type":   "paragraph",
 						"paragraph": map[string]interface{}{
 							"text": []interface{}{
 								map[string]interface{}{
@@ -2877,6 +2866,14 @@ func TestFindPagePropertyByID(t *testing.T) {
 func TestFindBlockChildrenById(t *testing.T) {
 	t.Parallel()
 
+	type blockFields struct {
+		id             string
+		createdTime    time.Time
+		lastEditedTime time.Time
+		hasChildren    bool
+		archived       bool
+	}
+
 	tests := []struct {
 		name           string
 		query          *notion.PaginationQuery
@@ -2884,6 +2881,7 @@ func TestFindBlockChildrenById(t *testing.T) {
 		respStatusCode int
 		expQueryParams url.Values
 		expResponse    notion.BlockChildrenResponse
+		expBlockFields []blockFields
 		expError       error
 	}{
 		{
@@ -2939,30 +2937,32 @@ func TestFindBlockChildrenById(t *testing.T) {
 			},
 			expResponse: notion.BlockChildrenResponse{
 				Results: []notion.Block{
-					{
-						Object:         "block",
-						ID:             "ae9c9a31-1c1e-4ae2-a5ee-c539a2d43113",
-						CreatedTime:    notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:00.000Z")),
-						LastEditedTime: notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:00.000Z")),
-						Type:           notion.BlockTypeParagraph,
-						Paragraph: &notion.RichTextBlock{
-							Text: []notion.RichText{
-								{
-									Type: notion.RichTextTypeText,
-									Text: &notion.Text{
-										Content: "Lorem ipsum dolor sit amet.",
-									},
-									Annotations: &notion.Annotations{
-										Color: notion.ColorDefault,
-									},
-									PlainText: "Lorem ipsum dolor sit amet.",
+					&notion.ParagraphBlock{
+						Text: []notion.RichText{
+							{
+								Type: notion.RichTextTypeText,
+								Text: &notion.Text{
+									Content: "Lorem ipsum dolor sit amet.",
 								},
+								Annotations: &notion.Annotations{
+									Color: notion.ColorDefault,
+								},
+								PlainText: "Lorem ipsum dolor sit amet.",
 							},
 						},
 					},
 				},
 				HasMore:    true,
 				NextCursor: notion.StringPtr("A^hd"),
+			},
+			expBlockFields: []blockFields{
+				{
+					id:             "ae9c9a31-1c1e-4ae2-a5ee-c539a2d43113",
+					createdTime:    mustParseTime(time.RFC3339, "2021-05-14T09:15:00.000Z"),
+					lastEditedTime: mustParseTime(time.RFC3339, "2021-05-14T09:15:00.000Z"),
+					hasChildren:    false,
+					archived:       false,
+				},
 			},
 			expError: nil,
 		},
@@ -3049,8 +3049,34 @@ func TestFindBlockChildrenById(t *testing.T) {
 				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
 			}
 
-			if diff := cmp.Diff(tt.expResponse, resp); diff != "" {
+			if diff := cmp.Diff(tt.expResponse, resp, cmpopts.IgnoreUnexported(notion.ParagraphBlock{})); diff != "" {
 				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+
+			if len(tt.expBlockFields) != len(resp.Results) {
+				t.Fatalf("expected %v result(s), got %v", len(tt.expBlockFields), len(resp.Results))
+			}
+
+			for i, exp := range tt.expBlockFields {
+				if exp.id != resp.Results[i].ID() {
+					t.Fatalf("id not equal (expected: %v, got: %v)", exp.id, resp.Results[i].ID())
+				}
+
+				if exp.createdTime != resp.Results[i].CreatedTime() {
+					t.Fatalf("createdTime not equal (expected: %v, got: %v)", exp.createdTime, resp.Results[i].CreatedTime())
+				}
+
+				if exp.lastEditedTime != resp.Results[i].LastEditedTime() {
+					t.Fatalf("lastEditedTime not equal (expected: %v, got: %v)", exp.lastEditedTime, resp.Results[i].LastEditedTime())
+				}
+
+				if exp.hasChildren != resp.Results[i].HasChildren() {
+					t.Fatalf("hasChildren not equal (expected: %v, got: %v)", exp.hasChildren, resp.Results[i].HasChildren())
+				}
+
+				if exp.archived != resp.Results[i].Archived() {
+					t.Fatalf("archived not equal (expected: %v, got: %v)", exp.archived, resp.Results[i].Archived())
+				}
 			}
 		})
 	}
@@ -3059,6 +3085,14 @@ func TestFindBlockChildrenById(t *testing.T) {
 func TestAppendBlockChildren(t *testing.T) {
 	t.Parallel()
 
+	type blockFields struct {
+		id             string
+		createdTime    time.Time
+		lastEditedTime time.Time
+		hasChildren    bool
+		archived       bool
+	}
+
 	tests := []struct {
 		name           string
 		children       []notion.Block
@@ -3066,19 +3100,17 @@ func TestAppendBlockChildren(t *testing.T) {
 		respStatusCode int
 		expPostBody    map[string]interface{}
 		expResponse    notion.BlockChildrenResponse
+		expBlockFields []blockFields
 		expError       error
 	}{
 		{
 			name: "successful response",
 			children: []notion.Block{
-				{
-					Type: notion.BlockTypeParagraph,
-					Paragraph: &notion.RichTextBlock{
-						Text: []notion.RichText{
-							{
-								Text: &notion.Text{
-									Content: "Lorem ipsum dolor sit amet.",
-								},
+				&notion.ParagraphBlock{
+					Text: []notion.RichText{
+						{
+							Text: &notion.Text{
+								Content: "Lorem ipsum dolor sit amet.",
 							},
 						},
 					},
@@ -3128,8 +3160,6 @@ func TestAppendBlockChildren(t *testing.T) {
 			expPostBody: map[string]interface{}{
 				"children": []interface{}{
 					map[string]interface{}{
-						"object": "block",
-						"type":   "paragraph",
 						"paragraph": map[string]interface{}{
 							"text": []interface{}{
 								map[string]interface{}{
@@ -3144,24 +3174,17 @@ func TestAppendBlockChildren(t *testing.T) {
 			},
 			expResponse: notion.BlockChildrenResponse{
 				Results: []notion.Block{
-					{
-						Object:         "block",
-						ID:             "ae9c9a31-1c1e-4ae2-a5ee-c539a2d43113",
-						CreatedTime:    notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:00.000Z")),
-						LastEditedTime: notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-14T09:15:00.000Z")),
-						Type:           notion.BlockTypeParagraph,
-						Paragraph: &notion.RichTextBlock{
-							Text: []notion.RichText{
-								{
-									Type: notion.RichTextTypeText,
-									Text: &notion.Text{
-										Content: "Lorem ipsum dolor sit amet.",
-									},
-									Annotations: &notion.Annotations{
-										Color: notion.ColorDefault,
-									},
-									PlainText: "Lorem ipsum dolor sit amet.",
+					&notion.ParagraphBlock{
+						Text: []notion.RichText{
+							{
+								Type: notion.RichTextTypeText,
+								Text: &notion.Text{
+									Content: "Lorem ipsum dolor sit amet.",
 								},
+								Annotations: &notion.Annotations{
+									Color: notion.ColorDefault,
+								},
+								PlainText: "Lorem ipsum dolor sit amet.",
 							},
 						},
 					},
@@ -3169,19 +3192,25 @@ func TestAppendBlockChildren(t *testing.T) {
 				HasMore:    true,
 				NextCursor: notion.StringPtr("A^hd"),
 			},
+			expBlockFields: []blockFields{
+				{
+					id:             "ae9c9a31-1c1e-4ae2-a5ee-c539a2d43113",
+					createdTime:    mustParseTime(time.RFC3339, "2021-05-14T09:15:00.000Z"),
+					lastEditedTime: mustParseTime(time.RFC3339, "2021-05-14T09:15:00.000Z"),
+					hasChildren:    false,
+					archived:       false,
+				},
+			},
 			expError: nil,
 		},
 		{
 			name: "error response",
 			children: []notion.Block{
-				{
-					Type: notion.BlockTypeParagraph,
-					Paragraph: &notion.RichTextBlock{
-						Text: []notion.RichText{
-							{
-								Text: &notion.Text{
-									Content: "Lorem ipsum dolor sit amet.",
-								},
+				&notion.ParagraphBlock{
+					Text: []notion.RichText{
+						{
+							Text: &notion.Text{
+								Content: "Lorem ipsum dolor sit amet.",
 							},
 						},
 					},
@@ -3201,8 +3230,6 @@ func TestAppendBlockChildren(t *testing.T) {
 			expPostBody: map[string]interface{}{
 				"children": []interface{}{
 					map[string]interface{}{
-						"object": "block",
-						"type":   "paragraph",
 						"paragraph": map[string]interface{}{
 							"text": []interface{}{
 								map[string]interface{}{
@@ -3268,8 +3295,34 @@ func TestAppendBlockChildren(t *testing.T) {
 				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
 			}
 
-			if diff := cmp.Diff(tt.expResponse, resp); diff != "" {
+			if diff := cmp.Diff(tt.expResponse, resp, cmpopts.IgnoreUnexported(notion.ParagraphBlock{})); diff != "" {
 				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+
+			if len(tt.expBlockFields) != len(resp.Results) {
+				t.Fatalf("expected %v result(s), got %v", len(tt.expBlockFields), len(resp.Results))
+			}
+
+			for i, exp := range tt.expBlockFields {
+				if exp.id != resp.Results[i].ID() {
+					t.Fatalf("id not equal (expected: %v, got: %v)", exp.id, resp.Results[i].ID())
+				}
+
+				if exp.createdTime != resp.Results[i].CreatedTime() {
+					t.Fatalf("createdTime not equal (expected: %v, got: %v)", exp.createdTime, resp.Results[i].CreatedTime())
+				}
+
+				if exp.lastEditedTime != resp.Results[i].LastEditedTime() {
+					t.Fatalf("lastEditedTime not equal (expected: %v, got: %v)", exp.lastEditedTime, resp.Results[i].LastEditedTime())
+				}
+
+				if exp.hasChildren != resp.Results[i].HasChildren() {
+					t.Fatalf("hasChildren not equal (expected: %v, got: %v)", exp.hasChildren, resp.Results[i].HasChildren())
+				}
+
+				if exp.archived != resp.Results[i].Archived() {
+					t.Fatalf("archived not equal (expected: %v, got: %v)", exp.archived, resp.Results[i].Archived())
+				}
 			}
 		})
 	}
@@ -3939,12 +3992,17 @@ func TestFindBlockByID(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name           string
-		blockID        string
-		respBody       func(r *http.Request) io.Reader
-		respStatusCode int
-		expBlock       notion.Block
-		expError       error
+		name              string
+		blockID           string
+		respBody          func(r *http.Request) io.Reader
+		respStatusCode    int
+		expBlock          notion.Block
+		expID             string
+		expCreatedTime    time.Time
+		expLastEditedTime time.Time
+		expHasChildren    bool
+		expArchived       bool
+		expError          error
 	}{
 		{
 			name:    "successful response",
@@ -3966,17 +4024,15 @@ func TestFindBlockByID(t *testing.T) {
 				)
 			},
 			respStatusCode: http.StatusOK,
-			expBlock: notion.Block{
-				Object:         "block",
-				ID:             "048e165e-352d-4119-8128-e46c3527d95c",
-				Type:           "child_page",
-				CreatedTime:    mustParseTimePointer(time.RFC3339, "2021-10-02T06:09:00Z"),
-				LastEditedTime: mustParseTimePointer(time.RFC3339, "2021-10-02T06:31:00Z"),
-				HasChildren:    true,
-				ChildPage:      &notion.ChildPage{Title: "test title"},
-				Archived:       notion.BoolPtr(false),
+			expBlock: &notion.ChildPageBlock{
+				Title: "test title",
 			},
-			expError: nil,
+			expID:             "048e165e-352d-4119-8128-e46c3527d95c",
+			expCreatedTime:    mustParseTime(time.RFC3339, "2021-10-02T06:09:00Z"),
+			expLastEditedTime: mustParseTime(time.RFC3339, "2021-10-02T06:31:00Z"),
+			expHasChildren:    true,
+			expArchived:       false,
+			expError:          nil,
 		},
 		{
 			name: "error response not found",
@@ -3991,7 +4047,7 @@ func TestFindBlockByID(t *testing.T) {
 				)
 			},
 			respStatusCode: http.StatusNotFound,
-			expBlock:       notion.Block{},
+			expBlock:       nil,
 			expError:       errors.New("notion: failed to find block: Could not find block with ID: test id. (code: object_not_found, status: 404)"),
 		},
 	}
@@ -4023,8 +4079,30 @@ func TestFindBlockByID(t *testing.T) {
 				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
 			}
 
-			if diff := cmp.Diff(tt.expBlock, block); diff != "" {
+			if diff := cmp.Diff(tt.expBlock, block, cmpopts.IgnoreUnexported(notion.ChildPageBlock{})); diff != "" {
 				t.Fatalf("user not equal (-exp, +got):\n%v", diff)
+			}
+
+			if block != nil {
+				if tt.expID != block.ID() {
+					t.Fatalf("id not equal (expected: %v, got: %v)", tt.expID, block.ID())
+				}
+
+				if tt.expCreatedTime != block.CreatedTime() {
+					t.Fatalf("createdTime not equal (expected: %v, got: %v)", tt.expCreatedTime, block.CreatedTime())
+				}
+
+				if tt.expLastEditedTime != block.LastEditedTime() {
+					t.Fatalf("lastEditedTime not equal (expected: %v, got: %v)", tt.expLastEditedTime, block.LastEditedTime())
+				}
+
+				if tt.expHasChildren != block.HasChildren() {
+					t.Fatalf("hasChildren not equal (expected: %v, got: %v)", tt.expHasChildren, block.HasChildren())
+				}
+
+				if tt.expArchived != block.Archived() {
+					t.Fatalf("archived not equal (expected: %v, got: %v)", tt.expArchived, block.Archived())
+				}
 			}
 		})
 	}
@@ -4034,23 +4112,26 @@ func TestUpdateBlock(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name           string
-		block          notion.Block
-		respBody       func(r *http.Request) io.Reader
-		respStatusCode int
-		expPostBody    map[string]interface{}
-		expResponse    notion.Block
-		expError       error
+		name              string
+		block             notion.Block
+		respBody          func(r *http.Request) io.Reader
+		respStatusCode    int
+		expPostBody       map[string]interface{}
+		expResponse       notion.Block
+		expID             string
+		expCreatedTime    time.Time
+		expLastEditedTime time.Time
+		expHasChildren    bool
+		expArchived       bool
+		expError          error
 	}{
 		{
 			name: "successful response",
-			block: notion.Block{
-				Paragraph: &notion.RichTextBlock{
-					Text: []notion.RichText{
-						{
-							Text: &notion.Text{
-								Content: "Foobar",
-							},
+			block: &notion.ParagraphBlock{
+				Text: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Foobar",
 						},
 					},
 				},
@@ -4091,7 +4172,6 @@ func TestUpdateBlock(t *testing.T) {
 			},
 			respStatusCode: http.StatusOK,
 			expPostBody: map[string]interface{}{
-				"object": "block",
 				"paragraph": map[string]interface{}{
 					"text": []interface{}{
 						map[string]interface{}{
@@ -4102,40 +4182,34 @@ func TestUpdateBlock(t *testing.T) {
 					},
 				},
 			},
-			expResponse: notion.Block{
-				Object:         "block",
-				ID:             "048e165e-352d-4119-8128-e46c3527d95c",
-				Type:           notion.BlockTypeParagraph,
-				CreatedTime:    mustParseTimePointer(time.RFC3339, "2021-10-02T06:09:00Z"),
-				LastEditedTime: mustParseTimePointer(time.RFC3339, "2021-10-02T06:31:00Z"),
-				HasChildren:    true,
-				Paragraph: &notion.RichTextBlock{
-					Text: []notion.RichText{
-						{
-							Type: notion.RichTextTypeText,
-							Text: &notion.Text{
-								Content: "Foobar",
-							},
-							PlainText: "Foobar",
-							Annotations: &notion.Annotations{
-								Color: notion.ColorDefault,
-							},
+			expResponse: &notion.ParagraphBlock{
+				Text: []notion.RichText{
+					{
+						Type: notion.RichTextTypeText,
+						Text: &notion.Text{
+							Content: "Foobar",
+						},
+						PlainText: "Foobar",
+						Annotations: &notion.Annotations{
+							Color: notion.ColorDefault,
 						},
 					},
 				},
-				Archived: notion.BoolPtr(false),
 			},
-			expError: nil,
+			expID:             "048e165e-352d-4119-8128-e46c3527d95c",
+			expCreatedTime:    mustParseTime(time.RFC3339, "2021-10-02T06:09:00Z"),
+			expLastEditedTime: mustParseTime(time.RFC3339, "2021-10-02T06:31:00Z"),
+			expHasChildren:    true,
+			expArchived:       false,
+			expError:          nil,
 		},
 		{
 			name: "error response",
-			block: notion.Block{
-				Paragraph: &notion.RichTextBlock{
-					Text: []notion.RichText{
-						{
-							Text: &notion.Text{
-								Content: "Foobar",
-							},
+			block: &notion.ParagraphBlock{
+				Text: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Foobar",
 						},
 					},
 				},
@@ -4152,7 +4226,6 @@ func TestUpdateBlock(t *testing.T) {
 			},
 			respStatusCode: http.StatusBadRequest,
 			expPostBody: map[string]interface{}{
-				"object": "block",
 				"paragraph": map[string]interface{}{
 					"text": []interface{}{
 						map[string]interface{}{
@@ -4163,7 +4236,7 @@ func TestUpdateBlock(t *testing.T) {
 					},
 				},
 			},
-			expResponse: notion.Block{},
+			expResponse: nil,
 			expError:    errors.New("notion: failed to update block: foobar (code: validation_error, status: 400)"),
 		},
 	}
@@ -4216,8 +4289,30 @@ func TestUpdateBlock(t *testing.T) {
 				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
 			}
 
-			if diff := cmp.Diff(tt.expResponse, updatedBlock); diff != "" {
+			if diff := cmp.Diff(tt.expResponse, updatedBlock, cmpopts.IgnoreUnexported(notion.ParagraphBlock{})); diff != "" {
 				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+
+			if updatedBlock != nil {
+				if tt.expID != updatedBlock.ID() {
+					t.Fatalf("id not equal (expected: %v, got: %v)", tt.expID, updatedBlock.ID())
+				}
+
+				if tt.expCreatedTime != updatedBlock.CreatedTime() {
+					t.Fatalf("createdTime not equal (expected: %v, got: %v)", tt.expCreatedTime, updatedBlock.CreatedTime())
+				}
+
+				if tt.expLastEditedTime != updatedBlock.LastEditedTime() {
+					t.Fatalf("lastEditedTime not equal (expected: %v, got: %v)", tt.expLastEditedTime, updatedBlock.LastEditedTime())
+				}
+
+				if tt.expHasChildren != updatedBlock.HasChildren() {
+					t.Fatalf("hasChildren not equal (expected: %v, got: %v)", tt.expHasChildren, updatedBlock.HasChildren())
+				}
+
+				if tt.expArchived != updatedBlock.Archived() {
+					t.Fatalf("archived not equal (expected: %v, got: %v)", tt.expArchived, updatedBlock.Archived())
+				}
 			}
 		})
 	}
@@ -4227,11 +4322,16 @@ func TestDeleteBlock(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name           string
-		respBody       func(r *http.Request) io.Reader
-		respStatusCode int
-		expResponse    notion.Block
-		expError       error
+		name              string
+		respBody          func(r *http.Request) io.Reader
+		respStatusCode    int
+		expResponse       notion.Block
+		expID             string
+		expCreatedTime    time.Time
+		expLastEditedTime time.Time
+		expHasChildren    bool
+		expArchived       bool
+		expError          error
 	}{
 		{
 			name: "successful response",
@@ -4270,30 +4370,26 @@ func TestDeleteBlock(t *testing.T) {
 				)
 			},
 			respStatusCode: http.StatusOK,
-			expResponse: notion.Block{
-				Object:         "block",
-				ID:             "048e165e-352d-4119-8128-e46c3527d95c",
-				Type:           notion.BlockTypeParagraph,
-				CreatedTime:    mustParseTimePointer(time.RFC3339, "2021-10-02T06:09:00Z"),
-				LastEditedTime: mustParseTimePointer(time.RFC3339, "2021-10-02T06:31:00Z"),
-				HasChildren:    true,
-				Paragraph: &notion.RichTextBlock{
-					Text: []notion.RichText{
-						{
-							Type: notion.RichTextTypeText,
-							Text: &notion.Text{
-								Content: "Foobar",
-							},
-							PlainText: "Foobar",
-							Annotations: &notion.Annotations{
-								Color: notion.ColorDefault,
-							},
+			expResponse: &notion.ParagraphBlock{
+				Text: []notion.RichText{
+					{
+						Type: notion.RichTextTypeText,
+						Text: &notion.Text{
+							Content: "Foobar",
+						},
+						PlainText: "Foobar",
+						Annotations: &notion.Annotations{
+							Color: notion.ColorDefault,
 						},
 					},
 				},
-				Archived: notion.BoolPtr(true),
 			},
-			expError: nil,
+			expID:             "048e165e-352d-4119-8128-e46c3527d95c",
+			expCreatedTime:    mustParseTime(time.RFC3339, "2021-10-02T06:09:00Z"),
+			expLastEditedTime: mustParseTime(time.RFC3339, "2021-10-02T06:31:00Z"),
+			expHasChildren:    true,
+			expArchived:       true,
+			expError:          nil,
 		},
 		{
 			name: "error response",
@@ -4308,7 +4404,7 @@ func TestDeleteBlock(t *testing.T) {
 				)
 			},
 			respStatusCode: http.StatusBadRequest,
-			expResponse:    notion.Block{},
+			expResponse:    nil,
 			expError:       errors.New("notion: failed to delete block: foobar (code: validation_error, status: 400)"),
 		},
 	}
@@ -4340,8 +4436,30 @@ func TestDeleteBlock(t *testing.T) {
 				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
 			}
 
-			if diff := cmp.Diff(tt.expResponse, deletedBlock); diff != "" {
+			if diff := cmp.Diff(tt.expResponse, deletedBlock, cmpopts.IgnoreUnexported(notion.ParagraphBlock{})); diff != "" {
 				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+
+			if deletedBlock != nil {
+				if tt.expID != deletedBlock.ID() {
+					t.Fatalf("id not equal (expected: %v, got: %v)", tt.expID, deletedBlock.ID())
+				}
+
+				if tt.expCreatedTime != deletedBlock.CreatedTime() {
+					t.Fatalf("createdTime not equal (expected: %v, got: %v)", tt.expCreatedTime, deletedBlock.CreatedTime())
+				}
+
+				if tt.expLastEditedTime != deletedBlock.LastEditedTime() {
+					t.Fatalf("lastEditedTime not equal (expected: %v, got: %v)", tt.expLastEditedTime, deletedBlock.LastEditedTime())
+				}
+
+				if tt.expHasChildren != deletedBlock.HasChildren() {
+					t.Fatalf("hasChildren not equal (expected: %v, got: %v)", tt.expHasChildren, deletedBlock.HasChildren())
+				}
+
+				if tt.expArchived != deletedBlock.Archived() {
+					t.Fatalf("archived not equal (expected: %v, got: %v)", tt.expArchived, deletedBlock.Archived())
+				}
 			}
 		})
 	}
