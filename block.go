@@ -12,6 +12,8 @@ type Block interface {
 	ID() string
 	Parent() Parent
 	CreatedTime() time.Time
+	CreatedBy() BaseUser
+	LastEditedBy() BaseUser
 	LastEditedTime() time.Time
 	HasChildren() bool
 	Archived() bool
@@ -23,7 +25,9 @@ type blockDTO struct {
 	Parent         *Parent    `json:"parent,omitempty"`
 	Type           BlockType  `json:"type,omitempty"`
 	CreatedTime    *time.Time `json:"created_time,omitempty"`
+	CreatedBy      *BaseUser  `json:"created_by,omitempty"`
 	LastEditedTime *time.Time `json:"last_edited_time,omitempty"`
+	LastEditedBy   *BaseUser  `json:"last_edited_by,omitempty"`
 	HasChildren    bool       `json:"has_children,omitempty"`
 	Archived       *bool      `json:"archived,omitempty"`
 
@@ -64,7 +68,9 @@ type baseBlock struct {
 	id             string
 	parent         Parent
 	createdTime    time.Time
+	createdBy      BaseUser
 	lastEditedTime time.Time
+	lastEditedBy   BaseUser
 	hasChildren    bool
 	archived       bool
 }
@@ -78,8 +84,16 @@ func (b baseBlock) CreatedTime() time.Time {
 	return b.createdTime
 }
 
+func (b baseBlock) CreatedBy() BaseUser {
+	return b.createdBy
+}
+
 func (b baseBlock) LastEditedTime() time.Time {
 	return b.lastEditedTime
+}
+
+func (b baseBlock) LastEditedBy() BaseUser {
+	return b.lastEditedBy
 }
 
 func (b baseBlock) HasChildren() bool {
@@ -846,8 +860,16 @@ func (dto blockDTO) Block() Block {
 		baseBlock.createdTime = *dto.CreatedTime
 	}
 
+	if dto.CreatedBy != nil {
+		baseBlock.createdBy = *dto.CreatedBy
+	}
+
 	if dto.LastEditedTime != nil {
 		baseBlock.lastEditedTime = *dto.LastEditedTime
+	}
+
+	if dto.LastEditedBy != nil {
+		baseBlock.lastEditedBy = *dto.LastEditedBy
 	}
 
 	if dto.Archived != nil {

@@ -13,7 +13,9 @@ import (
 type Page struct {
 	ID             string    `json:"id"`
 	CreatedTime    time.Time `json:"created_time"`
+	CreatedBy      *BaseUser `json:"created_by,omitempty"`
 	LastEditedTime time.Time `json:"last_edited_time"`
+	LastEditedBy   *BaseUser `json:"last_edited_by,omitempty"`
 	Parent         Parent    `json:"parent"`
 	Archived       bool      `json:"archived"`
 	URL            string    `json:"url"`

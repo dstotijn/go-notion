@@ -98,6 +98,14 @@ func TestFindDatabaseByID(t *testing.T) {
 						"id": "668d797c-76fa-4934-9b05-ad288df2d136",
 						"created_time": "2020-03-17T19:10:04.968Z",
 						"last_edited_time": "2020-03-17T21:49:37.913Z",
+						"created_by": {
+							"object": "user",
+							"id": "71e95936-2737-4e11-b03d-f174f6f13087"
+						},
+						"last_edited_by": {
+							"object": "user",
+							"id": "5ba97cc9-e5e0-4363-b33a-1d80a635577f"
+						},
 						"url": "https://www.notion.so/668d797c76fa49349b05ad288df2d136",
 						"title": [
 							{
@@ -238,7 +246,13 @@ func TestFindDatabaseByID(t *testing.T) {
 				ID:             "668d797c-76fa-4934-9b05-ad288df2d136",
 				CreatedTime:    mustParseTime(time.RFC3339, "2020-03-17T19:10:04.968Z"),
 				LastEditedTime: mustParseTime(time.RFC3339, "2020-03-17T21:49:37.913Z"),
-				URL:            "https://www.notion.so/668d797c76fa49349b05ad288df2d136",
+				CreatedBy: notion.BaseUser{
+					ID: "71e95936-2737-4e11-b03d-f174f6f13087",
+				},
+				LastEditedBy: notion.BaseUser{
+					ID: "5ba97cc9-e5e0-4363-b33a-1d80a635577f",
+				},
+				URL: "https://www.notion.so/668d797c76fa49349b05ad288df2d136",
 				Title: []notion.RichText{
 					{
 						Type: notion.RichTextTypeText,
@@ -710,7 +724,9 @@ func TestQueryDatabase(t *testing.T) {
 								Name: "People",
 								People: []notion.User{
 									{
-										ID:        "be32e790-8292-46df-a248-b784fdf483cf",
+										BaseUser: notion.BaseUser{
+											ID: "be32e790-8292-46df-a248-b784fdf483cf",
+										},
 										Name:      "Jane Doe",
 										AvatarURL: "https://example.com/image.png",
 										Type:      notion.UserTypePerson,
@@ -774,7 +790,9 @@ func TestQueryDatabase(t *testing.T) {
 								Type: notion.DBPropTypeCreatedBy,
 								Name: "Created by",
 								CreatedBy: &notion.User{
-									ID:        "be32e790-8292-46df-a248-b784fdf483cf",
+									BaseUser: notion.BaseUser{
+										ID: "be32e790-8292-46df-a248-b784fdf483cf",
+									},
 									Name:      "Jane Doe",
 									AvatarURL: "https://example.com/image.png",
 									Type:      notion.UserTypePerson,
@@ -794,7 +812,9 @@ func TestQueryDatabase(t *testing.T) {
 								Type: notion.DBPropTypeLastEditedBy,
 								Name: "Last edited by",
 								LastEditedBy: &notion.User{
-									ID:        "be32e790-8292-46df-a248-b784fdf483cf",
+									BaseUser: notion.BaseUser{
+										ID: "be32e790-8292-46df-a248-b784fdf483cf",
+									},
 									Name:      "Jane Doe",
 									AvatarURL: "https://example.com/image.png",
 									Type:      notion.UserTypePerson,
@@ -1529,7 +1549,15 @@ func TestFindPageByID(t *testing.T) {
 						"object": "page",
 						"id": "606ed832-7d79-46de-bbed-5b4896e7bc02",
 						"created_time": "2021-05-19T18:34:00.000Z",
+						"created_by": {
+							"object": "user",
+							"id": "71e95936-2737-4e11-b03d-f174f6f13087"
+						},
 						"last_edited_time": "2021-05-19T18:34:00.000Z",
+						"last_edited_by": {
+							"object": "user",
+							"id": "5ba97cc9-e5e0-4363-b33a-1d80a635577f"
+						},
 						"parent": {
 							"type": "page_id",
 							"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
@@ -1566,10 +1594,16 @@ func TestFindPageByID(t *testing.T) {
 			},
 			respStatusCode: http.StatusOK,
 			expPage: notion.Page{
-				ID:             "606ed832-7d79-46de-bbed-5b4896e7bc02",
-				CreatedTime:    mustParseTime(time.RFC3339Nano, "2021-05-19T18:34:00.000Z"),
+				ID:          "606ed832-7d79-46de-bbed-5b4896e7bc02",
+				CreatedTime: mustParseTime(time.RFC3339Nano, "2021-05-19T18:34:00.000Z"),
+				CreatedBy: &notion.BaseUser{
+					ID: "71e95936-2737-4e11-b03d-f174f6f13087",
+				},
 				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-19T18:34:00.000Z"),
-				URL:            "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
+				LastEditedBy: &notion.BaseUser{
+					ID: "5ba97cc9-e5e0-4363-b33a-1d80a635577f",
+				},
+				URL: "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
 				Parent: notion.Parent{
 					Type:   notion.ParentTypePage,
 					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
@@ -3369,7 +3403,9 @@ func TestFindUserByID(t *testing.T) {
 			},
 			respStatusCode: http.StatusOK,
 			expUser: notion.User{
-				ID:        "be32e790-8292-46df-a248-b784fdf483cf",
+				BaseUser: notion.BaseUser{
+					ID: "be32e790-8292-46df-a248-b784fdf483cf",
+				},
 				Name:      "Jane Doe",
 				AvatarURL: "https://example.com/avatar.png",
 				Type:      notion.UserTypePerson,
@@ -3469,13 +3505,17 @@ func TestFindCurrentUser(t *testing.T) {
 			},
 			respStatusCode: http.StatusOK,
 			expUser: notion.User{
-				ID:   "be32e790-8292-46df-a248-b784fdf483cf",
+				BaseUser: notion.BaseUser{
+					ID: "be32e790-8292-46df-a248-b784fdf483cf",
+				},
 				Type: notion.UserTypeBot,
 				Bot: &notion.Bot{
 					Owner: notion.BotOwner{
 						Type: notion.BotOwnerTypeUser,
 						User: &notion.User{
-							ID:        "5389a034-eb5c-47b5-8a9e-f79c99ef166c",
+							BaseUser: notion.BaseUser{
+								ID: "5389a034-eb5c-47b5-8a9e-f79c99ef166c",
+							},
 							Name:      "Jane Doe",
 							AvatarURL: "https://example.com/avatar.png",
 							Type:      notion.UserTypePerson,
@@ -3595,7 +3635,9 @@ func TestListUsers(t *testing.T) {
 			expResponse: notion.ListUsersResponse{
 				Results: []notion.User{
 					{
-						ID:        "be32e790-8292-46df-a248-b784fdf483cf",
+						BaseUser: notion.BaseUser{
+							ID: "be32e790-8292-46df-a248-b784fdf483cf",
+						},
 						Name:      "Jane Doe",
 						AvatarURL: "https://example.com/avatar.png",
 						Type:      notion.UserTypePerson,
@@ -3604,7 +3646,9 @@ func TestListUsers(t *testing.T) {
 						},
 					},
 					{
-						ID:   "25c9cc08-1afd-4d22-b9e6-31b0f6e7b44f",
+						BaseUser: notion.BaseUser{
+							ID: "25c9cc08-1afd-4d22-b9e6-31b0f6e7b44f",
+						},
 						Name: "Johnny 5",
 						Type: notion.UserTypeBot,
 						Bot:  &notion.Bot{},
@@ -4013,7 +4057,9 @@ func TestFindBlockByID(t *testing.T) {
 		expID             string
 		expParent         notion.Parent
 		expCreatedTime    time.Time
+		expCreatedBy      notion.BaseUser
 		expLastEditedTime time.Time
+		expLastEditedBy   notion.BaseUser
 		expHasChildren    bool
 		expArchived       bool
 		expError          error
@@ -4031,7 +4077,15 @@ func TestFindBlockByID(t *testing.T) {
 							"page_id": "59833787-2cf9-4fdf-8782-e53db20768a5"
 						},
 						"created_time": "2021-10-02T06:09:00.000Z",
+						"created_by": {
+							"object": "user",
+							"id": "71e95936-2737-4e11-b03d-f174f6f13087"
+						},
 						"last_edited_time": "2021-10-02T06:31:00.000Z",
+						"last_edited_by": {
+							"object": "user",
+							"id": "5ba97cc9-e5e0-4363-b33a-1d80a635577f"
+						},
 						"has_children": true,
 						"archived": false,
 						"type": "child_page",
@@ -4050,11 +4104,17 @@ func TestFindBlockByID(t *testing.T) {
 				Type:   notion.ParentTypePage,
 				PageID: "59833787-2cf9-4fdf-8782-e53db20768a5",
 			},
-			expCreatedTime:    mustParseTime(time.RFC3339, "2021-10-02T06:09:00Z"),
+			expCreatedTime: mustParseTime(time.RFC3339, "2021-10-02T06:09:00Z"),
+			expCreatedBy: notion.BaseUser{
+				ID: "71e95936-2737-4e11-b03d-f174f6f13087",
+			},
 			expLastEditedTime: mustParseTime(time.RFC3339, "2021-10-02T06:31:00Z"),
-			expHasChildren:    true,
-			expArchived:       false,
-			expError:          nil,
+			expLastEditedBy: notion.BaseUser{
+				ID: "5ba97cc9-e5e0-4363-b33a-1d80a635577f",
+			},
+			expHasChildren: true,
+			expArchived:    false,
+			expError:       nil,
 		},
 		{
 			name: "error response not found",
@@ -4118,8 +4178,16 @@ func TestFindBlockByID(t *testing.T) {
 					t.Fatalf("createdTime not equal (expected: %v, got: %v)", tt.expCreatedTime, block.CreatedTime())
 				}
 
+				if tt.expCreatedBy != block.CreatedBy() {
+					t.Fatalf("createdBy not equal (expected: %v, got: %v)", tt.expCreatedBy, block.CreatedBy())
+				}
+
 				if tt.expLastEditedTime != block.LastEditedTime() {
 					t.Fatalf("lastEditedTime not equal (expected: %v, got: %v)", tt.expLastEditedTime, block.LastEditedTime())
+				}
+
+				if tt.expLastEditedBy != block.LastEditedBy() {
+					t.Fatalf("lastEditedBy not equal (expected: %v, got: %v)", tt.expLastEditedBy, block.LastEditedBy())
 				}
 
 				if tt.expHasChildren != block.HasChildren() {
