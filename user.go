@@ -28,8 +28,15 @@ type BotOwner struct {
 	User      *User        `json:"user"`
 }
 
+// BaseUser contains the fields that are always returned for user objects.
+// See: https://developers.notion.com/reference/user#where-user-objects-appear-in-the-api
+type BaseUser struct {
+	ID string `json:"id"`
+}
+
 type User struct {
-	ID        string   `json:"id"`
+	BaseUser
+
 	Type      UserType `json:"type"`
 	Name      string   `json:"name"`
 	AvatarURL string   `json:"avatar_url"`

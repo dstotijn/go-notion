@@ -11,13 +11,16 @@ import (
 type Database struct {
 	ID             string             `json:"id"`
 	CreatedTime    time.Time          `json:"created_time"`
+	CreatedBy      BaseUser           `json:"created_by"`
 	LastEditedTime time.Time          `json:"last_edited_time"`
+	LastEditedBy   BaseUser           `json:"last_edited_by"`
 	URL            string             `json:"url"`
 	Title          []RichText         `json:"title"`
 	Properties     DatabaseProperties `json:"properties"`
 	Parent         Parent             `json:"parent"`
 	Icon           *Icon              `json:"icon,omitempty"`
 	Cover          *Cover             `json:"cover,omitempty"`
+	Archived       bool               `json:"archived"`
 }
 
 // DatabaseProperties is a mapping of properties defined on a database.
@@ -496,6 +499,7 @@ type UpdateDatabaseParams struct {
 	Properties map[string]*DatabaseProperty `json:"properties,omitempty"`
 	Icon       *Icon                        `json:"icon,omitempty"`
 	Cover      *Cover                       `json:"cover,omitempty"`
+	Archived   *bool                        `json:"archived,omitempty"`
 }
 
 // Validate validates params for updating a database.
