@@ -113,6 +113,7 @@ type ParagraphBlock struct {
 
 	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
+	Color    Color      `json:"color,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -134,6 +135,7 @@ type BulletedListItemBlock struct {
 
 	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
+	Color    Color      `json:"color,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -155,6 +157,7 @@ type NumberedListItemBlock struct {
 
 	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
+	Color    Color      `json:"color,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -176,6 +179,7 @@ type QuoteBlock struct {
 
 	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
+	Color    Color      `json:"color,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -197,6 +201,7 @@ type ToggleBlock struct {
 
 	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
+	Color    Color      `json:"color,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -239,6 +244,7 @@ type Heading1Block struct {
 
 	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
+	Color    Color      `json:"color,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -260,6 +266,7 @@ type Heading2Block struct {
 
 	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
+	Color    Color      `json:"color,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -281,6 +288,7 @@ type Heading3Block struct {
 
 	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
+	Color    Color      `json:"color,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -303,6 +311,7 @@ type ToDoBlock struct {
 	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
 	Checked  *bool      `json:"checked,omitempty"`
+	Color    Color      `json:"color,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -365,6 +374,7 @@ type CalloutBlock struct {
 	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
 	Icon     *Icon      `json:"icon,omitempty"`
+	Color    Color      `json:"color,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -739,6 +749,8 @@ func (b DividerBlock) MarshalJSON() ([]byte, error) {
 
 type TableOfContentsBlock struct {
 	baseBlock
+
+	Color Color `json:"color,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
