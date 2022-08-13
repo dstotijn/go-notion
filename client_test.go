@@ -433,8 +433,10 @@ func TestQueryDatabase(t *testing.T) {
 			query: &notion.DatabaseQuery{
 				Filter: &notion.DatabaseQueryFilter{
 					Property: "Name",
-					Text: &notion.TextDatabaseQueryFilter{
-						Contains: "foobar",
+					DatabaseQueryPropertyFilter: notion.DatabaseQueryPropertyFilter{
+						RichText: &notion.TextPropertyFilter{
+							Contains: "foobar",
+						},
 					},
 				},
 				Sorts: []notion.DatabaseQuerySort{
@@ -641,7 +643,7 @@ func TestQueryDatabase(t *testing.T) {
 			expPostBody: map[string]interface{}{
 				"filter": map[string]interface{}{
 					"property": "Name",
-					"text": map[string]interface{}{
+					"rich_text": map[string]interface{}{
 						"contains": "foobar",
 					},
 				},
@@ -1669,7 +1671,7 @@ func TestCreatePage(t *testing.T) {
 				},
 				Children: []notion.Block{
 					&notion.ParagraphBlock{
-						Text: []notion.RichText{
+						RichText: []notion.RichText{
 							{
 								Text: &notion.Text{
 									Content: "Lorem ipsum dolor sit amet.",
@@ -1761,7 +1763,7 @@ func TestCreatePage(t *testing.T) {
 				"children": []interface{}{
 					map[string]interface{}{
 						"paragraph": map[string]interface{}{
-							"text": []interface{}{
+							"rich_text": []interface{}{
 								map[string]interface{}{
 									"text": map[string]interface{}{
 										"content": "Lorem ipsum dolor sit amet.",
@@ -1842,7 +1844,7 @@ func TestCreatePage(t *testing.T) {
 				},
 				Children: []notion.Block{
 					&notion.ParagraphBlock{
-						Text: []notion.RichText{
+						RichText: []notion.RichText{
 							{
 								Text: &notion.Text{
 									Content: "Lorem ipsum dolor sit amet.",
@@ -1908,7 +1910,7 @@ func TestCreatePage(t *testing.T) {
 				"children": []interface{}{
 					map[string]interface{}{
 						"paragraph": map[string]interface{}{
-							"text": []interface{}{
+							"rich_text": []interface{}{
 								map[string]interface{}{
 									"text": map[string]interface{}{
 										"content": "Lorem ipsum dolor sit amet.",
@@ -2747,15 +2749,20 @@ func TestFindPagePropertyByID(t *testing.T) {
 								}
 							}
 						],
-						"has_more": false,
-						"type": "rollup",
-						"rollup": {
-							"type": "date",
-							"date": {
-								"start": "2021-10-07T14:42:00.000+00:00",
-								"end": null
-							},
-							"function": "latest_date"
+						"has_more": true,
+						"type": "property_item",
+						"property_item": {
+							"id": "aBcD123",
+							"next_url": "https://api.notion.com/v1/pages/b55c9c91-384d-452b-81db-d1ef79372b75/properties/aBcD123?start_cursor=some-next-cursor-value",
+							"type": "rollup",
+							"rollup": {
+								"type": "date",
+								"date": {
+									"start": "2021-10-07T14:42:00.000+00:00",
+									"end": null
+								},
+								"function": "latest_date"
+							}
 						}
 					}`,
 				)
@@ -2764,6 +2771,10 @@ func TestFindPagePropertyByID(t *testing.T) {
 			expQueryParams: nil,
 			expResponse: notion.PagePropResponse{
 				PagePropItem: notion.PagePropItem{
+					Type: notion.DBPropTypePropertyItem,
+				},
+				PropertyItem: notion.PagePropListItem{
+					ID:   "aBcD123",
 					Type: notion.DBPropTypeRollup,
 					Rollup: notion.RollupResult{
 						Type: notion.RollupResultTypeDate,
@@ -2771,7 +2782,9 @@ func TestFindPagePropertyByID(t *testing.T) {
 							Start: mustParseDateTime("2021-10-07T14:42:00.000+00:00"),
 						},
 					},
+					NextURL: "https://api.notion.com/v1/pages/b55c9c91-384d-452b-81db-d1ef79372b75/properties/aBcD123?start_cursor=some-next-cursor-value",
 				},
+				HasMore: true,
 				Results: []notion.PagePropItem{
 					{
 						Type: notion.DBPropTypeRelation,
@@ -2903,7 +2916,7 @@ func TestFindBlockChildrenById(t *testing.T) {
 								"has_children": false,
 								"type": "paragraph",
 								"paragraph": {
-									"text": [
+									"rich_text": [
 										{
 											"type": "text",
 											"text": {
@@ -2938,7 +2951,7 @@ func TestFindBlockChildrenById(t *testing.T) {
 			expResponse: notion.BlockChildrenResponse{
 				Results: []notion.Block{
 					&notion.ParagraphBlock{
-						Text: []notion.RichText{
+						RichText: []notion.RichText{
 							{
 								Type: notion.RichTextTypeText,
 								Text: &notion.Text{
@@ -3107,7 +3120,7 @@ func TestAppendBlockChildren(t *testing.T) {
 			name: "successful response",
 			children: []notion.Block{
 				&notion.ParagraphBlock{
-					Text: []notion.RichText{
+					RichText: []notion.RichText{
 						{
 							Text: &notion.Text{
 								Content: "Lorem ipsum dolor sit amet.",
@@ -3129,7 +3142,7 @@ func TestAppendBlockChildren(t *testing.T) {
 								"has_children": false,
 								"type": "paragraph",
 								"paragraph": {
-									"text": [
+									"rich_text": [
 										{
 											"type": "text",
 											"text": {
@@ -3161,7 +3174,7 @@ func TestAppendBlockChildren(t *testing.T) {
 				"children": []interface{}{
 					map[string]interface{}{
 						"paragraph": map[string]interface{}{
-							"text": []interface{}{
+							"rich_text": []interface{}{
 								map[string]interface{}{
 									"text": map[string]interface{}{
 										"content": "Lorem ipsum dolor sit amet.",
@@ -3175,7 +3188,7 @@ func TestAppendBlockChildren(t *testing.T) {
 			expResponse: notion.BlockChildrenResponse{
 				Results: []notion.Block{
 					&notion.ParagraphBlock{
-						Text: []notion.RichText{
+						RichText: []notion.RichText{
 							{
 								Type: notion.RichTextTypeText,
 								Text: &notion.Text{
@@ -3207,7 +3220,7 @@ func TestAppendBlockChildren(t *testing.T) {
 			name: "error response",
 			children: []notion.Block{
 				&notion.ParagraphBlock{
-					Text: []notion.RichText{
+					RichText: []notion.RichText{
 						{
 							Text: &notion.Text{
 								Content: "Lorem ipsum dolor sit amet.",
@@ -3231,7 +3244,7 @@ func TestAppendBlockChildren(t *testing.T) {
 				"children": []interface{}{
 					map[string]interface{}{
 						"paragraph": map[string]interface{}{
-							"text": []interface{}{
+							"rich_text": []interface{}{
 								map[string]interface{}{
 									"text": map[string]interface{}{
 										"content": "Lorem ipsum dolor sit amet.",
@@ -4141,7 +4154,7 @@ func TestUpdateBlock(t *testing.T) {
 		{
 			name: "successful response",
 			block: &notion.ParagraphBlock{
-				Text: []notion.RichText{
+				RichText: []notion.RichText{
 					{
 						Text: &notion.Text{
 							Content: "Foobar",
@@ -4160,7 +4173,7 @@ func TestUpdateBlock(t *testing.T) {
 						"archived": false,
 						"type": "paragraph",
 						"paragraph": {
-							"text": [
+							"rich_text": [
 								{
 									"type": "text",
 									"text": {
@@ -4186,7 +4199,7 @@ func TestUpdateBlock(t *testing.T) {
 			respStatusCode: http.StatusOK,
 			expPostBody: map[string]interface{}{
 				"paragraph": map[string]interface{}{
-					"text": []interface{}{
+					"rich_text": []interface{}{
 						map[string]interface{}{
 							"text": map[string]interface{}{
 								"content": "Foobar",
@@ -4196,7 +4209,7 @@ func TestUpdateBlock(t *testing.T) {
 				},
 			},
 			expResponse: &notion.ParagraphBlock{
-				Text: []notion.RichText{
+				RichText: []notion.RichText{
 					{
 						Type: notion.RichTextTypeText,
 						Text: &notion.Text{
@@ -4219,7 +4232,7 @@ func TestUpdateBlock(t *testing.T) {
 		{
 			name: "error response",
 			block: &notion.ParagraphBlock{
-				Text: []notion.RichText{
+				RichText: []notion.RichText{
 					{
 						Text: &notion.Text{
 							Content: "Foobar",
@@ -4240,7 +4253,7 @@ func TestUpdateBlock(t *testing.T) {
 			respStatusCode: http.StatusBadRequest,
 			expPostBody: map[string]interface{}{
 				"paragraph": map[string]interface{}{
-					"text": []interface{}{
+					"rich_text": []interface{}{
 						map[string]interface{}{
 							"text": map[string]interface{}{
 								"content": "Foobar",
@@ -4359,7 +4372,7 @@ func TestDeleteBlock(t *testing.T) {
 						"archived": true,
 						"type": "paragraph",
 						"paragraph": {
-							"text": [
+							"rich_text": [
 								{
 									"type": "text",
 									"text": {
@@ -4384,7 +4397,7 @@ func TestDeleteBlock(t *testing.T) {
 			},
 			respStatusCode: http.StatusOK,
 			expResponse: &notion.ParagraphBlock{
-				Text: []notion.RichText{
+				RichText: []notion.RichText{
 					{
 						Type: notion.RichTextTypeText,
 						Text: &notion.Text{
