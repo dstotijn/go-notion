@@ -154,21 +154,46 @@ type DatabaseQueryResponse struct {
 type DatabaseQueryFilter struct {
 	Property string `json:"property,omitempty"`
 
-	Text        *TextDatabaseQueryFilter        `json:"text,omitempty"`
+	DatabaseQueryPropertyFilter
+
+	Timestamp Timestamp             `json:"timestamp,omitempty"`
+	Or        []DatabaseQueryFilter `json:"or,omitempty"`
+	And       []DatabaseQueryFilter `json:"and,omitempty"`
+}
+
+type DatabaseQueryPropertyFilter struct {
+	Title       *TextPropertyFilter `json:"title,omitempty"`
+	RichText    *TextPropertyFilter `json:"rich_text,omitempty"`
+	URL         *TextPropertyFilter `json:"url,omitempty"`
+	Email       *TextPropertyFilter `json:"email,omitempty"`
+	PhoneNumber *TextPropertyFilter `json:"phone_number,omitempty"`
+
+	Date           *DatePropertyFilter `json:"date,omitempty"`
+	CreatedTime    *DatePropertyFilter `json:"created_time,omitempty"`
+	LastEditedTime *DatePropertyFilter `json:"last_edited_time,omitempty"`
+
 	Number      *NumberDatabaseQueryFilter      `json:"number,omitempty"`
 	Checkbox    *CheckboxDatabaseQueryFilter    `json:"checkbox,omitempty"`
 	Select      *SelectDatabaseQueryFilter      `json:"select,omitempty"`
 	MultiSelect *MultiSelectDatabaseQueryFilter `json:"multi_select,omitempty"`
-	Date        *DateDatabaseQueryFilter        `json:"date,omitempty"`
 	People      *PeopleDatabaseQueryFilter      `json:"people,omitempty"`
 	Files       *FilesDatabaseQueryFilter       `json:"files,omitempty"`
 	Relation    *RelationDatabaseQueryFilter    `json:"relation,omitempty"`
+	Formula     *FormulaDatabaseQueryFilter     `json:"formula,omitempty"`
+	Rollup      *RollupDatabaseQueryFilter      `json:"rollup,omitempty"`
 
-	Or  []DatabaseQueryFilter `json:"or,omitempty"`
-	And []DatabaseQueryFilter `json:"and,omitempty"`
+	CreatedBy    *PeopleDatabaseQueryFilter `json:"created_by,omitempty"`
+	LastEditedBy *PeopleDatabaseQueryFilter `json:"last_edited_by,omitempty"`
 }
 
-type TextDatabaseQueryFilter struct {
+type Timestamp string
+
+const (
+	TimestampCreatedTime    = "created_time"
+	TimestampLastEditedTime = "last_edited_time"
+)
+
+type TextPropertyFilter struct {
 	Equals         string `json:"equals,omitempty"`
 	DoesNotEqual   string `json:"does_not_equal,omitempty"`
 	Contains       string `json:"contains,omitempty"`
@@ -209,7 +234,7 @@ type MultiSelectDatabaseQueryFilter struct {
 	IsNotEmpty     bool   `json:"is_not_empty,omitempty"`
 }
 
-type DateDatabaseQueryFilter struct {
+type DatePropertyFilter struct {
 	Equals     *time.Time `json:"equals,omitempty"`
 	Before     *time.Time `json:"before,omitempty"`
 	After      *time.Time `json:"after,omitempty"`
@@ -244,11 +269,19 @@ type RelationDatabaseQueryFilter struct {
 	IsNotEmpty     bool   `json:"is_not_empty,omitempty"`
 }
 
+type RollupDatabaseQueryFilter struct {
+	Any    *DatabaseQueryPropertyFilter `json:"any,omitempty"`
+	Every  *DatabaseQueryPropertyFilter `json:"every,omitempty"`
+	None   *DatabaseQueryPropertyFilter `json:"none,omitempty"`
+	Number *NumberDatabaseQueryFilter   `json:"number,omitempty"`
+	Date   *DatePropertyFilter          `json:"date,omitempty"`
+}
+
 type FormulaDatabaseQueryFilter struct {
-	Text     TextDatabaseQueryFilter     `json:"text,omitempty"`
-	Checkbox CheckboxDatabaseQueryFilter `json:"checkbox,omitempty"`
-	Number   NumberDatabaseQueryFilter   `json:"number,omitempty"`
-	Date     DateDatabaseQueryFilter     `json:"date,omitempty"`
+	String   *TextPropertyFilter          `json:"string,omitempty"`
+	Checkbox *CheckboxDatabaseQueryFilter `json:"checkbox,omitempty"`
+	Number   *NumberDatabaseQueryFilter   `json:"number,omitempty"`
+	Date     *DatePropertyFilter          `json:"date,omitempty"`
 }
 
 type DatabaseQuerySort struct {
@@ -297,6 +330,10 @@ const (
 	DBPropTypeLastEditedTime DatabasePropertyType = "last_edited_time"
 	DBPropTypeLastEditedBy   DatabasePropertyType = "last_edited_by"
 
+	// Used for paginated property values.
+	// See: https://developers.notion.com/reference/property-item-object#paginated-property-values
+	DBPropTypePropertyItem DatabasePropertyType = "property_item"
+
 	// Number format enums.
 	NumberFormatNumber           NumberFormat = "number"
 	NumberFormatNumberWithCommas NumberFormat = "number_with_commas"
@@ -337,9 +374,11 @@ const (
 	FormulaResultTypeDate    FormulaResultType = "date"
 
 	// Rollup result type enums.
-	RollupResultTypeNumber RollupResultType = "number"
-	RollupResultTypeDate   RollupResultType = "date"
-	RollupResultTypeArray  RollupResultType = "array"
+	RollupResultTypeNumber      RollupResultType = "number"
+	RollupResultTypeDate        RollupResultType = "date"
+	RollupResultTypeArray       RollupResultType = "array"
+	RollupResultTypeUnsupported RollupResultType = "unsupported"
+	RollupResultTypeIncomplete  RollupResultType = "incomplete"
 
 	// Sort timestamp enums.
 	SortTimeStampCreatedTime    SortTimestamp = "created_time"

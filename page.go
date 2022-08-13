@@ -117,14 +117,25 @@ type PagePropItem struct {
 
 // PagePropResponse contains a single database page property item or a list
 // of items. For rollup props with an aggregation, both a `results` array and a
-// `rollup` field is included.
+// `rollup` field (inside `page_property`) is included.
 // See: https://developers.notion.com/reference/retrieve-a-page-property#rollup-properties
 type PagePropResponse struct {
 	PagePropItem
 
-	Results    []PagePropItem `json:"results"`
-	HasMore    bool           `json:"has_more"`
-	NextCursor string         `json:"next_cursor"`
+	Results      []PagePropItem   `json:"results"`
+	HasMore      bool             `json:"has_more"`
+	NextCursor   string           `json:"next_cursor"`
+	PropertyItem PagePropListItem `json:"property_item"`
+}
+
+// PagePropListItem describes the property returned in a paginated list
+// response (e.g. `type` is `title`, `rich_text`, `relation` or `people`).
+// See: https://developers.notion.com/reference/property-item-object#paginated-property-values
+type PagePropListItem struct {
+	ID      string               `json:"id"`
+	Type    DatabasePropertyType `json:"type"`
+	NextURL string               `json:"next_url"`
+	Rollup  RollupResult         `json:"rollup"`
 }
 
 // Value returns the underlying database page property value, based on its `type` field.

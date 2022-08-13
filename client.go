@@ -13,7 +13,7 @@ import (
 
 const (
 	baseURL       = "https://api.notion.com/v1"
-	apiVersion    = "2021-08-16"
+	apiVersion    = "2022-02-22"
 	clientVersion = "0.0.0"
 )
 

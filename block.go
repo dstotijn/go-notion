@@ -97,7 +97,7 @@ func (b baseBlock) Parent() Parent {
 type ParagraphBlock struct {
 	baseBlock
 
-	Text     []RichText `json:"text"`
+	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
 }
 
@@ -118,7 +118,7 @@ func (b ParagraphBlock) MarshalJSON() ([]byte, error) {
 type BulletedListItemBlock struct {
 	baseBlock
 
-	Text     []RichText `json:"text"`
+	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
 }
 
@@ -139,7 +139,7 @@ func (b BulletedListItemBlock) MarshalJSON() ([]byte, error) {
 type NumberedListItemBlock struct {
 	baseBlock
 
-	Text     []RichText `json:"text"`
+	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
 }
 
@@ -160,7 +160,7 @@ func (b NumberedListItemBlock) MarshalJSON() ([]byte, error) {
 type QuoteBlock struct {
 	baseBlock
 
-	Text     []RichText `json:"text"`
+	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
 }
 
@@ -181,7 +181,7 @@ func (b QuoteBlock) MarshalJSON() ([]byte, error) {
 type ToggleBlock struct {
 	baseBlock
 
-	Text     []RichText `json:"text"`
+	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
 }
 
@@ -202,7 +202,7 @@ func (b ToggleBlock) MarshalJSON() ([]byte, error) {
 type TemplateBlock struct {
 	baseBlock
 
-	Text     []RichText `json:"text"`
+	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
 }
 
@@ -223,7 +223,7 @@ func (b TemplateBlock) MarshalJSON() ([]byte, error) {
 type Heading1Block struct {
 	baseBlock
 
-	Text     []RichText `json:"text"`
+	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
 }
 
@@ -244,7 +244,7 @@ func (b Heading1Block) MarshalJSON() ([]byte, error) {
 type Heading2Block struct {
 	baseBlock
 
-	Text     []RichText `json:"text"`
+	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
 }
 
@@ -265,7 +265,7 @@ func (b Heading2Block) MarshalJSON() ([]byte, error) {
 type Heading3Block struct {
 	baseBlock
 
-	Text     []RichText `json:"text"`
+	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
 }
 
@@ -286,7 +286,7 @@ func (b Heading3Block) MarshalJSON() ([]byte, error) {
 type ToDoBlock struct {
 	baseBlock
 
-	Text     []RichText `json:"text"`
+	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
 	Checked  *bool      `json:"checked,omitempty"`
 }
@@ -348,7 +348,7 @@ func (b ChildDatabaseBlock) MarshalJSON() ([]byte, error) {
 type CalloutBlock struct {
 	baseBlock
 
-	Text     []RichText `json:"text"`
+	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
 	Icon     *Icon      `json:"icon,omitempty"`
 }
@@ -370,7 +370,7 @@ func (b CalloutBlock) MarshalJSON() ([]byte, error) {
 type CodeBlock struct {
 	baseBlock
 
-	Text     []RichText `json:"text"`
+	RichText []RichText `json:"rich_text"`
 	Children []Block    `json:"children,omitempty"`
 	Caption  []RichText `json:"caption,omitempty"`
 	Language *string    `json:"language,omitempty"`
