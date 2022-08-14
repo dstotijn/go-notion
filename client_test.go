@@ -1011,6 +1011,7 @@ func TestCreateDatabase(t *testing.T) {
 						URL: "https://example.com/image.png",
 					},
 				},
+				IsInline: true,
 			},
 			respBody: func(_ *http.Request) io.Reader {
 				return strings.NewReader(
@@ -1059,7 +1060,8 @@ func TestCreateDatabase(t *testing.T) {
 							"external": {
 								"url": "https://example.com/image.png"
 							}
-						}
+						},
+						"is_inline": true
 					}`,
 				)
 			},
@@ -1092,6 +1094,7 @@ func TestCreateDatabase(t *testing.T) {
 						"url": "https://example.com/image.png",
 					},
 				},
+				"is_inline": true,
 			},
 			expResponse: notion.Database{
 				ID:             "b89664e3-30b4-474a-9cce-c72a4827d1e4",
@@ -1131,6 +1134,7 @@ func TestCreateDatabase(t *testing.T) {
 						URL: "https://example.com/image.png",
 					},
 				},
+				IsInline: true,
 			},
 			expError: nil,
 		},
@@ -1297,6 +1301,7 @@ func TestUpdateDatabase(t *testing.T) {
 						URL: "https://example.com/image.png",
 					},
 				},
+				IsInline: notion.BoolPtr(true),
 			},
 			respBody: func(_ *http.Request) io.Reader {
 				return strings.NewReader(
@@ -1350,7 +1355,8 @@ func TestUpdateDatabase(t *testing.T) {
 							"external": {
 								"url": "https://example.com/image.png"
 							}
-						}
+						},
+						"is_inline": true
 					}`,
 				)
 			},
@@ -1380,6 +1386,7 @@ func TestUpdateDatabase(t *testing.T) {
 						"url": "https://example.com/image.png",
 					},
 				},
+				"is_inline": true,
 			},
 			expResponse: notion.Database{
 				ID:             "668d797c-76fa-4934-9b05-ad288df2d136",
@@ -1423,6 +1430,7 @@ func TestUpdateDatabase(t *testing.T) {
 						URL: "https://example.com/image.png",
 					},
 				},
+				IsInline: true,
 			},
 			expError: nil,
 		},
