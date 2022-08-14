@@ -59,6 +59,7 @@ type DatabasePageProperty struct {
 	URL            *string         `json:"url,omitempty"`
 	Email          *string         `json:"email,omitempty"`
 	PhoneNumber    *string         `json:"phone_number,omitempty"`
+	Status         *SelectOptions  `json:"status,omitempty"`
 	CreatedTime    *time.Time      `json:"created_time,omitempty"`
 	CreatedBy      *User           `json:"created_by,omitempty"`
 	LastEditedTime *time.Time      `json:"last_edited_time,omitempty"`
