@@ -995,6 +995,13 @@ func TestCreateDatabase(t *testing.T) {
 						},
 					},
 				},
+				Description: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Lorem ipsum dolor sit amet.",
+						},
+					},
+				},
 				Properties: notion.DatabaseProperties{
 					"Title": notion.DatabaseProperty{
 						Type:  notion.DBPropTypeTitle,
@@ -1040,6 +1047,25 @@ func TestCreateDatabase(t *testing.T) {
 								"href": null
 							}
 						],
+						"description": [
+							{
+								"type": "text",
+								"text": {
+									"content": "Lorem ipsum dolor sit amet.",
+									"link": null
+								},
+								"annotations": {
+									"bold": false,
+									"italic": false,
+									"strikethrough": false,
+									"underline": false,
+									"code": false,
+									"color": "default"
+								},
+								"plain_text": "Lorem ipsum dolor sit amet.",
+								"href": null
+							}
+						],
 						"properties": {
 							"Title": {
 								"id": "title",
@@ -1075,6 +1101,13 @@ func TestCreateDatabase(t *testing.T) {
 					map[string]interface{}{
 						"text": map[string]interface{}{
 							"content": "Foobar",
+						},
+					},
+				},
+				"description": []interface{}{
+					map[string]interface{}{
+						"text": map[string]interface{}{
+							"content": "Lorem ipsum dolor sit amet.",
 						},
 					},
 				},
@@ -1115,6 +1148,18 @@ func TestCreateDatabase(t *testing.T) {
 							Color: notion.ColorDefault,
 						},
 						PlainText: "Foobar",
+					},
+				},
+				Description: []notion.RichText{
+					{
+						Type: notion.RichTextTypeText,
+						Text: &notion.Text{
+							Content: "Lorem ipsum dolor sit amet.",
+						},
+						Annotations: &notion.Annotations{
+							Color: notion.ColorDefault,
+						},
+						PlainText: "Lorem ipsum dolor sit amet.",
 					},
 				},
 				Properties: notion.DatabaseProperties{
@@ -1284,6 +1329,13 @@ func TestUpdateDatabase(t *testing.T) {
 						},
 					},
 				},
+				Description: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Updated description.",
+						},
+					},
+				},
 				Properties: map[string]*notion.DatabaseProperty{
 					"New": {
 						Type:     notion.DBPropTypeRichText,
@@ -1330,6 +1382,25 @@ func TestUpdateDatabase(t *testing.T) {
 								"href": null
 							}
 						],
+						"description": [
+							{
+								"type": "text",
+								"text": {
+									"content": "Updated description.",
+									"link": null
+								},
+								"annotations": {
+									"bold": false,
+									"italic": false,
+									"strikethrough": false,
+									"underline": false,
+									"code": false,
+									"color": "default"
+								},
+								"plain_text": "Updated description.",
+								"href": null
+							}
+						],
 						"properties": {
 							"Name": {
 								"id": "title",
@@ -1369,6 +1440,13 @@ func TestUpdateDatabase(t *testing.T) {
 						},
 					},
 				},
+				"description": []interface{}{
+					map[string]interface{}{
+						"text": map[string]interface{}{
+							"content": "Updated description.",
+						},
+					},
+				},
 				"properties": map[string]interface{}{
 					"New": map[string]interface{}{
 						"type":      "rich_text",
@@ -1403,6 +1481,18 @@ func TestUpdateDatabase(t *testing.T) {
 							Color: notion.ColorDefault,
 						},
 						PlainText: "Grocery List",
+					},
+				},
+				Description: []notion.RichText{
+					{
+						Type: notion.RichTextTypeText,
+						Text: &notion.Text{
+							Content: "Updated description.",
+						},
+						Annotations: &notion.Annotations{
+							Color: notion.ColorDefault,
+						},
+						PlainText: "Updated description.",
 					},
 				},
 				Properties: notion.DatabaseProperties{

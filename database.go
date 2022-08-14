@@ -16,6 +16,7 @@ type Database struct {
 	LastEditedBy   BaseUser           `json:"last_edited_by"`
 	URL            string             `json:"url"`
 	Title          []RichText         `json:"title"`
+	Description    []RichText         `json:"description"`
 	Properties     DatabaseProperties `json:"properties"`
 	Parent         Parent             `json:"parent"`
 	Icon           *Icon              `json:"icon,omitempty"`
@@ -298,6 +299,7 @@ type DatabaseQuerySort struct {
 type CreateDatabaseParams struct {
 	ParentPageID string
 	Title        []RichText
+	Description  []RichText
 	Properties   DatabaseProperties
 	Icon         *Icon
 	Cover        *Cover
@@ -472,12 +474,13 @@ func (p CreateDatabaseParams) Validate() error {
 // MarshalJSON implements json.Marshaler.
 func (p CreateDatabaseParams) MarshalJSON() ([]byte, error) {
 	type CreatePageParamsDTO struct {
-		Parent     Parent             `json:"parent"`
-		Title      []RichText         `json:"title,omitempty"`
-		Properties DatabaseProperties `json:"properties"`
-		Icon       *Icon              `json:"icon,omitempty"`
-		Cover      *Cover             `json:"cover,omitempty"`
-		IsInline   bool               `json:"is_inline,omitempty"`
+		Parent      Parent             `json:"parent"`
+		Title       []RichText         `json:"title,omitempty"`
+		Description []RichText         `json:"description,omitempty"`
+		Properties  DatabaseProperties `json:"properties"`
+		Icon        *Icon              `json:"icon,omitempty"`
+		Cover       *Cover             `json:"cover,omitempty"`
+		IsInline    bool               `json:"is_inline,omitempty"`
 	}
 
 	parent := Parent{
@@ -486,12 +489,13 @@ func (p CreateDatabaseParams) MarshalJSON() ([]byte, error) {
 	}
 
 	dto := CreatePageParamsDTO{
-		Parent:     parent,
-		Title:      p.Title,
-		Properties: p.Properties,
-		Icon:       p.Icon,
-		Cover:      p.Cover,
-		IsInline:   p.IsInline,
+		Parent:      parent,
+		Title:       p.Title,
+		Description: p.Description,
+		Properties:  p.Properties,
+		Icon:        p.Icon,
+		Cover:       p.Cover,
+		IsInline:    p.IsInline,
 	}
 
 	return json.Marshal(dto)
@@ -499,12 +503,13 @@ func (p CreateDatabaseParams) MarshalJSON() ([]byte, error) {
 
 // UpdateDatabaseParams are the params used for updating a database.
 type UpdateDatabaseParams struct {
-	Title      []RichText                   `json:"title,omitempty"`
-	Properties map[string]*DatabaseProperty `json:"properties,omitempty"`
-	Icon       *Icon                        `json:"icon,omitempty"`
-	Cover      *Cover                       `json:"cover,omitempty"`
-	Archived   *bool                        `json:"archived,omitempty"`
-	IsInline   *bool                        `json:"is_inline,omitempty"`
+	Title       []RichText                   `json:"title,omitempty"`
+	Description []RichText                   `json:"description,omitempty"`
+	Properties  map[string]*DatabaseProperty `json:"properties,omitempty"`
+	Icon        *Icon                        `json:"icon,omitempty"`
+	Cover       *Cover                       `json:"cover,omitempty"`
+	Archived    *bool                        `json:"archived,omitempty"`
+	IsInline    *bool                        `json:"is_inline,omitempty"`
 }
 
 // Validate validates params for updating a database.
