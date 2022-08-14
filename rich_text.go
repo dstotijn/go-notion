@@ -27,11 +27,12 @@ type Annotations struct {
 type Mention struct {
 	Type MentionType `json:"type"`
 
-	User        *User        `json:"user,omitempty"`
-	Page        *ID          `json:"page,omitempty"`
-	Database    *ID          `json:"database,omitempty"`
-	Date        *Date        `json:"date,omitempty"`
-	LinkPreview *LinkPreview `json:"link_preview,omitempty"`
+	User            *User            `json:"user,omitempty"`
+	Page            *ID              `json:"page,omitempty"`
+	Database        *ID              `json:"database,omitempty"`
+	Date            *Date            `json:"date,omitempty"`
+	LinkPreview     *LinkPreview     `json:"link_preview,omitempty"`
+	TemplateMention *TemplateMention `json:"template_mention,omitempty"`
 }
 
 type Date struct {
@@ -42,6 +43,13 @@ type Date struct {
 
 type LinkPreview struct {
 	URL string `json:"url"`
+}
+
+type TemplateMention struct {
+	Type TemplateMentionType `json:"type"`
+
+	TemplateMentionDate *TemplateMentionDateType `json:"template_mention_date,omitempty"`
+	TemplateMentionUser *TemplateMentionUserType `json:"template_mention_user,omitempty"`
 }
 
 type Text struct {
@@ -58,9 +66,12 @@ type ID struct {
 }
 
 type (
-	RichTextType string
-	MentionType  string
-	Color        string
+	RichTextType            string
+	MentionType             string
+	TemplateMentionType     string
+	TemplateMentionDateType string
+	TemplateMentionUserType string
+	Color                   string
 )
 
 const (
@@ -70,11 +81,18 @@ const (
 )
 
 const (
-	MentionTypeUser        MentionType = "user"
-	MentionTypePage        MentionType = "page"
-	MentionTypeDatabase    MentionType = "database"
-	MentionTypeDate        MentionType = "date"
-	MentionTypeLinkPreview MentionType = "link_preview"
+	MentionTypeUser            MentionType = "user"
+	MentionTypePage            MentionType = "page"
+	MentionTypeDatabase        MentionType = "database"
+	MentionTypeDate            MentionType = "date"
+	MentionTypeLinkPreview     MentionType = "link_preview"
+	MentionTypeTemplateMention MentionType = "template_mention"
+
+	TemplateMentionTypeDate      TemplateMentionType     = "template_mention_date"
+	TemplateMentionTypeUser      TemplateMentionType     = "template_mention_user"
+	TemplateMentionDateTypeToday TemplateMentionDateType = "today"
+	TemplateMentionDateTypeNow   TemplateMentionDateType = "now"
+	TemplateMentionUserTypeMe    TemplateMentionUserType = "me"
 )
 
 const (
