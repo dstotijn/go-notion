@@ -21,6 +21,7 @@ type Database struct {
 	Icon           *Icon              `json:"icon,omitempty"`
 	Cover          *Cover             `json:"cover,omitempty"`
 	Archived       bool               `json:"archived"`
+	IsInline       bool               `json:"is_inline"`
 }
 
 // DatabaseProperties is a mapping of properties defined on a database.
@@ -300,6 +301,7 @@ type CreateDatabaseParams struct {
 	Properties   DatabaseProperties
 	Icon         *Icon
 	Cover        *Cover
+	IsInline     bool
 }
 
 type (
@@ -475,6 +477,7 @@ func (p CreateDatabaseParams) MarshalJSON() ([]byte, error) {
 		Properties DatabaseProperties `json:"properties"`
 		Icon       *Icon              `json:"icon,omitempty"`
 		Cover      *Cover             `json:"cover,omitempty"`
+		IsInline   bool               `json:"is_inline,omitempty"`
 	}
 
 	parent := Parent{
@@ -488,6 +491,7 @@ func (p CreateDatabaseParams) MarshalJSON() ([]byte, error) {
 		Properties: p.Properties,
 		Icon:       p.Icon,
 		Cover:      p.Cover,
+		IsInline:   p.IsInline,
 	}
 
 	return json.Marshal(dto)
@@ -500,6 +504,7 @@ type UpdateDatabaseParams struct {
 	Icon       *Icon                        `json:"icon,omitempty"`
 	Cover      *Cover                       `json:"cover,omitempty"`
 	Archived   *bool                        `json:"archived,omitempty"`
+	IsInline   *bool                        `json:"is_inline,omitempty"`
 }
 
 // Validate validates params for updating a database.
