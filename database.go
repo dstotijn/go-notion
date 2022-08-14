@@ -126,6 +126,7 @@ type DatabaseProperty struct {
 	URL            *EmptyMetadata `json:"url,omitempty"`
 	Email          *EmptyMetadata `json:"email,omitempty"`
 	PhoneNumber    *EmptyMetadata `json:"phone_number,omitempty"`
+	Status         *EmptyMetadata `json:"status,omitempty"`
 	CreatedTime    *EmptyMetadata `json:"created_time,omitempty"`
 	CreatedBy      *EmptyMetadata `json:"created_by,omitempty"`
 	LastEditedTime *EmptyMetadata `json:"last_edited_time,omitempty"`
