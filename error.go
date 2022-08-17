@@ -41,11 +41,13 @@ type APIError struct {
 	Status  int    `json:"status"`
 	Code    string `json:"code"`
 	Message string `json:"message"`
+
+	prefix string
 }
 
 // Error implements `error`.
 func (err *APIError) Error() string {
-	return fmt.Sprintf("%v (code: %v, status: %v)", err.Message, err.Code, err.Status)
+	return fmt.Sprintf("%s: %v (code: %v, status: %v)", err.prefix, err.Message, err.Code, err.Status)
 }
 
 func (err *APIError) Unwrap() error {
@@ -57,13 +59,15 @@ func (err *APIError) Unwrap() error {
 	return mapped
 }
 
-func parseErrorResponse(res *http.Response) error {
+func parseErrorResponse(res *http.Response, prefix string) error {
 	var apiErr APIError
 
 	err := json.NewDecoder(res.Body).Decode(&apiErr)
 	if err != nil {
 		return fmt.Errorf("failed to parse error from HTTP response: %w", err)
 	}
+
+	apiErr.prefix = prefix
 
 	return &apiErr
 }

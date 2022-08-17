@@ -79,7 +79,7 @@ func (c *Client) FindDatabaseByID(ctx context.Context, id string) (db Database, 
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return Database{}, fmt.Errorf("notion: failed to find database: %w", parseErrorResponse(res))
+		return Database{}, parseErrorResponse(res, "notion: failed to find database")
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&db)
@@ -114,7 +114,7 @@ func (c *Client) QueryDatabase(ctx context.Context, id string, query *DatabaseQu
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return DatabaseQueryResponse{}, fmt.Errorf("notion: failed to query database: %w", parseErrorResponse(res))
+		return DatabaseQueryResponse{}, parseErrorResponse(res, "notion: failed to query database")
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&result)
@@ -151,7 +151,7 @@ func (c *Client) CreateDatabase(ctx context.Context, params CreateDatabaseParams
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return Database{}, fmt.Errorf("notion: failed to create database: %w", parseErrorResponse(res))
+		return Database{}, parseErrorResponse(res, "notion: failed to create database")
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&db)
@@ -188,7 +188,7 @@ func (c *Client) UpdateDatabase(ctx context.Context, databaseID string, params U
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return Database{}, fmt.Errorf("notion: failed to update database: %w", parseErrorResponse(res))
+		return Database{}, parseErrorResponse(res, "notion: failed to update database")
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&updatedDB)
@@ -214,7 +214,7 @@ func (c *Client) FindPageByID(ctx context.Context, id string) (page Page, err er
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return Page{}, fmt.Errorf("notion: failed to find page: %w", parseErrorResponse(res))
+		return Page{}, parseErrorResponse(res, "notion: failed to find page")
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&page)
@@ -251,7 +251,7 @@ func (c *Client) CreatePage(ctx context.Context, params CreatePageParams) (page 
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return Page{}, fmt.Errorf("notion: failed to create page: %w", parseErrorResponse(res))
+		return Page{}, parseErrorResponse(res, "notion: failed to create page")
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&page)
@@ -288,7 +288,7 @@ func (c *Client) UpdatePage(ctx context.Context, pageID string, params UpdatePag
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return Page{}, fmt.Errorf("notion: failed to update page properties: %w", parseErrorResponse(res))
+		return Page{}, parseErrorResponse(res, "notion: failed to update page properties")
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&page)
@@ -325,7 +325,7 @@ func (c *Client) FindBlockChildrenByID(ctx context.Context, blockID string, quer
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return BlockChildrenResponse{}, fmt.Errorf("notion: failed to find block children: %w", parseErrorResponse(res))
+		return BlockChildrenResponse{}, parseErrorResponse(res, "notion: failed to find block children")
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&result)
@@ -362,7 +362,7 @@ func (c *Client) FindPagePropertyByID(ctx context.Context, pageID, propID string
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return PagePropResponse{}, fmt.Errorf("notion: failed to find page property: %w", parseErrorResponse(res))
+		return PagePropResponse{}, parseErrorResponse(res, "notion: failed to find page property")
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&result)
@@ -400,7 +400,7 @@ func (c *Client) AppendBlockChildren(ctx context.Context, blockID string, childr
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return BlockChildrenResponse{}, fmt.Errorf("notion: failed to append block children: %w", parseErrorResponse(res))
+		return BlockChildrenResponse{}, parseErrorResponse(res, "notion: failed to append block children")
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&result)
@@ -426,7 +426,7 @@ func (c *Client) FindBlockByID(ctx context.Context, blockID string) (Block, erro
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("notion: failed to find block: %w", parseErrorResponse(res))
+		return nil, parseErrorResponse(res, "notion: failed to find block")
 	}
 
 	var dto blockDTO
@@ -461,7 +461,7 @@ func (c *Client) UpdateBlock(ctx context.Context, blockID string, block Block) (
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("notion: failed to update block: %w", parseErrorResponse(res))
+		return nil, parseErrorResponse(res, "notion: failed to update block")
 	}
 
 	var dto blockDTO
@@ -489,7 +489,7 @@ func (c *Client) DeleteBlock(ctx context.Context, blockID string) (Block, error)
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("notion: failed to delete block: %w", parseErrorResponse(res))
+		return nil, parseErrorResponse(res, "notion: failed to delete block")
 	}
 
 	var dto blockDTO
@@ -517,7 +517,7 @@ func (c *Client) FindUserByID(ctx context.Context, id string) (user User, err er
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return User{}, fmt.Errorf("notion: failed to find user: %w", parseErrorResponse(res))
+		return User{}, parseErrorResponse(res, "notion: failed to find user")
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&user)
@@ -543,7 +543,7 @@ func (c *Client) FindCurrentUser(ctx context.Context) (user User, err error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return User{}, fmt.Errorf("notion: failed to find current user: %w", parseErrorResponse(res))
+		return User{}, parseErrorResponse(res, "notion: failed to find current user")
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&user)
@@ -580,7 +580,7 @@ func (c *Client) ListUsers(ctx context.Context, query *PaginationQuery) (result 
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return ListUsersResponse{}, fmt.Errorf("notion: failed to list users: %w", parseErrorResponse(res))
+		return ListUsersResponse{}, parseErrorResponse(res, "notion: failed to list users")
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&result)
@@ -616,7 +616,7 @@ func (c *Client) Search(ctx context.Context, opts *SearchOpts) (result SearchRes
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return SearchResponse{}, fmt.Errorf("notion: failed to search: %w", parseErrorResponse(res))
+		return SearchResponse{}, parseErrorResponse(res, "notion: failed to search")
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&result)
