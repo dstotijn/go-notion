@@ -14,5 +14,6 @@ type ParentType string
 const (
 	ParentTypeDatabase  ParentType = "database_id"
 	ParentTypePage      ParentType = "page_id"
+	ParentTypeBlock     ParentType = "block_id"
 	ParentTypeWorkspace ParentType = "workspace"
 )
