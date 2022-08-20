@@ -41,9 +41,11 @@ type (
 		Expression string `json:"expression"`
 	}
 	RelationMetadata struct {
-		DatabaseID     string `json:"database_id,omitempty"`
-		SyncedPropName string `json:"synced_property_name,omitempty"`
-		SyncedPropID   string `json:"synced_property_id,omitempty"`
+		DatabaseID string       `json:"database_id,omitempty"`
+		Type       RelationType `json:"type,omitempty"`
+
+		SingleProperty *struct{}             `json:"single_property,omitempty"`
+		DualProperty   *DualPropertyRelation `json:"dual_property,omitempty"`
 	}
 	RollupMetadata struct {
 		RelationPropName string         `json:"relation_property_name,omitempty"`
@@ -54,7 +56,15 @@ type (
 	}
 )
 
-type RollupFunction string
+type DualPropertyRelation struct {
+	SyncedPropID   string `json:"synced_property_id,omitempty"`
+	SyncedPropName string `json:"synced_property_name,omitempty"`
+}
+
+type (
+	RollupFunction string
+	RelationType   string
+)
 
 const (
 	RollupFunctionCountAll          RollupFunction = "count_all"
@@ -71,6 +81,9 @@ const (
 	RollupFunctionMax               RollupFunction = "max"
 	RollupFunctionRange             RollupFunction = "range"
 	RollupFunctionShowOriginal      RollupFunction = "show_original"
+
+	RelationTypeSingleProperty RelationType = "single_property"
+	RelationTypeDualProperty   RelationType = "dual_property"
 )
 
 type SelectOptions struct {

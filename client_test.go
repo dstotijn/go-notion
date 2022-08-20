@@ -189,8 +189,11 @@ func TestFindDatabaseByID(t *testing.T) {
 								"type": "relation",
 								"relation": {
 									"database_id": "668d797c-76fa-4934-9b05-ad288df2d136",
-									"synced_property_name": "Related to Test database (Relation Test)",
-									"synced_property_id": "IJi<"
+									"type": "dual_property",
+									"dual_property": {
+										"synced_property_name": "Related to Test database (Relation Test)",
+										"synced_property_id": "IJi<"
+									}
 								}
 							},
 							"Number of meals": {
@@ -326,9 +329,12 @@ func TestFindDatabaseByID(t *testing.T) {
 						ID:   "lV]M",
 						Type: notion.DBPropTypeRelation,
 						Relation: &notion.RelationMetadata{
-							DatabaseID:     "668d797c-76fa-4934-9b05-ad288df2d136",
-							SyncedPropName: "Related to Test database (Relation Test)",
-							SyncedPropID:   "IJi<",
+							DatabaseID: "668d797c-76fa-4934-9b05-ad288df2d136",
+							Type:       notion.RelationTypeDualProperty,
+							DualProperty: &notion.DualPropertyRelation{
+								SyncedPropID:   "IJi<",
+								SyncedPropName: "Related to Test database (Relation Test)",
+							},
 						},
 					},
 					"Number of meals": notion.DatabaseProperty{
