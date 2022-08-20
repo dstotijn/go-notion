@@ -33,14 +33,6 @@ func mustParseTime(layout, value string) time.Time {
 	return t
 }
 
-func mustParseTimePointer(layout, value string) *time.Time {
-	t, err := time.Parse(layout, value)
-	if err != nil {
-		panic(err)
-	}
-	return &t
-}
-
 func TestNewClient(t *testing.T) {
 	t.Parallel()
 
@@ -489,167 +481,8 @@ func TestQueryDatabase(t *testing.T) {
 								"archived": false,
 								"url": "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
 								"properties": {
-									"Date": {
-										"id": "Q]uT",
-										"type": "date",
-										"name": "Date",
-										"date": {
-											"start": "2021-05-18T12:49:00.000-05:00",
-											"end": null
-										}
-									},
 									"Name": {
-										"id": "title",
-										"type": "title",
-										"name": "Name",
-										"title": [
-											{
-												"type": "text",
-												"text": {
-													"content": "Foobar",
-													"link": null
-												},
-												"annotations": {
-													"bold": false,
-													"italic": false,
-													"strikethrough": false,
-													"underline": false,
-													"code": false,
-													"color": "default"
-												},
-												"plain_text": "Foobar",
-												"href": null
-											}
-										]
-									},
-									"Age": {
-										"id": "$9nb",
-										"type": "number",
-										"name": "Age",
-										"number": 42
-									},
-									"People": {
-										"id": "1#nc",
-										"type": "people",
-										"name": "People",
-										"people": [
-											{
-												"id": "be32e790-8292-46df-a248-b784fdf483cf",
-												"name": "Jane Doe",
-												"avatar_url": "https://example.com/image.png",
-												"type": "person",
-												"person": {
-													"email": "jane@example.com"
-												}
-											}
-										]
-									},
-									"Files": {
-										"id": "!$9x",
-										"type": "files",
-										"name": "Files",
-										"files": [
-											{
-												"name": "foobar.pdf"
-											}
-										]
-									},
-									"Checkbox": {
-										"id": "49S@",
-										"type": "checkbox",
-										"name": "Checkbox",
-										"checkbox": true
-									},
-									"URL": {
-										"id": "93$$",
-										"type": "url",
-										"name": "URL",
-										"url": "https://example.com"
-									},
-									"Email": {
-										"id": "xb3Q",
-										"type": "email",
-										"name": "Email",
-										"email": "jane@example.com"
-									},
-									"PhoneNumber": {
-										"id": "c2#Q",
-										"type": "phone_number",
-										"name": "PhoneNumber",
-										"phone_number": "867-5309"
-									},
-									"CreatedTime": {
-										"id": "s#0s",
-										"type": "created_time",
-										"name": "Created time",
-										"created_time": "2021-05-24T15:44:09.123Z"
-									},
-									"CreatedBy": {
-										"id": "49S@",
-										"type": "created_by",
-										"name": "Created by",
-										"created_by": {
-											"id": "be32e790-8292-46df-a248-b784fdf483cf",
-											"name": "Jane Doe",
-											"avatar_url": "https://example.com/image.png",
-											"type": "person",
-											"person": {
-												"email": "jane@example.com"
-											}
-										}
-									},
-									"LastEditedTime": {
-										"id": "x#0s",
-										"type": "last_edited_time",
-										"name": "Last edited time",
-										"last_edited_time": "2021-05-24T15:44:09.123Z"
-									},
-									"LastEditedBy": {
-										"id": "x9S@",
-										"type": "last_edited_by",
-										"name": "Last edited by",
-										"last_edited_by": {
-											"id": "be32e790-8292-46df-a248-b784fdf483cf",
-											"name": "Jane Doe",
-											"avatar_url": "https://example.com/image.png",
-											"type": "person",
-											"person": {
-												"email": "jane@example.com"
-											}
-										}
-									},
-									"Calculation": {
-										"id": "s(4f",
-										"type": "formula",
-										"name": "Calculation",
-										"formula": {
-											"type": "number",
-											"number": 42
-										}
-									},
-									"Relation": {
-										"id": "Cxl[",
-										"type": "relation",
-										"name": "Relation",
-										"relation": [
-											{
-												"id": "2be9597f-693f-4b87-baf9-efc545d38ebe"
-											}
-										]
-									},
-									"Rollup": {
-										"id": "xyA}",
-										"type": "rollup",
-										"name": "Rollup",
-										"rollup": {
-											"type": "array",
-											"array": [
-												{
-													"type": "number",
-													"number": 42
-												}
-											]
-										}
+										"id": "title"
 									}
 								}
 							}
@@ -692,166 +525,9 @@ func TestQueryDatabase(t *testing.T) {
 							DatabaseID: "39ddfc9d-33c9-404c-89cf-79f01c42dd0c",
 						},
 						Archived: false,
-						Properties: notion.DatabasePageProperties{
-							"Date": notion.DatabasePageProperty{
-								ID:   "Q]uT",
-								Type: notion.DBPropTypeDate,
-								Name: "Date",
-								Date: &notion.Date{
-									Start: mustParseDateTime("2021-05-18T12:49:00.000-05:00"),
-								},
-							},
-							"Name": notion.DatabasePageProperty{
-								ID:   "title",
-								Type: notion.DBPropTypeTitle,
-								Name: "Name",
-								Title: []notion.RichText{
-									{
-										Type: notion.RichTextTypeText,
-										Text: &notion.Text{
-											Content: "Foobar",
-										},
-										PlainText: "Foobar",
-										Annotations: &notion.Annotations{
-											Color: notion.ColorDefault,
-										},
-									},
-								},
-							},
-							"Age": notion.DatabasePageProperty{
-								ID:     "$9nb",
-								Type:   notion.DBPropTypeNumber,
-								Name:   "Age",
-								Number: notion.Float64Ptr(42),
-							},
-							"People": notion.DatabasePageProperty{
-								ID:   "1#nc",
-								Type: notion.DBPropTypePeople,
-								Name: "People",
-								People: []notion.User{
-									{
-										BaseUser: notion.BaseUser{
-											ID: "be32e790-8292-46df-a248-b784fdf483cf",
-										},
-										Name:      "Jane Doe",
-										AvatarURL: "https://example.com/image.png",
-										Type:      notion.UserTypePerson,
-										Person: &notion.Person{
-											Email: "jane@example.com",
-										},
-									},
-								},
-							},
-							"Files": notion.DatabasePageProperty{
-								ID:   "!$9x",
-								Type: notion.DBPropTypeFiles,
-								Name: "Files",
-								Files: []notion.File{
-									{
-										Name: "foobar.pdf",
-									},
-								},
-							},
-							"Checkbox": notion.DatabasePageProperty{
-								ID:       "49S@",
-								Type:     notion.DBPropTypeCheckbox,
-								Name:     "Checkbox",
-								Checkbox: notion.BoolPtr(true),
-							},
-							"Calculation": notion.DatabasePageProperty{
-								ID:   "s(4f",
-								Type: notion.DBPropTypeFormula,
-								Name: "Calculation",
-								Formula: &notion.FormulaResult{
-									Type:   notion.FormulaResultTypeNumber,
-									Number: notion.Float64Ptr(float64(42)),
-								},
-							},
-							"URL": notion.DatabasePageProperty{
-								ID:   "93$$",
-								Type: notion.DBPropTypeURL,
-								Name: "URL",
-								URL:  notion.StringPtr("https://example.com"),
-							},
-							"Email": notion.DatabasePageProperty{
-								ID:    "xb3Q",
-								Type:  notion.DBPropTypeEmail,
-								Name:  "Email",
-								Email: notion.StringPtr("jane@example.com"),
-							},
-							"PhoneNumber": notion.DatabasePageProperty{
-								ID:          "c2#Q",
-								Type:        notion.DBPropTypePhoneNumber,
-								Name:        "PhoneNumber",
-								PhoneNumber: notion.StringPtr("867-5309"),
-							},
-							"CreatedTime": notion.DatabasePageProperty{
-								ID:          "s#0s",
-								Type:        notion.DBPropTypeCreatedTime,
-								Name:        "Created time",
-								CreatedTime: notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z")),
-							},
-							"CreatedBy": notion.DatabasePageProperty{
-								ID:   "49S@",
-								Type: notion.DBPropTypeCreatedBy,
-								Name: "Created by",
-								CreatedBy: &notion.User{
-									BaseUser: notion.BaseUser{
-										ID: "be32e790-8292-46df-a248-b784fdf483cf",
-									},
-									Name:      "Jane Doe",
-									AvatarURL: "https://example.com/image.png",
-									Type:      notion.UserTypePerson,
-									Person: &notion.Person{
-										Email: "jane@example.com",
-									},
-								},
-							},
-							"LastEditedTime": notion.DatabasePageProperty{
-								ID:             "x#0s",
-								Type:           notion.DBPropTypeLastEditedTime,
-								Name:           "Last edited time",
-								LastEditedTime: notion.TimePtr(mustParseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z")),
-							},
-							"LastEditedBy": notion.DatabasePageProperty{
-								ID:   "x9S@",
-								Type: notion.DBPropTypeLastEditedBy,
-								Name: "Last edited by",
-								LastEditedBy: &notion.User{
-									BaseUser: notion.BaseUser{
-										ID: "be32e790-8292-46df-a248-b784fdf483cf",
-									},
-									Name:      "Jane Doe",
-									AvatarURL: "https://example.com/image.png",
-									Type:      notion.UserTypePerson,
-									Person: &notion.Person{
-										Email: "jane@example.com",
-									},
-								},
-							},
-							"Relation": notion.DatabasePageProperty{
-								ID:   "Cxl[",
-								Type: notion.DBPropTypeRelation,
-								Name: "Relation",
-								Relation: []notion.Relation{
-									{
-										ID: "2be9597f-693f-4b87-baf9-efc545d38ebe",
-									},
-								},
-							},
-							"Rollup": notion.DatabasePageProperty{
-								ID:   "xyA}",
-								Type: notion.DBPropTypeRollup,
-								Name: "Rollup",
-								Rollup: &notion.RollupResult{
-									Type: notion.RollupResultTypeArray,
-									Array: []notion.DatabasePageProperty{
-										{
-											Type:   notion.DBPropTypeNumber,
-											Number: notion.Float64Ptr(42),
-										},
-									},
-								},
+						Properties: notion.PageProperties{
+							"Name": notion.PagePropertyID{
+								ID: "title",
 							},
 						},
 					},
@@ -1713,19 +1389,8 @@ func TestFindPageByID(t *testing.T) {
 					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
 				},
 				Properties: notion.PageProperties{
-					Title: notion.PageTitle{
-						Title: []notion.RichText{
-							{
-								Type: notion.RichTextTypeText,
-								Text: &notion.Text{
-									Content: "Lorem ipsum",
-								},
-								Annotations: &notion.Annotations{
-									Color: notion.ColorDefault,
-								},
-								PlainText: "Lorem ipsum",
-							},
-						},
+					"title": notion.PagePropertyID{
+						ID: "title",
 					},
 				},
 			},
@@ -1846,27 +1511,7 @@ func TestCreatePage(t *testing.T) {
 						"url": "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
 						"properties": {
 							"title": {
-								"id": "title",
-								"type": "title",
-								"title": [
-									{
-										"type": "text",
-										"text": {
-											"content": "Foobar",
-											"link": null
-										},
-										"annotations": {
-											"bold": false,
-											"italic": false,
-											"strikethrough": false,
-											"underline": false,
-											"code": false,
-											"color": "default"
-										},
-										"plain_text": "Foobar",
-										"href": null
-									}
-								]
+								"id": "title"
 							}
 						},
 						"icon": {
@@ -1934,19 +1579,8 @@ func TestCreatePage(t *testing.T) {
 					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
 				},
 				Properties: notion.PageProperties{
-					Title: notion.PageTitle{
-						Title: []notion.RichText{
-							{
-								Type: notion.RichTextTypeText,
-								Text: &notion.Text{
-									Content: "Foobar",
-								},
-								Annotations: &notion.Annotations{
-									Color: notion.ColorDefault,
-								},
-								PlainText: "Foobar",
-							},
-						},
+					"title": notion.PagePropertyID{
+						ID: "title",
 					},
 				},
 				Icon: &notion.Icon{
@@ -2067,19 +1701,9 @@ func TestCreatePage(t *testing.T) {
 					Type:       notion.ParentTypeDatabase,
 					DatabaseID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
 				},
-				Properties: notion.DatabasePageProperties{
-					"title": notion.DatabasePageProperty{
+				Properties: notion.PageProperties{
+					"title": notion.PagePropertyID{
 						ID: "title",
-						Title: []notion.RichText{
-							{
-								Text: &notion.Text{
-									Content: "Foobar",
-								},
-								Annotations: &notion.Annotations{
-									Color: notion.ColorDefault,
-								},
-							},
-						},
 					},
 				},
 			},
@@ -2323,19 +1947,8 @@ func TestUpdatePage(t *testing.T) {
 					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
 				},
 				Properties: notion.PageProperties{
-					Title: notion.PageTitle{
-						Title: []notion.RichText{
-							{
-								Type: notion.RichTextTypeText,
-								Text: &notion.Text{
-									Content: "Lorem ipsum",
-								},
-								Annotations: &notion.Annotations{
-									Color: notion.ColorDefault,
-								},
-								PlainText: "Lorem ipsum",
-							},
-						},
+					"title": notion.PagePropertyID{
+						ID: "title",
 					},
 				},
 			},
@@ -2423,19 +2036,8 @@ func TestUpdatePage(t *testing.T) {
 					},
 				},
 				Properties: notion.PageProperties{
-					Title: notion.PageTitle{
-						Title: []notion.RichText{
-							{
-								Type: notion.RichTextTypeText,
-								Text: &notion.Text{
-									Content: "Lorem ipsum",
-								},
-								Annotations: &notion.Annotations{
-									Color: notion.ColorDefault,
-								},
-								PlainText: "Lorem ipsum",
-							},
-						},
+					"title": notion.PagePropertyID{
+						ID: "title",
 					},
 				},
 			},
@@ -2514,19 +2116,8 @@ func TestUpdatePage(t *testing.T) {
 					},
 				},
 				Properties: notion.PageProperties{
-					Title: notion.PageTitle{
-						Title: []notion.RichText{
-							{
-								Type: notion.RichTextTypeText,
-								Text: &notion.Text{
-									Content: "Lorem ipsum",
-								},
-								Annotations: &notion.Annotations{
-									Color: notion.ColorDefault,
-								},
-								PlainText: "Lorem ipsum",
-							},
-						},
+					"title": notion.PagePropertyID{
+						ID: "title",
 					},
 				},
 			},
@@ -2614,19 +2205,8 @@ func TestUpdatePage(t *testing.T) {
 					},
 				},
 				Properties: notion.PageProperties{
-					Title: notion.PageTitle{
-						Title: []notion.RichText{
-							{
-								Type: notion.RichTextTypeText,
-								Text: &notion.Text{
-									Content: "Lorem ipsum",
-								},
-								Annotations: &notion.Annotations{
-									Color: notion.ColorDefault,
-								},
-								PlainText: "Lorem ipsum",
-							},
-						},
+					"title": notion.PagePropertyID{
+						ID: "title",
 					},
 				},
 			},
@@ -4010,19 +3590,8 @@ func TestSearch(t *testing.T) {
 							PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
 						},
 						Properties: notion.PageProperties{
-							Title: notion.PageTitle{
-								Title: []notion.RichText{
-									{
-										Type: notion.RichTextTypeText,
-										Text: &notion.Text{
-											Content: "Foobar",
-										},
-										Annotations: &notion.Annotations{
-											Color: notion.ColorDefault,
-										},
-										PlainText: "Foobar",
-									},
-								},
+							"title": notion.PagePropertyID{
+								ID: "title",
 							},
 						},
 					},
