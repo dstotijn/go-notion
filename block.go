@@ -570,7 +570,7 @@ func (b EquationBlock) MarshalJSON() ([]byte, error) {
 type ColumnListBlock struct {
 	baseBlock
 
-	Children []Block `json:"children,omitempty"`
+	Children []ColumnBlock `json:"children,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
