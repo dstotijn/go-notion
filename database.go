@@ -37,6 +37,10 @@ type (
 	SelectMetadata struct {
 		Options []SelectOptions `json:"options"`
 	}
+	StatusMetadata struct {
+		Options []SelectOptions `json:"options"`
+		Groups  []StatusGroup   `json:"groups"`
+	}
 	FormulaMetadata struct {
 		Expression string `json:"expression"`
 	}
@@ -92,6 +96,13 @@ type SelectOptions struct {
 	Color Color  `json:"color,omitempty"`
 }
 
+type StatusGroup struct {
+	ID        string   `json:"id,omitempty"`
+	Name      string   `json:"name,omitempty"`
+	Color     Color    `json:"color,omitempty"`
+	OptionIDs []string `json:"option_ids,omitempty"`
+}
+
 type FormulaResult struct {
 	Type FormulaResultType `json:"type"`
 
@@ -139,7 +150,6 @@ type DatabaseProperty struct {
 	URL            *EmptyMetadata `json:"url,omitempty"`
 	Email          *EmptyMetadata `json:"email,omitempty"`
 	PhoneNumber    *EmptyMetadata `json:"phone_number,omitempty"`
-	Status         *EmptyMetadata `json:"status,omitempty"`
 	CreatedTime    *EmptyMetadata `json:"created_time,omitempty"`
 	CreatedBy      *EmptyMetadata `json:"created_by,omitempty"`
 	LastEditedTime *EmptyMetadata `json:"last_edited_time,omitempty"`
@@ -151,6 +161,7 @@ type DatabaseProperty struct {
 	Formula     *FormulaMetadata  `json:"formula,omitempty"`
 	Relation    *RelationMetadata `json:"relation,omitempty"`
 	Rollup      *RollupMetadata   `json:"rollup,omitempty"`
+	Status      *StatusMetadata   `json:"status,omitempty"`
 }
 
 // DatabaseQuery is used for quering a database.
@@ -195,6 +206,7 @@ type DatabaseQueryPropertyFilter struct {
 	Checkbox    *CheckboxDatabaseQueryFilter    `json:"checkbox,omitempty"`
 	Select      *SelectDatabaseQueryFilter      `json:"select,omitempty"`
 	MultiSelect *MultiSelectDatabaseQueryFilter `json:"multi_select,omitempty"`
+	Status      *StatusDatabaseQueryFilter      `json:"status,omitempty"`
 	People      *PeopleDatabaseQueryFilter      `json:"people,omitempty"`
 	Files       *FilesDatabaseQueryFilter       `json:"files,omitempty"`
 	Relation    *RelationDatabaseQueryFilter    `json:"relation,omitempty"`
@@ -251,6 +263,13 @@ type MultiSelectDatabaseQueryFilter struct {
 	DoesNotContain string `json:"does_not_contain,omitempty"`
 	IsEmpty        bool   `json:"is_empty,omitempty"`
 	IsNotEmpty     bool   `json:"is_not_empty,omitempty"`
+}
+
+type StatusDatabaseQueryFilter struct {
+	Equals       string `json:"equals,omitempty"`
+	DoesNotEqual string `json:"does_not_equal,omitempty"`
+	IsEmpty      bool   `json:"is_empty,omitempty"`
+	IsNotEmpty   bool   `json:"is_not_empty,omitempty"`
 }
 
 type DatePropertyFilter struct {
@@ -343,6 +362,7 @@ const (
 	DBPropTypeURL            DatabasePropertyType = "url"
 	DBPropTypeEmail          DatabasePropertyType = "email"
 	DBPropTypePhoneNumber    DatabasePropertyType = "phone_number"
+	DBPropTypeStatus         DatabasePropertyType = "status"
 	DBPropTypeFormula        DatabasePropertyType = "formula"
 	DBPropTypeRelation       DatabasePropertyType = "relation"
 	DBPropTypeRollup         DatabasePropertyType = "rollup"

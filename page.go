@@ -169,6 +169,8 @@ func (prop DatabasePageProperty) Value() interface{} {
 		return prop.Email
 	case DBPropTypePhoneNumber:
 		return prop.PhoneNumber
+	case DBPropTypeStatus:
+		return prop.Status
 	case DBPropTypeFormula:
 		return prop.Formula
 	case DBPropTypeRelation:
