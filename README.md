@@ -79,8 +79,8 @@ if err != nil {
 ```
 
 👉 Check out the docs on
-[pkg.go.dev](https://pkg.go.dev/github.com/dstotijn/go-notion) for further
-reference and examples.
+[pkg.go.dev](https://pkg.go.dev/github.com/dstotijn/go-notion) for a complete
+reference, and the [examples](/examples) directory for more example code.
 
 ## Status
 
@@ -88,11 +88,6 @@ The Notion API is currently in _public beta_.
 
 ⚠️ Although the API itself is versioned, this client **will** make breaking
 changes in its code until `v1.0` of the module is released.
-
-### To do
-
-- [x] Write tests
-- [ ] Provide examples
 
 ## License
 
