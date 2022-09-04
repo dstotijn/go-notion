@@ -626,3 +626,40 @@ func (c *Client) Search(ctx context.Context, opts *SearchOpts) (result SearchRes
 
 	return result, nil
 }
+
+// FindPagePropertyByID returns a page property.
+// See: https://developers.notion.com/reference/retrieve-a-page-property
+func (c *Client) FindCommitsByBlockID(ctx context.Context, blockId string, query *PaginationQuery) (result CommentResponse, err error) {
+	req, err := c.newRequest(ctx, http.MethodGet, fmt.Sprintf("/comments/%v", blockId), nil)
+	if err != nil {
+		return CommentResponse{}, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	if query != nil {
+		q := url.Values{}
+		if query.StartCursor != "" {
+			q.Set("start_cursor", query.StartCursor)
+		}
+		if query.PageSize != 0 {
+			q.Set("page_size", strconv.Itoa(query.PageSize))
+		}
+		req.URL.RawQuery = q.Encode()
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return CommentResponse{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return CommentResponse{}, fmt.Errorf("notion: failed to find commits: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&result)
+	if err != nil {
+		return CommentResponse{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return result, nil
+}

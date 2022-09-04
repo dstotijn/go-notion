@@ -4231,3 +4231,111 @@ func TestDeleteBlock(t *testing.T) {
 		})
 	}
 }
+
+func TestFindCommitsByBlockID(t *testing.T) {
+
+	tests := []struct {
+		name           string
+		blockId        string
+		query          *notion.PaginationQuery
+		respBody       func(_ *http.Request) io.Reader
+		respStatusCode int
+		expResponse    notion.CommentResponse
+		expErr         bool
+	}{
+		{
+			name: "successful response",
+			query: &notion.PaginationQuery{
+				StartCursor: "7c6b1c95-de50-45ca-94e6-af1d9fd295ab",
+				PageSize:    42,
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+					  "object": "list",
+					  "results": [
+						{
+						  "object": "comment",
+						  "id": "94cc56ab-9f02-409d-9f99-1037e9fe502f",
+						  "parent": {
+							"type": "page_id",
+							"page_id": "5c6a2821-6bb1-4a7e-b6e1-c50111515c3d"
+						  },
+						  "discussion_id": "f1407351-36f5-4c49-a13c-49f8ba11776d",
+						  "created_time": "2022-07-15T16:52:00.000Z",
+						  "last_edited_time": "2022-07-15T19:16:00.000Z",
+						  "created_by": {
+							"object": "user",
+							"id": "9b15170a-9941-4297-8ee6-83fa7649a87a"
+						  },
+						  "rich_text": [
+							{
+							  "type": "text",
+							  "text": {
+								"content": "Single comment",
+								"link": null
+							  },
+							  "annotations": {
+								"bold": false,
+								"italic": false,
+								"strikethrough": false,
+								"underline": false,
+								"code": false,
+								"color": "default"
+							  },
+							  "plain_text": "Single comment",
+							  "href": null
+							}
+						  ]
+						}
+					  ],
+					  "next_cursor": null,
+					  "has_more": false,
+					  "type": "comment",
+					  "comment": {}
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expResponse: notion.CommentResponse{
+				Results: []notion.Comment{
+					{
+						ID:             "94cc56ab-9f02-409d-9f99-1037e9fe502f",
+						DiscussionID:   "f1407351-36f5-4c49-a13c-49f8ba11776d",
+						CreatedTime:    mustParseTime(time.RFC3339Nano, "2022-07-15T16:52:00.000Z"),
+						LastEditedTime: mustParseTime(time.RFC3339Nano, "2022-07-15T19:16:00.000Z"),
+						CreatedBy:      &notion.BaseUser{ID: "9b15170a-9941-4297-8ee6-83fa7649a87a"},
+						Parent: notion.Parent{
+							Type:   notion.ParentTypePage,
+							PageID: "5c6a2821-6bb1-4a7e-b6e1-c50111515c3d",
+						},
+					},
+				},
+				Type: "comment",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Parallel()
+		t.Run(tt.name, func(t *testing.T) {
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			resp, err := client.FindCommitsByBlockID(context.Background(), tt.blockId, tt.query)
+			if (err != nil) != tt.expErr {
+				t.Errorf("FindCommitsByBlockID() error = %v, expErr %v", err, tt.expErr)
+				return
+			}
+			if diff := cmp.Diff(tt.expResponse, resp); diff != "" {
+				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}
