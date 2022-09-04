@@ -12,7 +12,7 @@
 ## Features
 
 The client supports all (non-deprecated) endpoints available in the Notion API,
-as of December 22, 2021:
+as of September 4, 2022:
 
 ### Databases
 
@@ -45,6 +45,11 @@ as of December 22, 2021:
 ### Search
 
 - [x] [Search](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.Search)
+
+### Comments
+
+- [x] [Retrieve comments](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.FindCommentsByBlockID)
+- [x] [Create a comment](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.CreateComment)
 
 ## Installation
 

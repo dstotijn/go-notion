@@ -4231,3 +4231,424 @@ func TestDeleteBlock(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateComment(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		params         notion.CreateCommentParams
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expPostBody    map[string]interface{}
+		expResponse    notion.Comment
+		expError       error
+	}{
+		{
+			name: "successful response",
+			params: notion.CreateCommentParams{
+				ParentPageID: "8046f83a-09d3-4218-b308-2c0954a7f5d6",
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "This is an example comment.",
+						},
+					},
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"created_by": {
+							"id": "25c9cc08-1afd-4d22-b9e6-31b0f6e7b44f",
+							"object": "user"
+						},
+						"created_time": "2022-09-04T14:15:00.000Z",
+						"discussion_id": "729d95d1-a804-4bc4-ab6a-adbb5de8c9b3",
+						"id": "ade11b15-10f1-474a-97dd-955073779f39",
+						"last_edited_time": "2022-09-04T14:15:00.000Z",
+						"object": "comment",
+						"parent": {
+							"page_id": "8046f83a-09d3-4218-b308-2c0954a7f5d6",
+							"type": "page_id"
+						},
+						"rich_text": [
+							{
+								"annotations": {
+									"bold": false,
+									"code": false,
+									"color": "default",
+									"italic": false,
+									"strikethrough": false,
+									"underline": false
+								},
+								"href": null,
+								"plain_text": "This is an example comment.",
+								"text": {
+									"content": "This is an example comment.",
+									"link": null
+								},
+								"type": "text"
+							}
+						]
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expPostBody: map[string]interface{}{
+				"parent": map[string]interface{}{
+					"type":    "page_id",
+					"page_id": "8046f83a-09d3-4218-b308-2c0954a7f5d6",
+				},
+				"rich_text": []interface{}{
+					map[string]interface{}{
+						"text": map[string]interface{}{
+							"content": "This is an example comment.",
+						},
+					},
+				},
+			},
+			expResponse: notion.Comment{
+				ID:             "ade11b15-10f1-474a-97dd-955073779f39",
+				DiscussionID:   "729d95d1-a804-4bc4-ab6a-adbb5de8c9b3",
+				CreatedTime:    mustParseTime(time.RFC3339Nano, "2022-09-04T14:15:00.000Z"),
+				LastEditedTime: mustParseTime(time.RFC3339Nano, "2022-09-04T14:15:00.000Z"),
+				CreatedBy: notion.BaseUser{
+					ID: "25c9cc08-1afd-4d22-b9e6-31b0f6e7b44f",
+				},
+				Parent: notion.Parent{
+					Type:   notion.ParentTypePage,
+					PageID: "8046f83a-09d3-4218-b308-2c0954a7f5d6",
+				},
+				RichText: []notion.RichText{
+					{
+						Type: "text",
+						Annotations: &notion.Annotations{
+							Color: "default",
+						},
+						PlainText: "This is an example comment.",
+						HRef:      nil,
+						Text: &notion.Text{
+							Content: "This is an example comment.",
+						},
+					},
+				},
+			},
+			expError: nil,
+		},
+		{
+			name: "error response",
+			params: notion.CreateCommentParams{
+				ParentPageID: "8046f83a-09d3-4218-b308-2c0954a7f5d6",
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "This is an example comment.",
+						},
+					},
+				},
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 400,
+						"code": "validation_error",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusBadRequest,
+			expPostBody: map[string]interface{}{
+				"parent": map[string]interface{}{
+					"type":    "page_id",
+					"page_id": "8046f83a-09d3-4218-b308-2c0954a7f5d6",
+				},
+				"rich_text": []interface{}{
+					map[string]interface{}{
+						"text": map[string]interface{}{
+							"content": "This is an example comment.",
+						},
+					},
+				},
+			},
+			expResponse: notion.Comment{},
+			expError:    errors.New("notion: failed to create comment: foobar (code: validation_error, status: 400)"),
+		},
+		{
+			name: "parent ID and discussion ID both missing error",
+			params: notion.CreateCommentParams{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "This is an example comment.",
+						},
+					},
+				},
+			},
+			expResponse: notion.Comment{},
+			expError:    errors.New("notion: invalid comment params: either parent page ID or discussion ID is required"),
+		},
+		{
+			name: "parent ID and discussion ID both non-empty error",
+			params: notion.CreateCommentParams{
+				ParentPageID: "foo",
+				DiscussionID: "bar",
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "This is an example comment.",
+						},
+					},
+				},
+			},
+			expResponse: notion.Comment{},
+			expError:    errors.New("notion: invalid comment params: parent page ID and discussion ID cannot both be non-empty"),
+		},
+		{
+			name: "rich text zero length error",
+			params: notion.CreateCommentParams{
+				ParentPageID: "foo",
+			},
+			expResponse: notion.Comment{},
+			expError:    errors.New("notion: invalid comment params: rich text is required"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					postBody := make(map[string]interface{})
+
+					err := json.NewDecoder(r.Body).Decode(&postBody)
+					if err != nil && err != io.EOF {
+						t.Fatal(err)
+					}
+
+					if len(tt.expPostBody) == 0 && len(postBody) != 0 {
+						t.Errorf("unexpected post body: %#v", postBody)
+					}
+
+					if len(tt.expPostBody) != 0 && len(postBody) == 0 {
+						t.Errorf("post body not equal (expected %+v, got: nil)", tt.expPostBody)
+					}
+
+					if len(tt.expPostBody) != 0 && len(postBody) != 0 {
+						if diff := cmp.Diff(tt.expPostBody, postBody); diff != "" {
+							t.Errorf("post body not equal (-exp, +got):\n%v", diff)
+						}
+					}
+
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			page, err := client.CreateComment(context.Background(), tt.params)
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expResponse, page); diff != "" {
+				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}
+
+func TestFindCommentsByBlockID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		query          notion.FindCommentsByBlockIDQuery
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expQueryParams url.Values
+		expResponse    notion.FindCommentsResponse
+		expError       error
+	}{
+		{
+			name: "successful response",
+			query: notion.FindCommentsByBlockIDQuery{
+				BlockID:     "8046f83a-09d3-4218-b308-2c0954a7f5d6",
+				StartCursor: "7c6b1c95-de50-45ca-94e6-af1d9fd295ab",
+				PageSize:    42,
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "list",
+						"results": [
+							{
+								"created_by": {
+									"id": "25c9cc08-1afd-4d22-b9e6-31b0f6e7b44f",
+									"object": "user"
+								},
+								"created_time": "2022-09-04T14:15:00.000Z",
+								"discussion_id": "729d95d1-a804-4bc4-ab6a-adbb5de8c9b3",
+								"id": "ade11b15-10f1-474a-97dd-955073779f39",
+								"last_edited_time": "2022-09-04T14:15:00.000Z",
+								"object": "comment",
+								"parent": {
+									"page_id": "8046f83a-09d3-4218-b308-2c0954a7f5d6",
+									"type": "page_id"
+								},
+								"rich_text": [
+									{
+										"annotations": {
+											"bold": false,
+											"code": false,
+											"color": "default",
+											"italic": false,
+											"strikethrough": false,
+											"underline": false
+										},
+										"href": null,
+										"plain_text": "This is an example comment.",
+										"text": {
+											"content": "This is an example comment.",
+											"link": null
+										},
+										"type": "text"
+									}
+								]
+							}
+						],
+						"next_cursor": "A^hd",
+						"has_more": true
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expQueryParams: url.Values{
+				"block_id":     []string{"8046f83a-09d3-4218-b308-2c0954a7f5d6"},
+				"start_cursor": []string{"7c6b1c95-de50-45ca-94e6-af1d9fd295ab"},
+				"page_size":    []string{"42"},
+			},
+			expResponse: notion.FindCommentsResponse{
+				Results: []notion.Comment{
+					{
+						ID: "ade11b15-10f1-474a-97dd-955073779f39",
+						Parent: notion.Parent{
+							Type:   "page_id",
+							PageID: "8046f83a-09d3-4218-b308-2c0954a7f5d6",
+						},
+						DiscussionID: "729d95d1-a804-4bc4-ab6a-adbb5de8c9b3",
+						RichText: []notion.RichText{
+							{
+								Type: "text",
+								Annotations: &notion.Annotations{
+									Color: "default",
+								},
+								PlainText: "This is an example comment.",
+								HRef:      nil,
+								Text: &notion.Text{
+									Content: "This is an example comment.",
+								},
+							},
+						},
+						CreatedTime:    mustParseTime(time.RFC3339, "2022-09-04T14:15:00.000Z"),
+						LastEditedTime: mustParseTime(time.RFC3339, "2022-09-04T14:15:00.000Z"),
+						CreatedBy: notion.BaseUser{
+							ID: "25c9cc08-1afd-4d22-b9e6-31b0f6e7b44f",
+						},
+					},
+				},
+				HasMore:    true,
+				NextCursor: notion.StringPtr("A^hd"),
+			},
+			expError: nil,
+		},
+		{
+			name:     "without block ID",
+			query:    notion.FindCommentsByBlockIDQuery{},
+			expError: errors.New("notion: block ID query field is required"),
+		},
+		{
+			name: "error response",
+			query: notion.FindCommentsByBlockIDQuery{
+				BlockID: "8046f83a-09d3-4218-b308-2c0954a7f5d6",
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 400,
+						"code": "validation_error",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusBadRequest,
+			expQueryParams: url.Values{
+				"block_id": []string{"8046f83a-09d3-4218-b308-2c0954a7f5d6"},
+			},
+			expResponse: notion.FindCommentsResponse{},
+			expError:    errors.New("notion: failed to list comments: foobar (code: validation_error, status: 400)"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					q := r.URL.Query()
+
+					if len(tt.expQueryParams) == 0 && len(q) != 0 {
+						t.Errorf("unexpected query params: %+v", q)
+					}
+
+					if len(tt.expQueryParams) != 0 && len(q) == 0 {
+						t.Errorf("query params not equal (expected %+v, got: nil)", tt.expQueryParams)
+					}
+
+					if len(tt.expQueryParams) != 0 && len(q) != 0 {
+						if diff := cmp.Diff(tt.expQueryParams, q); diff != "" {
+							t.Errorf("query params not equal (-exp, +got):\n%v", diff)
+						}
+					}
+
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			resp, err := client.FindCommentsByBlockID(context.Background(), tt.query)
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expResponse, resp); diff != "" {
+				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}
