@@ -46,6 +46,10 @@ as of December 22, 2021:
 
 - [x] [Search](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.Search)
 
+### Comments
+
+- [x] [Create a comment](https://pkg.go.dev/github.com/dstotijn/go-notion#Client.CreateComment)
+
 ## Installation
 
 ```sh

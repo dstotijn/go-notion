@@ -626,3 +626,40 @@ func (c *Client) Search(ctx context.Context, opts *SearchOpts) (result SearchRes
 
 	return result, nil
 }
+
+// CreateComment creates a comment in a page or existing discussion thread.
+// See: https://developers.notion.com/reference/create-a-comment
+func (c *Client) CreateComment(ctx context.Context, params CreateCommentParams) (comment Comment, err error) {
+	if err := params.Validate(); err != nil {
+		return Comment{}, fmt.Errorf("notion: invalid comment params: %w", err)
+	}
+
+	body := &bytes.Buffer{}
+
+	err = json.NewEncoder(body).Encode(params)
+	if err != nil {
+		return Comment{}, fmt.Errorf("notion: failed to encode body params to JSON: %w", err)
+	}
+
+	req, err := c.newRequest(ctx, http.MethodPost, "/comments", body)
+	if err != nil {
+		return Comment{}, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return Comment{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return Comment{}, fmt.Errorf("notion: failed to create comment: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&comment)
+	if err != nil {
+		return Comment{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return comment, nil
+}
