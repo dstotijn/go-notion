@@ -63,3 +63,18 @@ func (p CreateCommentParams) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(dto)
 }
+
+// FindCommentsByBlockIDQuery is used when listing comments.
+type FindCommentsByBlockIDQuery struct {
+	BlockID     string
+	StartCursor string
+	PageSize    int
+}
+
+// FindCommentsResponse contains results (comments) and pagination data returned
+// from a list request.
+type FindCommentsResponse struct {
+	Results    []Comment `json:"results"`
+	HasMore    bool      `json:"has_more"`
+	NextCursor *string   `json:"next_cursor"`
+}

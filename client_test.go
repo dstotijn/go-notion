@@ -4469,3 +4469,186 @@ func TestCreateComment(t *testing.T) {
 		})
 	}
 }
+
+func TestFindCommentsByBlockID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		query          notion.FindCommentsByBlockIDQuery
+		respBody       func(r *http.Request) io.Reader
+		respStatusCode int
+		expQueryParams url.Values
+		expResponse    notion.FindCommentsResponse
+		expError       error
+	}{
+		{
+			name: "successful response",
+			query: notion.FindCommentsByBlockIDQuery{
+				BlockID:     "8046f83a-09d3-4218-b308-2c0954a7f5d6",
+				StartCursor: "7c6b1c95-de50-45ca-94e6-af1d9fd295ab",
+				PageSize:    42,
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "list",
+						"results": [
+							{
+								"created_by": {
+									"id": "25c9cc08-1afd-4d22-b9e6-31b0f6e7b44f",
+									"object": "user"
+								},
+								"created_time": "2022-09-04T14:15:00.000Z",
+								"discussion_id": "729d95d1-a804-4bc4-ab6a-adbb5de8c9b3",
+								"id": "ade11b15-10f1-474a-97dd-955073779f39",
+								"last_edited_time": "2022-09-04T14:15:00.000Z",
+								"object": "comment",
+								"parent": {
+									"page_id": "8046f83a-09d3-4218-b308-2c0954a7f5d6",
+									"type": "page_id"
+								},
+								"rich_text": [
+									{
+										"annotations": {
+											"bold": false,
+											"code": false,
+											"color": "default",
+											"italic": false,
+											"strikethrough": false,
+											"underline": false
+										},
+										"href": null,
+										"plain_text": "This is an example comment.",
+										"text": {
+											"content": "This is an example comment.",
+											"link": null
+										},
+										"type": "text"
+									}
+								]
+							}
+						],
+						"next_cursor": "A^hd",
+						"has_more": true
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expQueryParams: url.Values{
+				"block_id":     []string{"8046f83a-09d3-4218-b308-2c0954a7f5d6"},
+				"start_cursor": []string{"7c6b1c95-de50-45ca-94e6-af1d9fd295ab"},
+				"page_size":    []string{"42"},
+			},
+			expResponse: notion.FindCommentsResponse{
+				Results: []notion.Comment{
+					{
+						ID: "ade11b15-10f1-474a-97dd-955073779f39",
+						Parent: notion.Parent{
+							Type:   "page_id",
+							PageID: "8046f83a-09d3-4218-b308-2c0954a7f5d6",
+						},
+						DiscussionID: "729d95d1-a804-4bc4-ab6a-adbb5de8c9b3",
+						RichText: []notion.RichText{
+							{
+								Type: "text",
+								Annotations: &notion.Annotations{
+									Color: "default",
+								},
+								PlainText: "This is an example comment.",
+								HRef:      nil,
+								Text: &notion.Text{
+									Content: "This is an example comment.",
+								},
+							},
+						},
+						CreatedTime:    mustParseTime(time.RFC3339, "2022-09-04T14:15:00.000Z"),
+						LastEditedTime: mustParseTime(time.RFC3339, "2022-09-04T14:15:00.000Z"),
+						CreatedBy: notion.BaseUser{
+							ID: "25c9cc08-1afd-4d22-b9e6-31b0f6e7b44f",
+						},
+					},
+				},
+				HasMore:    true,
+				NextCursor: notion.StringPtr("A^hd"),
+			},
+			expError: nil,
+		},
+		{
+			name:     "without block ID",
+			query:    notion.FindCommentsByBlockIDQuery{},
+			expError: errors.New("notion: block ID query field is required"),
+		},
+		{
+			name: "error response",
+			query: notion.FindCommentsByBlockIDQuery{
+				BlockID: "8046f83a-09d3-4218-b308-2c0954a7f5d6",
+			},
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "error",
+						"status": 400,
+						"code": "validation_error",
+						"message": "foobar"
+					}`,
+				)
+			},
+			respStatusCode: http.StatusBadRequest,
+			expQueryParams: url.Values{
+				"block_id": []string{"8046f83a-09d3-4218-b308-2c0954a7f5d6"},
+			},
+			expResponse: notion.FindCommentsResponse{},
+			expError:    errors.New("notion: failed to list comments: foobar (code: validation_error, status: 400)"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					q := r.URL.Query()
+
+					if len(tt.expQueryParams) == 0 && len(q) != 0 {
+						t.Errorf("unexpected query params: %+v", q)
+					}
+
+					if len(tt.expQueryParams) != 0 && len(q) == 0 {
+						t.Errorf("query params not equal (expected %+v, got: nil)", tt.expQueryParams)
+					}
+
+					if len(tt.expQueryParams) != 0 && len(q) != 0 {
+						if diff := cmp.Diff(tt.expQueryParams, q); diff != "" {
+							t.Errorf("query params not equal (-exp, +got):\n%v", diff)
+						}
+					}
+
+					return &http.Response{
+						StatusCode: tt.respStatusCode,
+						Status:     http.StatusText(tt.respStatusCode),
+						Body:       ioutil.NopCloser(tt.respBody(r)),
+					}, nil
+				}},
+			}
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			resp, err := client.FindCommentsByBlockID(context.Background(), tt.query)
+
+			if tt.expError == nil && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.expError != nil && err == nil {
+				t.Fatalf("error not equal (expected: %v, got: nil)", tt.expError)
+			}
+			if tt.expError != nil && err != nil && tt.expError.Error() != err.Error() {
+				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
+			}
+
+			if diff := cmp.Diff(tt.expResponse, resp); diff != "" {
+				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
+			}
+		})
+	}
+}

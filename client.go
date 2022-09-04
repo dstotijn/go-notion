@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -662,4 +663,48 @@ func (c *Client) CreateComment(ctx context.Context, params CreateCommentParams) 
 	}
 
 	return comment, nil
+}
+
+// FindCommentsByBlockID returns a list of unresolved comments by parent block
+// ID, and pagination metadata.
+// See: https://developers.notion.com/reference/retrieve-a-comment
+func (c *Client) FindCommentsByBlockID(
+	ctx context.Context,
+	query FindCommentsByBlockIDQuery,
+) (result FindCommentsResponse, err error) {
+	req, err := c.newRequest(ctx, http.MethodGet, "/comments", nil)
+	if err != nil {
+		return FindCommentsResponse{}, fmt.Errorf("notion: invalid request: %w", err)
+	}
+
+	if query.BlockID == "" {
+		return FindCommentsResponse{}, errors.New("notion: block ID query field is required")
+	}
+
+	q := url.Values{}
+	q.Set("block_id", query.BlockID)
+	if query.StartCursor != "" {
+		q.Set("start_cursor", query.StartCursor)
+	}
+	if query.PageSize != 0 {
+		q.Set("page_size", strconv.Itoa(query.PageSize))
+	}
+	req.URL.RawQuery = q.Encode()
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return FindCommentsResponse{}, fmt.Errorf("notion: failed to make HTTP request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return FindCommentsResponse{}, fmt.Errorf("notion: failed to list comments: %w", parseErrorResponse(res))
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&result)
+	if err != nil {
+		return FindCommentsResponse{}, fmt.Errorf("notion: failed to parse HTTP response: %w", err)
+	}
+
+	return result, nil
 }
