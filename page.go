@@ -3,6 +3,7 @@ package notion
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -10,17 +11,25 @@ import (
 // another page, or a database.
 // See: https://developers.notion.com/reference/page
 type Page struct {
-	ID             string         `json:"id"`
-	CreatedTime    time.Time      `json:"created_time"`
-	CreatedBy      *BaseUser      `json:"created_by,omitempty"`
-	LastEditedTime time.Time      `json:"last_edited_time"`
-	LastEditedBy   *BaseUser      `json:"last_edited_by,omitempty"`
-	Parent         Parent         `json:"parent"`
-	Archived       bool           `json:"archived"`
-	URL            string         `json:"url"`
-	Icon           *Icon          `json:"icon,omitempty"`
-	Cover          *Cover         `json:"cover,omitempty"`
-	Properties     PageProperties `json:"properties"`
+	ID             string    `json:"id"`
+	CreatedTime    time.Time `json:"created_time"`
+	CreatedBy      *BaseUser `json:"created_by,omitempty"`
+	LastEditedTime time.Time `json:"last_edited_time"`
+	LastEditedBy   *BaseUser `json:"last_edited_by,omitempty"`
+	Parent         Parent    `json:"parent"`
+	Archived       bool      `json:"archived"`
+	URL            string    `json:"url"`
+	Icon           *Icon     `json:"icon,omitempty"`
+	Cover          *Cover    `json:"cover,omitempty"`
+
+	// Properties differ between parent type.
+	// See the `UnmarshalJSON` method.
+	Properties interface{} `json:"properties"`
+}
+
+// PageProperties are properties of a page whose parent is a page or a workspace.
+type PageProperties struct {
+	Title PageTitle `json:"title"`
 }
 
 type PageTitle struct {
@@ -55,15 +64,6 @@ type DatabasePageProperty struct {
 	CreatedBy      *User           `json:"created_by,omitempty"`
 	LastEditedTime *time.Time      `json:"last_edited_time,omitempty"`
 	LastEditedBy   *User           `json:"last_edited_by,omitempty"`
-}
-
-// PageProperties represents a map of page property names to ID objects.
-// This type is used whenever pages are returned, where only the `id` field
-// of a page property is included.
-type PageProperties map[string]PagePropertyID
-
-type PagePropertyID struct {
-	ID string `json:"id"`
 }
 
 // CreatePageParams are the params used for creating a page.
@@ -250,6 +250,55 @@ func (p CreatePageParams) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(dto)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+//
+// Pages get a different Properties type based on the parent of the page.
+// If parent type is `workspace` or `page_id`, PageProperties is used. Else if
+// parent type is `database_id`, DatabasePageProperties is used.
+func (p *Page) UnmarshalJSON(b []byte) error {
+	type (
+		PageAlias Page
+		PageDTO   struct {
+			PageAlias
+			Properties json.RawMessage `json:"properties"`
+		}
+	)
+
+	var dto PageDTO
+
+	err := json.Unmarshal(b, &dto)
+	if err != nil {
+		return err
+	}
+
+	page := dto.PageAlias
+
+	switch dto.Parent.Type {
+	case "workspace":
+		fallthrough
+	case "page_id":
+		var props PageProperties
+		err := json.Unmarshal(dto.Properties, &props)
+		if err != nil {
+			return err
+		}
+		page.Properties = props
+	case "database_id":
+		var props DatabasePageProperties
+		err := json.Unmarshal(dto.Properties, &props)
+		if err != nil {
+			return err
+		}
+		page.Properties = props
+	default:
+		return fmt.Errorf("unknown page parent type %q", dto.Parent.Type)
+	}
+
+	*p = Page(page)
+
+	return nil
 }
 
 func (p UpdatePageParams) Validate() error {
