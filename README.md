@@ -2,6 +2,7 @@
 
 [![GitHub tag (latest
 SemVer)](https://img.shields.io/github/v/tag/dstotijn/go-notion?label=go%20module)](https://github.com/dstotijn/go-notion/tags)
+[![Test](https://github.com/dstotijn/go-notion/actions/workflows/test.yaml/badge.svg)](https://github.com/dstotijn/go-notion/actions/workflows/test.yml)
 [![Go
 Reference](https://pkg.go.dev/badge/github.com/dstotijn/go-notion.svg)](https://pkg.go.dev/github.com/dstotijn/go-notion)
 [![GitHub](https://img.shields.io/github/license/dstotijn/go-notion)](LICENSE)
