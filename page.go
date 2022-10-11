@@ -278,6 +278,8 @@ func (p *Page) UnmarshalJSON(b []byte) error {
 	switch dto.Parent.Type {
 	case "workspace":
 		fallthrough
+	case "block_id":
+		fallthrough
 	case "page_id":
 		var props PageProperties
 		err := json.Unmarshal(dto.Properties, &props)
