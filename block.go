@@ -46,6 +46,7 @@ type blockDTO struct {
 	Code             *CodeBlock             `json:"code,omitempty"`
 	Embed            *EmbedBlock            `json:"embed,omitempty"`
 	Image            *ImageBlock            `json:"image,omitempty"`
+	Audio            *AudioBlock            `json:"audio,omitempty"`
 	Video            *VideoBlock            `json:"video,omitempty"`
 	File             *FileBlock             `json:"file,omitempty"`
 	PDF              *PDFBlock              `json:"pdf,omitempty"`
@@ -460,6 +461,29 @@ func (b ImageBlock) MarshalJSON() ([]byte, error) {
 	})
 }
 
+type AudioBlock struct {
+	baseBlock
+
+	Type     FileType      `json:"type"`
+	File     *FileFile     `json:"file,omitempty"`
+	External *FileExternal `json:"external,omitempty"`
+	Caption  []RichText    `json:"caption,omitempty"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (b AudioBlock) MarshalJSON() ([]byte, error) {
+	type (
+		blockAlias ImageBlock
+		dto        struct {
+			Audio blockAlias `json:"audio"`
+		}
+	)
+
+	return json.Marshal(dto{
+		Audio: blockAlias(b),
+	})
+}
+
 type VideoBlock struct {
 	baseBlock
 
@@ -806,6 +830,7 @@ const (
 	BlockTypeCode             BlockType = "code"
 	BlockTypeEmbed            BlockType = "embed"
 	BlockTypeImage            BlockType = "image"
+	BlockTypeAudio            BlockType = "audio"
 	BlockTypeVideo            BlockType = "video"
 	BlockTypeFile             BlockType = "file"
 	BlockTypePDF              BlockType = "pdf"
@@ -937,6 +962,9 @@ func (dto blockDTO) Block() Block {
 	case BlockTypeImage:
 		dto.Image.baseBlock = baseBlock
 		return dto.Image
+	case BlockTypeAudio:
+		dto.Audio.baseBlock = baseBlock
+		return dto.Audio
 	case BlockTypeVideo:
 		dto.Video.baseBlock = baseBlock
 		return dto.Video

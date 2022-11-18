@@ -189,6 +189,12 @@ func main() {
 					URL: "https://picsum.photos/600/200.jpg",
 				},
 			},
+			notion.AudioBlock{
+				Type: notion.FileTypeExternal,
+				External: &notion.FileExternal{
+					URL: "https://download.samplelib.com/mp3/sample-3s.mp3",
+				},
+			},
 			notion.VideoBlock{
 				Type: notion.FileTypeExternal,
 				External: &notion.FileExternal{
