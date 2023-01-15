@@ -2,7 +2,6 @@ package notion
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 )
 
@@ -879,10 +878,16 @@ func (resp *BlockChildrenResponse) UnmarshalJSON(b []byte) error {
 	resp.NextCursor = dto.NextCursor
 	resp.Results = make([]Block, len(dto.Results))
 
-	for i, blockDTO := range dto.Results {
-		resp.Results[i] = blockDTO.Block()
+	var i int
+	for _, blockDTO := range dto.Results {
+		block := blockDTO.Block()
+		if block != nil {
+			resp.Results[i] = block
+			i++
+		}
 	}
 
+	resp.Results = resp.Results[0:i]
 	return nil
 }
 
@@ -1013,7 +1018,13 @@ func (dto blockDTO) Block() Block {
 	case BlockTypeTemplate:
 		dto.Template.baseBlock = baseBlock
 		return dto.Template
+	case BlockTypeUnsupported:
+		// These are types for which API support isn't available yet.
+		// From Notion: Any unsupported block types will continue to appear in the structure,
+		// but only contain a type set to "unsupported".
+		return nil
 	default:
-		panic(fmt.Sprintf("type %q is unsupported", dto.Type))
+		// These are types that this library doesn't support yet.
+		return nil
 	}
 }
