@@ -2,6 +2,7 @@ package notion
 
 import (
 	"encoding/json"
+	"errors"
 	"time"
 )
 
@@ -880,8 +881,12 @@ func (resp *BlockChildrenResponse) UnmarshalJSON(b []byte) error {
 
 	var i int
 	for _, blockDTO := range dto.Results {
-		block := blockDTO.Block()
-		if block != nil {
+		block, err := blockDTO.Block()
+		// Drop unsupported blocks, bubble up any other errors
+		if err != nil && !errors.Is(err, UnsupportedBlockError) {
+			return err
+		}
+		if err == nil {
 			resp.Results[i] = block
 			i++
 		}
@@ -891,7 +896,7 @@ func (resp *BlockChildrenResponse) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (dto blockDTO) Block() Block {
+func (dto blockDTO) Block() (Block, error) {
 	baseBlock := baseBlock{
 		id:          dto.ID,
 		hasChildren: dto.HasChildren,
@@ -924,107 +929,107 @@ func (dto blockDTO) Block() Block {
 	switch dto.Type {
 	case BlockTypeParagraph:
 		dto.Paragraph.baseBlock = baseBlock
-		return dto.Paragraph
+		return dto.Paragraph, nil
 	case BlockTypeHeading1:
 		dto.Heading1.baseBlock = baseBlock
-		return dto.Heading1
+		return dto.Heading1, nil
 	case BlockTypeHeading2:
 		dto.Heading2.baseBlock = baseBlock
-		return dto.Heading2
+		return dto.Heading2, nil
 	case BlockTypeHeading3:
 		dto.Heading3.baseBlock = baseBlock
-		return dto.Heading3
+		return dto.Heading3, nil
 	case BlockTypeBulletedListItem:
 		dto.BulletedListItem.baseBlock = baseBlock
-		return dto.BulletedListItem
+		return dto.BulletedListItem, nil
 	case BlockTypeNumberedListItem:
 		dto.NumberedListItem.baseBlock = baseBlock
-		return dto.NumberedListItem
+		return dto.NumberedListItem, nil
 	case BlockTypeToDo:
 		dto.ToDo.baseBlock = baseBlock
-		return dto.ToDo
+		return dto.ToDo, nil
 	case BlockTypeToggle:
 		dto.Toggle.baseBlock = baseBlock
-		return dto.Toggle
+		return dto.Toggle, nil
 	case BlockTypeChildPage:
 		dto.ChildPage.baseBlock = baseBlock
-		return dto.ChildPage
+		return dto.ChildPage, nil
 	case BlockTypeChildDatabase:
 		dto.ChildDatabase.baseBlock = baseBlock
-		return dto.ChildDatabase
+		return dto.ChildDatabase, nil
 	case BlockTypeCallout:
 		dto.Callout.baseBlock = baseBlock
-		return dto.Callout
+		return dto.Callout, nil
 	case BlockTypeQuote:
 		dto.Quote.baseBlock = baseBlock
-		return dto.Quote
+		return dto.Quote, nil
 	case BlockTypeCode:
 		dto.Code.baseBlock = baseBlock
-		return dto.Code
+		return dto.Code, nil
 	case BlockTypeEmbed:
 		dto.Embed.baseBlock = baseBlock
-		return dto.Embed
+		return dto.Embed, nil
 	case BlockTypeImage:
 		dto.Image.baseBlock = baseBlock
-		return dto.Image
+		return dto.Image, nil
 	case BlockTypeAudio:
 		dto.Audio.baseBlock = baseBlock
-		return dto.Audio
+		return dto.Audio, nil
 	case BlockTypeVideo:
 		dto.Video.baseBlock = baseBlock
-		return dto.Video
+		return dto.Video, nil
 	case BlockTypeFile:
 		dto.File.baseBlock = baseBlock
-		return dto.File
+		return dto.File, nil
 	case BlockTypePDF:
 		dto.PDF.baseBlock = baseBlock
-		return dto.PDF
+		return dto.PDF, nil
 	case BlockTypeBookmark:
 		dto.Bookmark.baseBlock = baseBlock
-		return dto.Bookmark
+		return dto.Bookmark, nil
 	case BlockTypeEquation:
 		dto.Equation.baseBlock = baseBlock
-		return dto.Equation
+		return dto.Equation, nil
 	case BlockTypeDivider:
 		dto.Divider.baseBlock = baseBlock
-		return dto.Divider
+		return dto.Divider, nil
 	case BlockTypeTableOfContents:
 		dto.TableOfContents.baseBlock = baseBlock
-		return dto.TableOfContents
+		return dto.TableOfContents, nil
 	case BlockTypeBreadCrumb:
 		dto.Breadcrumb.baseBlock = baseBlock
-		return dto.Breadcrumb
+		return dto.Breadcrumb, nil
 	case BlockTypeColumnList:
 		dto.ColumnList.baseBlock = baseBlock
-		return dto.ColumnList
+		return dto.ColumnList, nil
 	case BlockTypeColumn:
 		dto.Column.baseBlock = baseBlock
-		return dto.Column
+		return dto.Column, nil
 	case BlockTypeTable:
 		dto.Table.baseBlock = baseBlock
-		return dto.Table
+		return dto.Table, nil
 	case BlockTypeTableRow:
 		dto.TableRow.baseBlock = baseBlock
-		return dto.TableRow
+		return dto.TableRow, nil
 	case BlockTypeLinkPreview:
 		dto.LinkPreview.baseBlock = baseBlock
-		return dto.LinkPreview
+		return dto.LinkPreview, nil
 	case BlockTypeLinkToPage:
 		dto.LinkToPage.baseBlock = baseBlock
-		return dto.LinkToPage
+		return dto.LinkToPage, nil
 	case BlockTypeSyncedBlock:
 		dto.SyncedBlock.baseBlock = baseBlock
-		return dto.SyncedBlock
+		return dto.SyncedBlock, nil
 	case BlockTypeTemplate:
 		dto.Template.baseBlock = baseBlock
-		return dto.Template
+		return dto.Template, nil
 	case BlockTypeUnsupported:
 		// These are types for which API support isn't available yet.
 		// From Notion: Any unsupported block types will continue to appear in the structure,
 		// but only contain a type set to "unsupported".
-		return nil
+		return nil, UnsupportedBlockError
 	default:
 		// These are types that this library doesn't support yet.
-		return nil
+		return nil, UnsupportedBlockError
 	}
 }
