@@ -2,9 +2,13 @@ package notion
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 )
+
+// ErrUnknownBlockType is used when encountering an unknown block type.
+var ErrUnknownBlockType = errors.New("unknown block type")
 
 // Block represents content on the Notion platform.
 // See: https://developers.notion.com/reference/block
@@ -63,6 +67,7 @@ type blockDTO struct {
 	LinkToPage       *LinkToPageBlock       `json:"link_to_page,omitempty"`
 	SyncedBlock      *SyncedBlock           `json:"synced_block,omitempty"`
 	Template         *TemplateBlock         `json:"template,omitempty"`
+	Unsupported      *UnsupportedBlock      `json:"unsupported,omitempty"`
 }
 
 type baseBlock struct {
@@ -812,6 +817,24 @@ func (b BreadcrumbBlock) MarshalJSON() ([]byte, error) {
 	})
 }
 
+type UnsupportedBlock struct {
+	baseBlock
+}
+
+// MarshalJSON implements json.Marshaler.
+func (b UnsupportedBlock) MarshalJSON() ([]byte, error) {
+	type (
+		blockAlias UnsupportedBlock
+		dto        struct {
+			Unsupported blockAlias `json:"unsupported"`
+		}
+	)
+
+	return json.Marshal(dto{
+		Unsupported: blockAlias(b),
+	})
+}
+
 type BlockType string
 
 const (
@@ -880,13 +903,21 @@ func (resp *BlockChildrenResponse) UnmarshalJSON(b []byte) error {
 	resp.Results = make([]Block, len(dto.Results))
 
 	for i, blockDTO := range dto.Results {
-		resp.Results[i] = blockDTO.Block()
+		block, err := blockDTO.Block()
+		if err != nil {
+			// Any error (even `ErrUnknownBlockType`) is explicitly returned.
+			// We don't silently drop blocks with an unknown/unmapped type,
+			// because this could lead to surprises/unexpected list behaviour
+			// for users.
+			return fmt.Errorf("notion: failed to parse block (id: %q, type: %q): %w", blockDTO.ID, blockDTO.Type, err)
+		}
+		resp.Results[i] = block
 	}
 
 	return nil
 }
 
-func (dto blockDTO) Block() Block {
+func (dto blockDTO) Block() (Block, error) {
 	baseBlock := baseBlock{
 		id:          dto.ID,
 		hasChildren: dto.HasChildren,
@@ -919,101 +950,106 @@ func (dto blockDTO) Block() Block {
 	switch dto.Type {
 	case BlockTypeParagraph:
 		dto.Paragraph.baseBlock = baseBlock
-		return dto.Paragraph
+		return dto.Paragraph, nil
 	case BlockTypeHeading1:
 		dto.Heading1.baseBlock = baseBlock
-		return dto.Heading1
+		return dto.Heading1, nil
 	case BlockTypeHeading2:
 		dto.Heading2.baseBlock = baseBlock
-		return dto.Heading2
+		return dto.Heading2, nil
 	case BlockTypeHeading3:
 		dto.Heading3.baseBlock = baseBlock
-		return dto.Heading3
+		return dto.Heading3, nil
 	case BlockTypeBulletedListItem:
 		dto.BulletedListItem.baseBlock = baseBlock
-		return dto.BulletedListItem
+		return dto.BulletedListItem, nil
 	case BlockTypeNumberedListItem:
 		dto.NumberedListItem.baseBlock = baseBlock
-		return dto.NumberedListItem
+		return dto.NumberedListItem, nil
 	case BlockTypeToDo:
 		dto.ToDo.baseBlock = baseBlock
-		return dto.ToDo
+		return dto.ToDo, nil
 	case BlockTypeToggle:
 		dto.Toggle.baseBlock = baseBlock
-		return dto.Toggle
+		return dto.Toggle, nil
 	case BlockTypeChildPage:
 		dto.ChildPage.baseBlock = baseBlock
-		return dto.ChildPage
+		return dto.ChildPage, nil
 	case BlockTypeChildDatabase:
 		dto.ChildDatabase.baseBlock = baseBlock
-		return dto.ChildDatabase
+		return dto.ChildDatabase, nil
 	case BlockTypeCallout:
 		dto.Callout.baseBlock = baseBlock
-		return dto.Callout
+		return dto.Callout, nil
 	case BlockTypeQuote:
 		dto.Quote.baseBlock = baseBlock
-		return dto.Quote
+		return dto.Quote, nil
 	case BlockTypeCode:
 		dto.Code.baseBlock = baseBlock
-		return dto.Code
+		return dto.Code, nil
 	case BlockTypeEmbed:
 		dto.Embed.baseBlock = baseBlock
-		return dto.Embed
+		return dto.Embed, nil
 	case BlockTypeImage:
 		dto.Image.baseBlock = baseBlock
-		return dto.Image
+		return dto.Image, nil
 	case BlockTypeAudio:
 		dto.Audio.baseBlock = baseBlock
-		return dto.Audio
+		return dto.Audio, nil
 	case BlockTypeVideo:
 		dto.Video.baseBlock = baseBlock
-		return dto.Video
+		return dto.Video, nil
 	case BlockTypeFile:
 		dto.File.baseBlock = baseBlock
-		return dto.File
+		return dto.File, nil
 	case BlockTypePDF:
 		dto.PDF.baseBlock = baseBlock
-		return dto.PDF
+		return dto.PDF, nil
 	case BlockTypeBookmark:
 		dto.Bookmark.baseBlock = baseBlock
-		return dto.Bookmark
+		return dto.Bookmark, nil
 	case BlockTypeEquation:
 		dto.Equation.baseBlock = baseBlock
-		return dto.Equation
+		return dto.Equation, nil
 	case BlockTypeDivider:
 		dto.Divider.baseBlock = baseBlock
-		return dto.Divider
+		return dto.Divider, nil
 	case BlockTypeTableOfContents:
 		dto.TableOfContents.baseBlock = baseBlock
-		return dto.TableOfContents
+		return dto.TableOfContents, nil
 	case BlockTypeBreadCrumb:
 		dto.Breadcrumb.baseBlock = baseBlock
-		return dto.Breadcrumb
+		return dto.Breadcrumb, nil
 	case BlockTypeColumnList:
 		dto.ColumnList.baseBlock = baseBlock
-		return dto.ColumnList
+		return dto.ColumnList, nil
 	case BlockTypeColumn:
 		dto.Column.baseBlock = baseBlock
-		return dto.Column
+		return dto.Column, nil
 	case BlockTypeTable:
 		dto.Table.baseBlock = baseBlock
-		return dto.Table
+		return dto.Table, nil
 	case BlockTypeTableRow:
 		dto.TableRow.baseBlock = baseBlock
-		return dto.TableRow
+		return dto.TableRow, nil
 	case BlockTypeLinkPreview:
 		dto.LinkPreview.baseBlock = baseBlock
-		return dto.LinkPreview
+		return dto.LinkPreview, nil
 	case BlockTypeLinkToPage:
 		dto.LinkToPage.baseBlock = baseBlock
-		return dto.LinkToPage
+		return dto.LinkToPage, nil
 	case BlockTypeSyncedBlock:
 		dto.SyncedBlock.baseBlock = baseBlock
-		return dto.SyncedBlock
+		return dto.SyncedBlock, nil
 	case BlockTypeTemplate:
 		dto.Template.baseBlock = baseBlock
-		return dto.Template
+		return dto.Template, nil
+	case BlockTypeUnsupported:
+		dto.Unsupported.baseBlock = baseBlock
+		return dto.Unsupported, nil
 	default:
-		panic(fmt.Sprintf("type %q is unsupported", dto.Type))
+		// When this case is selected, the block type is supported in the Notion
+		// API, but unknown in this library.
+		return nil, ErrUnknownBlockType
 	}
 }
