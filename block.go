@@ -3,8 +3,12 @@ package notion
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 )
+
+// ErrUnknownBlockType is used when encountering an unknown block type.
+var ErrUnknownBlockType = errors.New("unknown block type")
 
 // Block represents content on the Notion platform.
 // See: https://developers.notion.com/reference/block
@@ -63,6 +67,7 @@ type blockDTO struct {
 	LinkToPage       *LinkToPageBlock       `json:"link_to_page,omitempty"`
 	SyncedBlock      *SyncedBlock           `json:"synced_block,omitempty"`
 	Template         *TemplateBlock         `json:"template,omitempty"`
+	Unsupported      *UnsupportedBlock      `json:"unsupported,omitempty"`
 }
 
 type baseBlock struct {
@@ -812,6 +817,24 @@ func (b BreadcrumbBlock) MarshalJSON() ([]byte, error) {
 	})
 }
 
+type UnsupportedBlock struct {
+	baseBlock
+}
+
+// MarshalJSON implements json.Marshaler.
+func (b UnsupportedBlock) MarshalJSON() ([]byte, error) {
+	type (
+		blockAlias UnsupportedBlock
+		dto        struct {
+			Unsupported blockAlias `json:"unsupported"`
+		}
+	)
+
+	return json.Marshal(dto{
+		Unsupported: blockAlias(b),
+	})
+}
+
 type BlockType string
 
 const (
@@ -879,20 +902,18 @@ func (resp *BlockChildrenResponse) UnmarshalJSON(b []byte) error {
 	resp.NextCursor = dto.NextCursor
 	resp.Results = make([]Block, len(dto.Results))
 
-	var i int
-	for _, blockDTO := range dto.Results {
+	for i, blockDTO := range dto.Results {
 		block, err := blockDTO.Block()
-		// Drop unsupported blocks, bubble up any other errors
-		if err != nil && !errors.Is(err, UnsupportedBlockError) {
-			return err
+		if err != nil {
+			// Any error (even `ErrUnknownBlockType`) is explicitly returned.
+			// We don't silently drop blocks with an unknown/unmapped type,
+			// because this could lead to surprises/unexpected list behaviour
+			// for users.
+			return fmt.Errorf("notion: failed to parse block (id: %q, type: %q): %w", blockDTO.ID, blockDTO.Type, err)
 		}
-		if err == nil {
-			resp.Results[i] = block
-			i++
-		}
+		resp.Results[i] = block
 	}
 
-	resp.Results = resp.Results[0:i]
 	return nil
 }
 
@@ -1024,12 +1045,11 @@ func (dto blockDTO) Block() (Block, error) {
 		dto.Template.baseBlock = baseBlock
 		return dto.Template, nil
 	case BlockTypeUnsupported:
-		// These are types for which API support isn't available yet.
-		// From Notion: Any unsupported block types will continue to appear in the structure,
-		// but only contain a type set to "unsupported".
-		return nil, UnsupportedBlockError
+		dto.Unsupported.baseBlock = baseBlock
+		return dto.Unsupported, nil
 	default:
-		// These are types that this library doesn't support yet.
-		return nil, UnsupportedBlockError
+		// When this case is selected, the block type is supported in the Notion
+		// API, but unknown in this library.
+		return nil, ErrUnknownBlockType
 	}
 }

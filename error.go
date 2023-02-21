@@ -67,6 +67,3 @@ func parseErrorResponse(res *http.Response) error {
 
 	return &apiErr
 }
-
-// UnsupportedBlockError is an internal failure when a block is unknown and cannot be decoded
-var UnsupportedBlockError = errors.New("unsupported block type")

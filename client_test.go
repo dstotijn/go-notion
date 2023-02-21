@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -3074,6 +3075,15 @@ func TestFindBlockChildrenById(t *testing.T) {
 										}
 									]
 								}
+							},
+							{
+								"object": "block",
+								"id": "5e113754-eae4-4da9-96d2-675977acce99",
+								"created_time": "2021-05-14T09:15:00.000Z",
+								"last_edited_time": "2021-05-14T09:15:00.000Z",
+								"has_children": false,
+								"type": "unsupported",
+								"unsupported": {}
 							}
 						],
 						"next_cursor": "A^hd",
@@ -3102,6 +3112,7 @@ func TestFindBlockChildrenById(t *testing.T) {
 							},
 						},
 					},
+					&notion.UnsupportedBlock{},
 				},
 				HasMore:    true,
 				NextCursor: notion.StringPtr("A^hd"),
@@ -3109,6 +3120,13 @@ func TestFindBlockChildrenById(t *testing.T) {
 			expBlockFields: []blockFields{
 				{
 					id:             "ae9c9a31-1c1e-4ae2-a5ee-c539a2d43113",
+					createdTime:    mustParseTime(time.RFC3339, "2021-05-14T09:15:00.000Z"),
+					lastEditedTime: mustParseTime(time.RFC3339, "2021-05-14T09:15:00.000Z"),
+					hasChildren:    false,
+					archived:       false,
+				},
+				{
+					id:             "5e113754-eae4-4da9-96d2-675977acce99",
 					createdTime:    mustParseTime(time.RFC3339, "2021-05-14T09:15:00.000Z"),
 					lastEditedTime: mustParseTime(time.RFC3339, "2021-05-14T09:15:00.000Z"),
 					hasChildren:    false,
@@ -3138,6 +3156,30 @@ func TestFindBlockChildrenById(t *testing.T) {
 				NextCursor: nil,
 			},
 			expError: nil,
+		},
+		{
+			name: "unknown block type",
+			respBody: func(_ *http.Request) io.Reader {
+				return strings.NewReader(
+					`{
+						"object": "list",
+						"results": [
+							{
+								"object": "block",
+								"id": "ae9c9a31-1c1e-4ae2-a5ee-c539a2d43113",
+								"created_time": "2021-05-14T09:15:00.000Z",
+								"last_edited_time": "2021-05-14T09:15:00.000Z",
+								"has_children": false,
+								"type": "foobar"
+							}
+						],
+						"next_cursor": null,
+						"has_more": false
+					}`,
+				)
+			},
+			respStatusCode: http.StatusOK,
+			expError:       fmt.Errorf(`notion: failed to parse HTTP response: notion: failed to parse block (id: "ae9c9a31-1c1e-4ae2-a5ee-c539a2d43113", type: "foobar"): unknown block type`),
 		},
 		{
 			name: "error response",
@@ -3200,7 +3242,7 @@ func TestFindBlockChildrenById(t *testing.T) {
 				t.Fatalf("error not equal (expected: %v, got: %v)", tt.expError, err)
 			}
 
-			if diff := cmp.Diff(tt.expResponse, resp, cmpopts.IgnoreUnexported(notion.ParagraphBlock{})); diff != "" {
+			if diff := cmp.Diff(tt.expResponse, resp, cmpopts.IgnoreUnexported(notion.ParagraphBlock{}, notion.UnsupportedBlock{})); diff != "" {
 				t.Fatalf("response not equal (-exp, +got):\n%v", diff)
 			}
 
