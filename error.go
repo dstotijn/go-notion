@@ -62,7 +62,7 @@ func parseErrorResponse(res *http.Response) error {
 
 	err := json.NewDecoder(res.Body).Decode(&apiErr)
 	if err != nil {
-		return fmt.Errorf("failed to parse error from HTTP response: %w", err)
+		return &APIError{Status: res.StatusCode}
 	}
 
 	return &apiErr
