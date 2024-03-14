@@ -301,7 +301,7 @@ func (c *Client) UpdatePage(ctx context.Context, pageID string, params UpdatePag
 }
 
 // FindBlockChildrenByID returns a list of block children for a given block ID.
-// See: https://developers.notion.com/reference/post-database-query
+// See: https://developers.notion.com/reference/get-block-children
 func (c *Client) FindBlockChildrenByID(ctx context.Context, blockID string, query *PaginationQuery) (result BlockChildrenResponse, err error) {
 	req, err := c.newRequest(ctx, http.MethodGet, fmt.Sprintf("/blocks/%v/children", blockID), nil)
 	if err != nil {
