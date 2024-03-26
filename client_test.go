@@ -2257,6 +2257,13 @@ func TestUpdatePage(t *testing.T) {
 							},
 						},
 					},
+					"People": notion.DatabasePageProperty{
+						People: []notion.User{
+							notion.User{
+								BaseUser: notion.BaseUser{ID: "user-id"},
+							},
+						},
+					},
 				},
 			},
 			respBody: func(_ *http.Request) io.Reader {
@@ -2267,8 +2274,8 @@ func TestUpdatePage(t *testing.T) {
 						"created_time": "2021-05-14T09:15:46.796Z",
 						"last_edited_time": "2021-05-22T15:54:31.116Z",
 						"parent": {
-							"type": "page_id",
-							"page_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
+							"type": "database_id",
+							"database_id": "b0668f48-8d66-4733-9bdb-2f82215707f7"
 						},
 						"archived": false,
 						"url": "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
@@ -2295,6 +2302,22 @@ func TestUpdatePage(t *testing.T) {
 										"href": null
 									}
 								]
+							},
+							"People": {
+								"id": "people",
+								"type": "people",
+								"people": [
+									{
+										"object": "user",
+										"id": "user-id",
+										"name": "name",
+										"avatar_url": null,
+										"type": "person",
+										"person": {
+											"email": "person@organization.com"	
+										}
+									}
+								]
 							}
 						}
 					}`,
@@ -2312,6 +2335,13 @@ func TestUpdatePage(t *testing.T) {
 							},
 						},
 					},
+					"People": map[string]interface{}{
+						"people": []interface{}{
+							map[string]interface{}{
+								"id": "user-id",
+							},
+						},
+					},
 				},
 			},
 			expResponse: notion.Page{
@@ -2320,11 +2350,13 @@ func TestUpdatePage(t *testing.T) {
 				LastEditedTime: mustParseTime(time.RFC3339Nano, "2021-05-22T15:54:31.116Z"),
 				URL:            "https://www.notion.so/Avocado-251d2b5f268c4de2afe9c71ff92ca95c",
 				Parent: notion.Parent{
-					Type:   notion.ParentTypePage,
-					PageID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
+					Type:       notion.ParentTypeDatabase,
+					DatabaseID: "b0668f48-8d66-4733-9bdb-2f82215707f7",
 				},
-				Properties: notion.PageProperties{
-					Title: notion.PageTitle{
+				Properties: notion.DatabasePageProperties{
+					"title": notion.DatabasePageProperty{
+						ID:   "title",
+						Type: notion.DBPropTypeTitle,
 						Title: []notion.RichText{
 							{
 								Type: notion.RichTextTypeText,
@@ -2335,6 +2367,20 @@ func TestUpdatePage(t *testing.T) {
 									Color: notion.ColorDefault,
 								},
 								PlainText: "Lorem ipsum",
+							},
+						},
+					},
+					"People": notion.DatabasePageProperty{
+						ID:   "people",
+						Type: notion.DBPropTypePeople,
+						People: []notion.User{
+							notion.User{
+								BaseUser:  notion.BaseUser{ID: "user-id"},
+								Type:      notion.UserTypePerson,
+								Name:      "name",
+								AvatarURL: "",
+								Person:    &notion.Person{Email: "person@organization.com"},
+								Bot:       nil,
 							},
 						},
 					},
