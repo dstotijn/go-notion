@@ -37,12 +37,12 @@ type BaseUser struct {
 type User struct {
 	BaseUser
 
-	Type      UserType `json:"type"`
-	Name      string   `json:"name"`
-	AvatarURL string   `json:"avatar_url"`
+	Type      UserType `json:"type,omitempty"`
+	Name      string   `json:"name,omitempty"`
+	AvatarURL string   `json:"avatar_url,omitempty"`
 
-	Person *Person `json:"person"`
-	Bot    *Bot    `json:"bot"`
+	Person *Person `json:"person,omitempty"`
+	Bot    *Bot    `json:"bot,omitempty"`
 }
 
 // ListUsersResponse contains results (users) and pagination data returned from a list request.
